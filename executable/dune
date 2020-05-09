@@ -1,0 +1,13 @@
+(executable
+ (name MorphOidcClient)
+ (package morph_oidc_client)
+ (public_name MorphOidcClient.exe)
+ (libraries lwt logs logs.fmt fmt.tty morph_oidc_client.library
+   morph_oidc_client.oidc morph)
+ (preprocess
+  (pps lwt_ppx)))
+
+(env
+ (docker
+  (flags
+   (:standard -ccopt -static -verbose))))

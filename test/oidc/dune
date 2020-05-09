@@ -1,0 +1,6 @@
+(library
+ (name morph_oidc_client_oidc_test)
+ (public_name morph_oidc_client.oidc_test)
+ (libraries jose morph_oidc_client.oidc morph_oidc_client.library
+   morph_oidc_client.framework rely.lib)
+ (flags -linkall -g -w -9))

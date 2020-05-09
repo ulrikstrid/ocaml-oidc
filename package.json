@@ -1,0 +1,44 @@
+{
+  "name": "morph_oidc_client",
+  "version": "0.0.0",
+  "description": "My Project",
+  "esy": {
+    "build": "dune build --root=.",
+    "install": "esy-installer #{self.target_dir / 'default' / self.name '.install'}"
+  },
+  "scripts": {
+    "start": "reenv -e .env -- esy x MorphOidcClient.exe",
+    "test": "esy x RunTests.exe",
+    "docs": "dune build @doc --root .",
+    "fmt": "dune build @fmt --auto-promote --root .",
+    "docs-path": "esy echo #{self.target_dir / 'default' / '_doc' / '_html'}"
+  },
+  "dependencies": {
+    "@esy-ocaml/reason": "<4.0.0",
+    "@opam/containers": "*",
+    "@opam/dune": "*",
+    "@opam/fmt": "*",
+    "@opam/logs": "*",
+    "@opam/lwt": "^4.0.0",
+    "@opam/lwt_ppx": "1.2.3",
+    "@opam/nocrypto": "*",
+    "@opam/uri": "*",
+    "@opam/uuidm": "*",
+    "@opam/yojson": "*",
+    "@opam/jose": "^0.3.0",
+    "@opam/tyxml": "*",
+    "@opam/tyxml-jsx": "*",
+    "@opam/routes": "*",
+    "@opam/ppx_deriving": "*",
+    "@opam/ppx_deriving_yojson": "*",
+    "ocaml": "~4.10.0",
+    "@reason-native-web/piaf": "*",
+    "@reason-native-web/morph": "^0.4.0"
+  },
+  "devDependencies": {
+    "@opam/merlin": "*",
+    "@opam/ocamlformat": "*",
+    "@reason-native/rely": "^3.1.0",
+    "@opam/odoc": "*"
+  }
+}

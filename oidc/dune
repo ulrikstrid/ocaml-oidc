@@ -1,0 +1,7 @@
+(library
+ (name Oidc)
+ (public_name morph_oidc_client.oidc)
+ (libraries lwt logs uri yojson str containers jose
+   ppx_deriving_yojson.runtime)
+ (preprocess
+  (pps ppx_deriving_yojson ppx_deriving.make)))

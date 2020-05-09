@@ -1,0 +1,53 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+name: $(Build.SourceVersion)
+
+stages:
+  - stage: Build_docker
+    dependsOn: []
+    jobs:
+      - job: Docker
+        variables:
+          dockerId: ulrikaugustsson
+          imageName: reason-guest-login-oidc-client
+        pool:
+          vmImage: ubuntu-16.04
+
+        steps:
+          - script: docker login -u $(dockerId) -p $(dockerPassword)
+            displayName: "Login to docker"
+
+          - script: mkdir -p $(Pipeline.Workspace)/docker-cache
+
+          - task: CacheBeta@0
+            inputs:
+              key: |
+                ReasonGuestLoginOidcClient
+                docker
+                $(Build.SourcesDirectory)/docker-cache.json
+              path: $(Pipeline.Workspace)/docker-cache
+            displayName: Cache Docker image
+
+          - script: |
+              docker load -i $(Pipeline.Workspace)/docker-cache/docker_cache.tar || exit 0
+            displayName: Load Docker image and layers
+          
+          # Build the builder stage:
+          - script: |
+              docker build --target builder \
+                    --cache-from=$(dockerId)/$(imageName)-builder:latest \
+                    --tag $(dockerId)/$(imageName)-builder:latest .
+            displayName: "Build builder stage"
+
+          - script: docker save $(dockerId)/$(imageName)-builder:latest $(docker history -q $(dockerId)/$(imageName)-builder:latest | grep -v "<missing>") -o $(Pipeline.Workspace)/docker-cache/docker_cache.tar
+            displayName: Save docker cache
+
+          # Build the runtime stage, using cached compile stage:
+          - script: |
+              docker build \
+                    --cache-from=$(dockerId)/$(imageName)-builder:latest \
+                    --tag $(dockerId)/$(imageName):$(Build.BuildId) .
+            displayName: "Build runtime stage"
