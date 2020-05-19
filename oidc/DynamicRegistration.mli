@@ -13,4 +13,6 @@ type response = {
  The [response] also includes the {! ClientMeta.t }
  *)
 
-val response_of_string : string -> (response, string) result
+val of_json : Yojson.Safe.t -> (response, [> `Msg of string ]) result
+
+val response_of_string : string -> (response, [> `Msg of string ]) result

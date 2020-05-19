@@ -22,7 +22,6 @@
     "@opam/jose": "^0.3.0",
     "@opam/logs": "*",
     "@opam/lwt": "^5.0.0",
-    "@opam/nocrypto": "*",
     "@opam/ppx_deriving_yojson": "*",
     "@opam/ppx_deriving": "*",
     "@opam/routes": "*",
@@ -31,9 +30,11 @@
     "@opam/uri": "*",
     "@opam/uuidm": "*",
     "@opam/yojson": "*",
+    "@opam/mirage-crypto": "^0.6.0",
+    "@opam/mirage-crypto-pk": "^0.6.0",
     "@reason-native-web/morph": "^0.5.0",
     "@reason-native-web/piaf": "^1.3.0",
-    "ocaml": "~4.10.0"
+    "ocaml": ">4.7.0"
   },
   "devDependencies": {
     "@opam/luv": "*",

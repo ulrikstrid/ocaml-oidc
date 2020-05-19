@@ -33,6 +33,6 @@ let of_json json =
         application_type =
           json |> Json.member "application_type" |> Json.to_string_option;
       }
-  with Json.Type_error (e, _) -> Error e
+  with Json.Type_error (e, _) -> Error (`Msg e)
 
 let response_of_string response = Yojson.Safe.from_string response |> of_json

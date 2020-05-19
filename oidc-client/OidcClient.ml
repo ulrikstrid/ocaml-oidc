@@ -49,4 +49,14 @@ let get_token ~(client : Oidc.Client.t) t code =
     ~body token_path
   >>= fun res -> Piaf.Body.to_string res.body
 
-module RegisterClient = RegisterClient
+let register t client_meta =
+  match t.discovery.registration_endpoint with
+  | Some endpoint ->
+      let open Lwt_result.Infix in
+      let meta_string = Oidc.ClientMeta.to_string client_meta in
+      let body = Piaf.Body.of_string meta_string in
+      let registration_path = Uri.of_string endpoint |> Uri.path in
+      Piaf.Client.post t.client ~body registration_path >>= fun res ->
+      Piaf.Body.to_string res.body >>= fun s ->
+      Oidc.DynamicRegistration.response_of_string s |> Lwt.return
+  | None -> Lwt_result.fail (`Msg "No_registration_endpoint")

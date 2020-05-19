@@ -11,14 +11,19 @@ module OidcClient = {
       OidcClient.make(~redirect_uri, provider_uri)
       |> Lwt_result.map_err(Piaf.Error.to_string);
 
-    let registration_uri =
-      Uri.with_path(
-        provider_uri,
-        "/morph_auth_local/rp-response_type-code/registration",
+    let client_meta =
+      Oidc.ClientMeta.make(
+        ~redirect_uris=[Uri.to_string(redirect_uri)],
+        ~contacts=["ulrik.strid@outlook.com"],
+        ~response_types=["code"],
+        ~grant_types=["authorization_code"],
+        ~token_endpoint_auth_method="client_secret_post",
+        (),
       );
 
     let+ registration_response =
-      OidcClient.RegisterClient.req(~registration_uri);
+      OidcClient.register(oidc_client, client_meta)
+      |> Lwt_result.map_err(Piaf.Error.to_string);
 
     Context.make(
       ~oidc_client,
