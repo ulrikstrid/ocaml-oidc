@@ -1,0 +1,4 @@
+(library
+ (name OidcClient)
+ (public_name oidc_client)
+ (libraries oidc piaf yojson uri))

@@ -1,13 +1,12 @@
 (executable
  (name MorphOidcClient)
  (package morph_oidc_client)
- (public_name MorphOidcClient.exe)
+ (public_name MorphOidcClient)
  (libraries lwt logs logs.fmt fmt.tty morph_oidc_client.library
-   morph_oidc_client.oidc morph)
- (preprocess
-  (pps lwt_ppx)))
+   oidc morph archi archi-lwt luv dynlink
+   mirage-crypto-rng.unix))
 
 (env
  (docker
   (flags
-   (:standard -ccopt -static -verbose))))
+   (:standard -ccopt -static))))

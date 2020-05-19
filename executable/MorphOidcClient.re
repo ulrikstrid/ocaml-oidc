@@ -1,53 +1,102 @@
-open Lwt_result.Infix;
-open Library;
+module OidcClient = {
+  open Library;
+  open Lwt_result.Syntax;
 
-Fmt_tty.setup_std_outputs();
-Logs.set_level(~all=true, Some(Logs.Debug));
-Logs.set_reporter(Logs_fmt.reporter());
+  let start = () => {
+    let provider_uri =
+      Uri.of_string("https://" ++ Sys.getenv("PROVIDER_HOST"));
+    let redirect_uri = Uri.of_string(Sys.getenv("OIDC_REDIRECT_URI"));
 
-let http_server =
-  Morph.Server.make(~address=Unix.inet_addr_loopback, ());
-let provider_uri = Uri.of_string(Sys.getenv("PROVIDER_HOST"));
+    let* oidc_client =
+      OidcClient.make(~redirect_uri, provider_uri)
+      |> Lwt_result.map_err(Piaf.Error.to_string);
 
-GetDiscovery.req(~provider_uri, ())
->>= (
-  body => {
-    let discovery = Oidc.Discover.of_string(body);
+    let registration_uri =
+      Uri.with_path(
+        provider_uri,
+        "/morph_auth_local/rp-response_type-code/registration",
+      );
 
-    RegisterClient.req()
-    >>= (
-      client => {
-        Logs.info(m => m("%s", client));
-        let registration_response =
-          Oidc.DynamicRegistration.response_of_string(client);
+    let+ registration_response =
+      OidcClient.RegisterClient.req(~registration_uri);
 
-        switch (registration_response) {
-        | Ok(registration_response) =>
-          let context =
-            Context.make(
-              ~discovery,
-              ~client_id=registration_response.client_id,
-              ~redirect_uri="http://localhost:8080/auth/cb",
-              ~secret=registration_response.client_secret,
-              (),
-            );
-
-          if (Sys.unix) {
-            Sys.(set_signal(sigpipe, Signal_handle(_ => ())));
-          };
-
-          let handler = Context.middleware(~context, Router.handler);
-
-          http_server.start(handler) |> Lwt_result.ok;
-        | Error(e) => failwith(e)
-        };
-      }
+    Context.make(
+      ~oidc_client,
+      ~client_id=registration_response.client_id,
+      ~secret=registration_response.client_secret,
+      (),
     );
-  }
-)
-|> Lwt_main.run
-|> (
-  fun
-  | Ok () => print_endline("started")
-  | Error(msg) => Logs.err(m => m("%s", msg))
-);
+  };
+
+  let stop = _ => {
+    Logs.info(m => m("Stopped OIDC Client")) |> Lwt.return;
+  };
+
+  let component = Archi_lwt.Component.make(~start, ~stop);
+};
+
+module WebServer = {
+  open Library;
+  let server =
+    Morph.Server.make(~port=4040, ~address=Unix.inet_addr_loopback, ());
+
+  let start = ((), context) => {
+    Logs.info(m => m("Starting server"));
+    let handler =
+      Morph.Session.middleware(Context.middleware(~context, Router.handler));
+
+    server.start(handler) |> Lwt_result.ok;
+  };
+
+  let stop = _server => {
+    Logs.info(m => m("Stopped Server")) |> Lwt.return;
+  };
+
+  let component =
+    Archi_lwt.Component.using(
+      ~start,
+      ~stop,
+      ~dependencies=[OidcClient.component],
+    );
+};
+
+let system =
+  Archi_lwt.System.make([
+    ("oidc_client", OidcClient.component),
+    ("web_server", WebServer.component),
+  ]);
+
+open Lwt.Infix;
+
+let main = () => {
+  Fmt_tty.setup_std_outputs();
+  Logs.set_level(~all=true, Some(Logs.Debug));
+  Logs.set_reporter(Logs_fmt.reporter());
+  let () = Mirage_crypto_rng_unix.initialize();
+
+  Archi_lwt.System.start((), system)
+  >|= (
+    fun
+    | Ok(system) => {
+        Logs.info(m => m("Starting"));
+
+        Sys.(
+          set_signal(
+            sigint,
+            Signal_handle(
+              _ => {
+                Logs.err(m => m("SIGNINT received, tearing down.@."));
+                Archi_lwt.System.stop(system) |> ignore;
+              },
+            ),
+          )
+        );
+      }
+    | Error(error) => {
+        Logs.err(m => m("ERROR: %s@.", error));
+        exit(1);
+      }
+  );
+};
+
+let () = Lwt_main.run(main());

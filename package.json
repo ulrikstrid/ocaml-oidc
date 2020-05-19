@@ -3,11 +3,10 @@
   "version": "0.0.0",
   "description": "My Project",
   "esy": {
-    "build": "dune build --root=.",
-    "install": "esy-installer #{self.target_dir / 'default' / self.name '.install'}"
+    "build": "dune build --root=. --promote-install-file"
   },
   "scripts": {
-    "start": "reenv -e .env -- esy x MorphOidcClient.exe",
+    "start": "reenv -e .env -- redemon -p ./oidc -p ./oidc-client -p ./library -p ./executable dune exec executable/MorphOidcClient.exe",
     "test": "esy x RunTests.exe",
     "docs": "dune build @doc --root .",
     "fmt": "dune build @fmt --auto-promote --root .",
@@ -15,30 +14,36 @@
   },
   "dependencies": {
     "@esy-ocaml/reason": "<4.0.0",
+    "@opam/archi": "*",
+    "@opam/archi-lwt": "*",
     "@opam/containers": "*",
-    "@opam/dune": "*",
+    "@opam/dune": "^2.5.0",
     "@opam/fmt": "*",
+    "@opam/jose": "^0.3.0",
     "@opam/logs": "*",
-    "@opam/lwt": "^4.0.0",
-    "@opam/lwt_ppx": "1.2.3",
+    "@opam/lwt": "^5.0.0",
     "@opam/nocrypto": "*",
+    "@opam/ppx_deriving_yojson": "*",
+    "@opam/ppx_deriving": "*",
+    "@opam/routes": "*",
+    "@opam/tyxml-jsx": "*",
+    "@opam/tyxml": "*",
     "@opam/uri": "*",
     "@opam/uuidm": "*",
     "@opam/yojson": "*",
-    "@opam/jose": "^0.3.0",
-    "@opam/tyxml": "*",
-    "@opam/tyxml-jsx": "*",
-    "@opam/routes": "*",
-    "@opam/ppx_deriving": "*",
-    "@opam/ppx_deriving_yojson": "*",
-    "ocaml": "~4.10.0",
-    "@reason-native-web/piaf": "*",
-    "@reason-native-web/morph": "^0.4.0"
+    "@reason-native-web/morph": "^0.5.0",
+    "@reason-native-web/piaf": "^1.3.0",
+    "ocaml": "~4.10.0"
   },
   "devDependencies": {
+    "@opam/luv": "*",
     "@opam/merlin": "*",
+    "@opam/ocaml-lsp-server": "ocaml/ocaml-lsp:ocaml-lsp-server.opam",
     "@opam/ocamlformat": "*",
-    "@reason-native/rely": "^3.1.0",
-    "@opam/odoc": "*"
+    "@opam/odoc": "*",
+    "@reason-native/rely": "^3.1.0"
+  },
+  "resolutions": {
+    "@opam/session": "inhabitedtype/ocaml-session:session.opam#6180413"
   }
 }

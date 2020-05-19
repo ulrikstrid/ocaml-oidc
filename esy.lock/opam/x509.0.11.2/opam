@@ -47,9 +47,9 @@ namely PKCS 1, PKCS 7, PKCS 8, PKCS 9 and PKCS 10.
 """
 url {
   src:
-    "https://github.com/mirleft/ocaml-x509/releases/download/v0.11.1/x509-v0.11.1.tbz"
+    "https://github.com/mirleft/ocaml-x509/releases/download/v0.11.2/x509-v0.11.2.tbz"
   checksum: [
-    "sha256=2ce5dd40d3da46d86b07510847aa307c2274ffb87c5c9a4f09ff1fd72bc7b2ee"
-    "sha512=b232778e22adf20da7207ecd5a6893eab256ab083548e540e76034cd5196593d8a1d6b77fb387ba960071a6acd8b0e0dc0aa390b1e5e7a1699880d46342123d1"
+    "sha256=42ccf807a7b397b8f5411d261f64ae3cb671e59b2a2f10f16b507a5ae16594ac"
+    "sha512=e7f9757f74e2b4caa4f5fb2eb801aa203ba1b77ab7629f01a4bd6e4a02cb82dc67bd97353d45999a5862519b2c704b8285f5e36115efc3e01553379a6f9d1f6c"
   ]
 }
