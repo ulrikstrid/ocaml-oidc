@@ -8,8 +8,7 @@ let make = _request => {
         <Card title="Welcome"> <a href="/auth"> "Go to login" </a> </Card>
         <div />
       </main>
-    </Layout>
-    |> Format.asprintf("%a", Html.pp(~indent=false, ()));
+    </Layout>;
 
-  Morph.Response.html(body) |> Lwt.return;
+  TyxmlRender.respond_html(body) |> Lwt.return;
 };
