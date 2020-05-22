@@ -1,11 +1,3 @@
-let find_jwk = (jwks: Jose.Jwks.t, kid: string) => {
-  print_endline(CCList.length(jwks.keys) |> string_of_int);
-  CCList.find_opt(
-    (jwk: Jose.Jwk.t('a)) => {Jose.Jwk.get_kid(jwk) == kid},
-    jwks.keys,
-  );
-};
-
 let make = (req: Morph.Request.t) => {
   open Lwt.Syntax;
 
@@ -38,7 +30,7 @@ let make = (req: Morph.Request.t) => {
       |> CCResult.flat_map((jwt: Jose.Jwt.t) => {
            let kid = jwt.header.kid;
            Logs.info(m => m("kid: %s", kid));
-           find_jwk(jwks, kid)
+           Jose.Jwks.find_key(jwks, kid)
            |> CCResult.of_opt
            |> CCResult.map_err(e => `Msg("JWK not found, " ++ e))
            |> CCResult.flat_map(jwk => {Jose.Jwt.validate(~jwk, jwt)});

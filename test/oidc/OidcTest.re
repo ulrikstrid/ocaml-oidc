@@ -3,8 +3,11 @@ open TestFramework;
 describe("OIDC - Parameters", ({test}) => {
   let client: Oidc.Client.t = {
     id: "s6BhdRkqt3",
+    response_types: ["code"],
+    grant_types: ["authorization_code"],
     redirect_uris: ["https://client.example.org/cb"],
     secret: Some("secret"),
+    token_endpoint_auth_method: "client_secret_post",
   };
   let clients = [client];
 

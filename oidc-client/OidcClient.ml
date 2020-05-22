@@ -17,7 +17,6 @@ let register ~http_client ~client_meta ~(discovery : Oidc.Discover.t) =
       let registration_path = Uri.of_string endpoint |> Uri.path in
       Piaf.Client.post http_client ~body registration_path >>= fun res ->
       Piaf.Body.to_string res.body >>= fun s ->
-      print_endline s;
       Oidc.Client.dynamic_of_string s |> Lwt.return
   | None -> Lwt_result.fail (`Msg "No_registration_endpoint")
 
@@ -50,7 +49,9 @@ let jwks t =
   let open Lwt_result.Infix in
   let jwks_path = Uri.of_string t.discovery.jwks_uri |> Uri.path in
   Piaf.Client.get t.http_client jwks_path >>= fun res ->
-  Piaf.Body.to_string res.body >|= Jose.Jwks.of_string
+  Piaf.Body.to_string res.body >|= fun jwks ->
+  print_endline jwks;
+  Jose.Jwks.of_string jwks
 
 let get_token ~code t =
   let open Lwt_result.Infix in
@@ -82,3 +83,29 @@ let register t client_meta =
 let get_auth_parameters ?scope ?claims ~nonce ~state t =
   Oidc.Parameters.make ?scope ?claims t.client ~nonce ~state
     ~redirect_uri:t.redirect_uri
+
+let get_auth_uri ?scope ?claims ~nonce ~state t =
+  let query =
+    get_auth_parameters ?scope ?claims ~nonce ~state t
+    |> Oidc.Parameters.to_query
+  in
+  t.discovery.authorization_endpoint ^ query
+
+module Microsoft = struct
+  let make ~app_id ~tenant_id:_ ~secret ~redirect_uri =
+    let provider_uri =
+      Uri.of_string "https://login.microsoftonline.com/common/v2.0"
+    in
+    let client =
+      Client
+        {
+          id = app_id;
+          response_types = [ "code" ];
+          grant_types = [ "authorization_code" ];
+          redirect_uris = [ "https://login.microsoftonline.com/common/v2.0" ];
+          secret;
+          token_endpoint_auth_method = "client_secret_post";
+        }
+    in
+    make ~redirect_uri ~provider_uri ~client
+end

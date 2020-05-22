@@ -8,6 +8,7 @@
   "scripts": {
     "start": "reenv -e .env -- redemon -p ./oidc -p ./oidc-client -p ./library -p ./executable dune exec executable/MorphOidcClient.exe",
     "test": "esy x RunTests.exe",
+    "watch:test": "redemon -p ./oidc -p ./oidc-client -p ./test esy x RunTests.exe",
     "docs": "dune build @doc --root .",
     "fmt": "dune build @fmt --auto-promote --root .",
     "docs-path": "esy echo #{self.target_dir / 'default' / '_doc' / '_html'}"
@@ -45,6 +46,7 @@
     "@reason-native/rely": "^3.1.0"
   },
   "resolutions": {
-    "@opam/session": "inhabitedtype/ocaml-session:session.opam#6180413"
+    "@opam/session": "inhabitedtype/ocaml-session:session.opam#6180413",
+    "@opam/jose": "ulrikstrid/reason-jose:jose.opam#c2e64e2bf605729d1e7d57cc21560fafd4bd4b78"
   }
 }

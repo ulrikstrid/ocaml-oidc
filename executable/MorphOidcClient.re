@@ -2,25 +2,35 @@ module OidcClient = {
   open Lwt_result.Syntax;
 
   let start = () => {
-    let provider_uri =
-      Uri.of_string("https://" ++ Sys.getenv("PROVIDER_HOST"));
+    /*let provider_uri =
+      Uri.of_string("https://" ++ Sys.getenv("PROVIDER_HOST"));*/
     let redirect_uri = Uri.of_string(Sys.getenv("OIDC_REDIRECT_URI"));
+    /*
+     let client_meta =
+       Oidc.Client.make_meta(
+         ~redirect_uris=[Uri.to_string(redirect_uri)],
+         ~contacts=["ulrik.strid@outlook.com"],
+         ~response_types=["code"],
+         ~grant_types=["authorization_code"],
+         ~token_endpoint_auth_method="client_secret_post",
+         (),
+       );
 
-    let client_meta =
-      Oidc.Client.make_meta(
-        ~redirect_uris=[Uri.to_string(redirect_uri)],
-        ~contacts=["ulrik.strid@outlook.com"],
-        ~response_types=["code"],
-        ~grant_types=["authorization_code"],
-        ~token_endpoint_auth_method="client_secret_post",
-        (),
-      );
+      let+ oidc_client =
+        OidcClient.make(
+          ~redirect_uri,
+          ~provider_uri,
+          ~client=OidcClient.Register(client_meta),
+        )
+        |> Lwt_result.map_err(Piaf.Error.to_string);
+      */
 
     let+ oidc_client =
-      OidcClient.make(
+      OidcClient.Microsoft.make(
+        ~app_id="2824b599-24f1-4595-b63b-0cab4bb26c24",
+        ~tenant_id="5c26a08a-b3ca-475d-abfc-a96df0a5593e",
         ~redirect_uri,
-        ~provider_uri,
-        ~client=OidcClient.Register(client_meta),
+        ~secret=Sys.getenv_opt("OIDC_SECRET"),
       )
       |> Lwt_result.map_err(Piaf.Error.to_string);
 

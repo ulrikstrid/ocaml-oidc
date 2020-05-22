@@ -9,14 +9,9 @@ let make = request => {
   let nonce =
     Uuidm.v4_gen(Random.State.make_self_init(), ()) |> Uuidm.to_string;
 
-  let paremeters =
-    OidcClient.get_auth_parameters(~nonce, ~state, oidc_client);
-
-  let query = Oidc.Parameters.to_query(paremeters);
-
   let+ () = Morph.Session.set(request, ~key=state, ~value=state);
 
-  Morph.Response.redirect(
-    oidc_client.discovery.authorization_endpoint ++ query,
-  );
+  let auth_uri = OidcClient.get_auth_uri(~nonce, ~state, oidc_client);
+
+  Morph.Response.redirect(auth_uri);
 };
