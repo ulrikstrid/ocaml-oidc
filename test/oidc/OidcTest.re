@@ -3,7 +3,7 @@ open TestFramework;
 describe("OIDC - Parameters", ({test}) => {
   let client: Oidc.Client.t = {
     id: "s6BhdRkqt3",
-    redirect_uri: "https://client.example.org/cb",
+    redirect_uris: ["https://client.example.org/cb"],
     secret: Some("secret"),
   };
   let clients = [client];

@@ -1,5 +1,4 @@
 module OidcClient = {
-  open Library;
   open Lwt_result.Syntax;
 
   let start = () => {
@@ -7,12 +6,8 @@ module OidcClient = {
       Uri.of_string("https://" ++ Sys.getenv("PROVIDER_HOST"));
     let redirect_uri = Uri.of_string(Sys.getenv("OIDC_REDIRECT_URI"));
 
-    let* oidc_client =
-      OidcClient.make(~redirect_uri, provider_uri)
-      |> Lwt_result.map_err(Piaf.Error.to_string);
-
     let client_meta =
-      Oidc.ClientMeta.make(
+      Oidc.Client.make_meta(
         ~redirect_uris=[Uri.to_string(redirect_uri)],
         ~contacts=["ulrik.strid@outlook.com"],
         ~response_types=["code"],
@@ -21,16 +16,15 @@ module OidcClient = {
         (),
       );
 
-    let+ registration_response =
-      OidcClient.register(oidc_client, client_meta)
+    let+ oidc_client =
+      OidcClient.make(
+        ~redirect_uri,
+        ~provider_uri,
+        ~client=OidcClient.Register(client_meta),
+      )
       |> Lwt_result.map_err(Piaf.Error.to_string);
 
-    Context.make(
-      ~oidc_client,
-      ~client_id=registration_response.client_id,
-      ~secret=registration_response.client_secret,
-      (),
-    );
+    oidc_client;
   };
 
   let stop = _ => {

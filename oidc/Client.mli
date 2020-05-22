@@ -1,4 +1,13 @@
 type t = {
+  id : string;
+  response_types : string list;
+  grant_types : string list;
+  redirect_uris : string list;
+  secret : string option;
+  token_endpoint_auth_method : string;
+}
+
+type meta = {
   redirect_uris : string list;  (** TODO: use Uri.t *)
   response_types : string list option;  (** TODO: use special respone_type *)
   grant_types : string list option;  (** TODO: use special grant_type *)
@@ -20,4 +29,25 @@ type t = {
  [ clientMetadata ] used in registration
  *)
 
-val to_string : t -> string
+val meta_to_string : meta -> string
+
+type dynamic_response = {
+  client_id : string;
+  client_secret : string option;
+  registration_access_token : string option;
+  registration_client_uri : string option;  (** TODO: use Uri.t *)
+  client_secret_expires_at : int option;
+  client_id_issued_at : int option;  (** seconds from 1970-01-01T0:0:0Z UTC *)
+  client_id_expires_at : int option;  (** seconds from 1970-01-01T0:0:0Z UTC *)
+  application_type : string option;
+}
+(**
+ The [response] also includes the {! ClientMeta.t }
+ *)
+
+val dynamic_of_json :
+  Yojson.Safe.t -> (dynamic_response, [> `Msg of string ]) result
+
+val dynamic_of_string : string -> (dynamic_response, [> `Msg of string ]) result
+
+val of_dynamic_and_meta : dynamic:dynamic_response -> meta:meta -> t

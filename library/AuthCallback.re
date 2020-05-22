@@ -7,19 +7,17 @@ let find_jwk = (jwks: Jose.Jwks.t, kid: string) => {
 };
 
 let make = (req: Morph.Request.t) => {
-  open Context;
   open Lwt.Syntax;
 
   let req_uri = req.request.target |> Uri.of_string;
 
-  let context = Context.get_context(req);
+  let oidc_client = Context.get_context(req);
 
   let code =
     Uri.get_query_param(req_uri, "code") |> CCOpt.get_or(~default="code");
 
-  let* jwks_response_body = OidcClient.jwks(context.oidc_client);
-  let* token_response_body =
-    OidcClient.get_token(~client=context.client, context.oidc_client, code);
+  let* jwks_response_body = OidcClient.jwks(oidc_client);
+  let* token_response_body = OidcClient.get_token(~code, oidc_client);
 
   switch (jwks_response_body, token_response_body) {
   | (Error(_), Error(_)) =>
