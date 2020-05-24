@@ -5,3 +5,4 @@ module Parameters = Parameters
 module Provider = Provider
 module Scopes = Scopes
 module States = States
+module TokenResponse = TokenResponse

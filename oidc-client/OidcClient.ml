@@ -62,7 +62,19 @@ let get_token ~code t =
         ("Accept", "application/json");
       ]
     ~body token_path
-  >>= fun res -> Piaf.Body.to_string res.body
+  >>= Internal.to_string_body
+
+(*
+let get_and_validate_token ~code ~state ~nonce t =
+  jwks t
+  |> Lwt_result.map (fun jwks ->
+    get_token ~code t |>
+    Lwt_result.map (fun token -> 
+      let token_response = Oidc.TokenResponse.of_string token in
+      let jwt = Jose.Jwt.of_string token_response.id_token
+    )
+  )
+*)
 
 let register t client_meta =
   discover t

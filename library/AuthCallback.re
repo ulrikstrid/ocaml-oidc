@@ -23,18 +23,19 @@ let make = (req: Morph.Request.t) => {
     Logs.info(m => m("token: %s", token_response_body));
     let valid_token =
       token_response_body
-      |> Yojson.Basic.from_string
-      |> Yojson.Basic.Util.member("id_token")
-      |> Yojson.Basic.Util.to_string
-      |> Jose.Jwt.of_string
-      |> CCResult.flat_map((jwt: Jose.Jwt.t) => {
-           let kid = jwt.header.kid;
-           Logs.info(m => m("kid: %s", kid));
-           Jose.Jwks.find_key(jwks, kid)
-           |> CCResult.of_opt
-           |> CCResult.map_err(e => `Msg("JWK not found, " ++ e))
-           |> CCResult.flat_map(jwk => {Jose.Jwt.validate(~jwk, jwt)});
-         });
+      |> Oidc.TokenResponse.of_string
+      |> (
+        token_response =>
+          Jose.Jwt.of_string(token_response.id_token)
+          |> CCResult.flat_map((jwt: Jose.Jwt.t) => {
+               let kid = jwt.header.kid;
+               Logs.info(m => m("kid: %s", kid));
+               Jose.Jwks.find_key(jwks, kid)
+               |> CCResult.of_opt
+               |> CCResult.map_err(e => `Msg("JWK not found, " ++ e))
+               |> CCResult.flat_map(jwk => {Jose.Jwt.validate(~jwk, jwt)});
+             })
+      );
 
     let* _set_token =
       switch (valid_token) {
