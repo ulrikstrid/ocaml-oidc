@@ -25,8 +25,15 @@ module OidcClient = {
         |> Lwt_result.map_err(Piaf.Error.to_string);
       */
 
+    let kv:
+      module OidcClient.KeyValue.KV with
+        type value = string and type store = Hashtbl.t(string, string) =
+      (module OidcClient.KeyValue.MemoryKV);
+
     let+ oidc_client =
       OidcClient.Microsoft.make(
+        ~kv,
+        ~store=Hashtbl.create(128),
         ~app_id="2824b599-24f1-4595-b63b-0cab4bb26c24",
         ~tenant_id="5c26a08a-b3ca-475d-abfc-a96df0a5593e",
         ~redirect_uri,

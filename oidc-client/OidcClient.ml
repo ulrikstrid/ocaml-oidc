@@ -1,61 +1,48 @@
 type client = Register of Oidc.Client.meta | Client of Oidc.Client.t
 
-type t = {
+type 'store t = {
+  kv : (module KeyValue.KV with type value = string and type store = 'store);
+  store : 'store;
   client : Oidc.Client.t;
   http_client : Piaf.Client.t;
   provider_uri : Uri.t;
-  discovery : Oidc.Discover.t;
   redirect_uri : Uri.t;
 }
 
-let register ~http_client ~client_meta ~(discovery : Oidc.Discover.t) =
-  match discovery.registration_endpoint with
-  | Some endpoint ->
-      let open Lwt_result.Infix in
-      let meta_string = Oidc.Client.meta_to_string client_meta in
-      let body = Piaf.Body.of_string meta_string in
-      let registration_path = Uri.of_string endpoint |> Uri.path in
-      Piaf.Client.post http_client ~body registration_path >>= fun res ->
-      Piaf.Body.to_string res.body >>= fun s ->
-      Oidc.Client.dynamic_of_string s |> Lwt.return
-  | None -> Lwt_result.fail (`Msg "No_registration_endpoint")
-
-let make ~redirect_uri ~provider_uri ~client : (t, Piaf.Error.t) Lwt_result.t =
+let make (type store)
+    ~(kv : (module KeyValue.KV with type value = string and type store = store))
+    ~(store : store) ~redirect_uri ~provider_uri ~client :
+    (store t, Piaf.Error.t) Lwt_result.t =
+  let (module KV) = kv in
   let open Lwt_result.Syntax in
   let open Lwt_result.Infix in
   let* http_client = Piaf.Client.create provider_uri in
-  let discovery_path =
-    Uri.path provider_uri ^ "/.well-known/openid-configuration"
-  in
-  let* discovery =
-    Piaf.Client.get http_client discovery_path >>= fun res ->
-    Piaf.Body.to_string res.body >|= Oidc.Discover.of_string
-  in
   let+ client =
     match client with
     | Client c -> Lwt_result.return c
     | Register client_meta ->
-        register ~http_client ~client_meta ~discovery >|= fun dynamic ->
+        let* discovery =
+          Internal.discover ~kv ~store ~http_client ~provider_uri
+        in
+        Internal.register ~http_client ~client_meta ~discovery
+        >|= fun dynamic ->
         Oidc.Client.of_dynamic_and_meta ~dynamic ~meta:client_meta
   in
-  { client; http_client; provider_uri; discovery; redirect_uri }
+  { kv; store; client; http_client; provider_uri; redirect_uri }
 
 let discover t =
-  let open Lwt_result.Infix in
-  Piaf.Client.get t.http_client "/.well-known/openid-configuration"
-  >>= fun res -> Piaf.Body.to_string res.body >|= Oidc.Discover.of_string
+  Internal.discover ~kv:t.kv ~store:t.store ~http_client:t.http_client
+    ~provider_uri:t.provider_uri
 
 let jwks t =
-  let open Lwt_result.Infix in
-  let jwks_path = Uri.of_string t.discovery.jwks_uri |> Uri.path in
-  Piaf.Client.get t.http_client jwks_path >>= fun res ->
-  Piaf.Body.to_string res.body >|= fun jwks ->
-  print_endline jwks;
-  Jose.Jwks.of_string jwks
+  Internal.jwks ~kv:t.kv ~store:t.store ~http_client:t.http_client
+    ~provider_uri:t.provider_uri
 
 let get_token ~code t =
   let open Lwt_result.Infix in
-  let token_path = Uri.of_string t.discovery.token_endpoint |> Uri.path in
+  let open Lwt_result.Syntax in
+  let* discovery = discover t in
+  let token_path = Uri.of_string discovery.token_endpoint |> Uri.path in
   let body =
     Uri.add_query_params' Uri.empty
       [
@@ -78,7 +65,9 @@ let get_token ~code t =
   >>= fun res -> Piaf.Body.to_string res.body
 
 let register t client_meta =
-  register ~http_client:t.http_client ~client_meta ~discovery:t.discovery
+  discover t
+  |> Lwt_result.map (fun discovery ->
+         Internal.register ~http_client:t.http_client ~client_meta ~discovery)
 
 let get_auth_parameters ?scope ?claims ~nonce ~state t =
   Oidc.Parameters.make ?scope ?claims t.client ~nonce ~state
@@ -89,10 +78,15 @@ let get_auth_uri ?scope ?claims ~nonce ~state t =
     get_auth_parameters ?scope ?claims ~nonce ~state t
     |> Oidc.Parameters.to_query
   in
-  t.discovery.authorization_endpoint ^ query
+  discover t
+  |> Lwt_result.map (fun (discovery : Oidc.Discover.t) ->
+         discovery.authorization_endpoint ^ query)
 
 module Microsoft = struct
-  let make ~app_id ~tenant_id:_ ~secret ~redirect_uri =
+  let make (type store)
+      ~(kv :
+         (module KeyValue.KV with type value = string and type store = store))
+      ~(store : store) ~app_id ~tenant_id:_ ~secret ~redirect_uri =
     let provider_uri =
       Uri.of_string "https://login.microsoftonline.com/common/v2.0"
     in
@@ -107,5 +101,7 @@ module Microsoft = struct
           token_endpoint_auth_method = "client_secret_post";
         }
     in
-    make ~redirect_uri ~provider_uri ~client
+    make ~kv ~store ~redirect_uri ~provider_uri ~client
 end
+
+module KeyValue = KeyValue
