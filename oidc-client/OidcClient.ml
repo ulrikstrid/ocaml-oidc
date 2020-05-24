@@ -9,6 +9,9 @@ type 'store t = {
   redirect_uri : Uri.t;
 }
 
+let map_piaf_err (x : ('a, Piaf.Error.t) Lwt_result.t) =
+  Lwt_result.map_err (fun e -> `Msg (Piaf.Error.to_string e)) x
+
 let make (type store)
     ~(kv : (module KeyValue.KV with type value = string and type store = store))
     ~(store : store) ~redirect_uri ~provider_uri ~client :
@@ -34,7 +37,7 @@ let discover t =
   Internal.discover ~kv:t.kv ~store:t.store ~http_client:t.http_client
     ~provider_uri:t.provider_uri
 
-let jwks t =
+let get_jwks t =
   Internal.jwks ~kv:t.kv ~store:t.store ~http_client:t.http_client
     ~provider_uri:t.provider_uri
 
@@ -62,19 +65,19 @@ let get_token ~code t =
         ("Accept", "application/json");
       ]
     ~body token_path
-  >>= Internal.to_string_body
+  >>= Internal.to_string_body >|= Oidc.TokenResponse.of_string
 
-(*
-let get_and_validate_token ~code ~state ~nonce t =
-  jwks t
-  |> Lwt_result.map (fun jwks ->
-    get_token ~code t |>
-    Lwt_result.map (fun token -> 
-      let token_response = Oidc.TokenResponse.of_string token in
-      let jwt = Jose.Jwt.of_string token_response.id_token
-    )
-  )
-*)
+let get_and_validate_id_token ~code t =
+  let open Lwt_result.Syntax in
+  let* jwks = get_jwks t |> map_piaf_err in
+  let* token_response = get_token ~code t |> map_piaf_err in
+  ( match Jose.Jwt.of_string token_response.id_token with
+  | Ok jwt -> (
+      match Jose.Jwks.find_key jwks jwt.header.kid with
+      | Some jwk -> Jose.Jwt.validate ~jwk jwt
+      | None -> Error (`Msg "Could not find JWK") )
+  | Error e -> Error e )
+  |> Lwt.return
 
 let register t client_meta =
   discover t

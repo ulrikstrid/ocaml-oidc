@@ -10,7 +10,8 @@ let make: Morph.Server.handler =
     let nonce =
       Uuidm.v4_gen(Random.State.make_self_init(), ()) |> Uuidm.to_string;
 
-    let* () = Morph.Session.set(request, ~key=state, ~value=state);
+    let* () = Morph.Session.set(request, ~key="state", ~value=state);
+    let* () = Morph.Session.set(request, ~key="nonce", ~value=nonce);
 
     let+ auth_uri = OidcClient.get_auth_uri(~nonce, ~state, oidc_client);
 
