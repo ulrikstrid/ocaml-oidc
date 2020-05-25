@@ -1,6 +1,6 @@
 {
-    "ocaml.sandbox": {
-        "root": "/Users/ulrik.strid/Projects/private/morph-oidc-client",
-        "kind": "esy"
-    }
+  "ocaml.sandbox": {
+    "root": "${workspaceFolder}",
+    "kind": "esy"
+  }
 }

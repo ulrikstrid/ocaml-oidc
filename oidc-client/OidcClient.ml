@@ -79,6 +79,15 @@ let get_and_validate_id_token ~code t =
   | Error e -> Error e )
   |> Lwt.return
 
+let get_auth_result ~uri ~state t =
+  match (Uri.get_query_param uri "state", Uri.get_query_param uri "code") with
+  | None, _ -> Error (`Msg "No state returned") |> Lwt.return
+  | _, None -> Error (`Msg "No code returned") |> Lwt.return
+  | Some returned_state, Some code ->
+      if returned_state <> state then
+        Error (`Msg "State doesn't match") |> Lwt.return
+      else get_and_validate_id_token ~code t
+
 let register t client_meta =
   discover t
   |> Lwt_result.map (fun discovery ->
