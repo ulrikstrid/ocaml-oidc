@@ -1,9 +1,13 @@
 let make = (req: Morph.Request.t) => {
   open Lwt_result.Infix;
+  open Lwt_result.Syntax;
 
   let req_uri = req.request.target |> Uri.of_string;
 
-  let oidc_client = Context.get_context(req);
+  let* provider =
+    Morph.Session.get(req, ~key="provider")
+    |> Lwt_result.map_err(_ => `Msg("No provider set in session"));
+  let oidc_client = Context.get_client(req, provider);
 
   Morph.Session.get(req, ~key="state")
   |> Lwt_result.map_err(_ => `Msg("State not found in session"))

@@ -1,12 +1,10 @@
-let make = _request => {
+let make = (providers, _request) => {
   open Tyxml;
 
   let body =
     <Layout title="Landing page">
-      <main className="my-16 grid grid-cols-3 gap-4">
-        <div />
-        <Card title="Welcome"> <a href="/auth"> "Go to login" </a> </Card>
-        <div />
+      <main className="flex flex-row items-center justify-center">
+        <Card title="OIDC Demo Client"> ...<AuthButtons providers /> </Card>
       </main>
     </Layout>;
 

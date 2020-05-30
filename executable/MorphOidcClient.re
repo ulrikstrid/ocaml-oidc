@@ -2,35 +2,46 @@ module OidcClient = {
   open Lwt_result.Syntax;
 
   let start = () => {
-    /*let provider_uri =
-      Uri.of_string("https://" ++ Sys.getenv("PROVIDER_HOST"));*/
+    let provider_uri =
+      Uri.of_string("https://" ++ Sys.getenv("PROVIDER_HOST"));
     let redirect_uri = Uri.of_string(Sys.getenv("OIDC_REDIRECT_URI"));
-    /*
-     let client_meta =
-       Oidc.Client.make_meta(
-         ~redirect_uris=[Uri.to_string(redirect_uri)],
-         ~contacts=["ulrik.strid@outlook.com"],
-         ~response_types=["code"],
-         ~grant_types=["authorization_code"],
-         ~token_endpoint_auth_method="client_secret_post",
-         (),
-       );
-
-      let+ oidc_client =
-        OidcClient.make(
-          ~redirect_uri,
-          ~provider_uri,
-          ~client=OidcClient.Register(client_meta),
-        )
-        |> Lwt_result.map_err(Piaf.Error.to_string);
-      */
 
     let kv:
       module OidcClient.KeyValue.KV with
         type value = string and type store = Hashtbl.t(string, string) =
       (module OidcClient.KeyValue.MemoryKV);
 
-    let+ oidc_client =
+    /*
+         let client_meta =
+           Oidc.Client.make_meta(
+             ~client_name="rp-response_type-code",
+             ~redirect_uris=[Uri.to_string(redirect_uri)],
+             ~contacts=["ulrik.strid@outlook.com"],
+             ~response_types=["code"],
+             ~grant_types=["authorization_code"],
+             ~token_endpoint_auth_method="client_secret_post",
+             (),
+           );
+
+         let* oidc_client =
+           OidcClient.make(
+             ~kv,
+             ~store=Hashtbl.create(128),
+             ~redirect_uri,
+             ~provider_uri,
+             ~client=OidcClient.Register(client_meta),
+           )
+           |> Lwt_result.map_err(Piaf.Error.to_string);
+     */
+    let certification_clients =
+      CertificationClients.get_clients(
+        ~kv,
+        ~store=Hashtbl.create(128),
+        ~provider_uri,
+      )
+      |> Lwt.map(clients => List.filter_map(CCOpt.of_result, clients));
+
+    let+ microsoft_client =
       OidcClient.Microsoft.make(
         ~kv,
         ~store=Hashtbl.create(128),
@@ -40,12 +51,30 @@ module OidcClient = {
         ~secret=Sys.getenv_opt("OIDC_SECRET"),
       )
       |> Lwt_result.map_err(Piaf.Error.to_string);
-
-    oidc_client;
+    open Lwt.Infix;
+    let oidc_clients_tbl = Hashtbl.create(16);
+    Hashtbl.add(oidc_clients_tbl, "microsoft", microsoft_client);
+    // Hashtbl.add(oidc_clients_tbl, "rp-response_type-code", oidc_client);
+    let _ =
+      certification_clients
+      >|= List.iter(((data, client)) => {
+            CertificationClients.(
+              Hashtbl.add(oidc_clients_tbl, data.name, client)
+            )
+          });
+    oidc_clients_tbl;
   };
 
-  let stop = _ => {
-    Logs.info(m => m("Stopped OIDC Client")) |> Lwt.return;
+  let stop = oidc_clients_tbl => {
+    Logs.info(m => m("Stopping OIDC Clients"));
+
+    Hashtbl.to_seq(oidc_clients_tbl)
+    |> Array.of_seq
+    |> Array.map(((_, client): (string, OidcClient.t('a))) =>
+         Piaf.Client.shutdown(client.http_client)
+       )
+    |> Array.to_list
+    |> Lwt.join;
   };
 
   let component = Archi_lwt.Component.make(~start, ~stop);
@@ -58,8 +87,21 @@ module WebServer = {
 
   let start = ((), context) => {
     Logs.info(m => m("Starting server"));
+    let providers = [
+      ("microsoft", "Login with Microsoft"),
+      ...List.map(
+           (data: CertificationClients.t) => (data.name, data.name),
+           CertificationClients.datas,
+         ),
+    ];
+
     let handler =
-      Morph.Session.middleware(Context.middleware(~context, Router.handler));
+      Morph.Session.middleware(
+        Context.middleware(
+          ~context,
+          Router.handler(Router.routes(~providers)),
+        ),
+      );
 
     server.start(handler) |> Lwt_result.ok;
   };

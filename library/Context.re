@@ -5,8 +5,13 @@ module Env = {
 let get_context = (request: Morph.Request.t) =>
   Hmap.get(Env.key, request.ctx);
 
+let get_client = (request, name) => {
+  let htbl = get_context(request);
+  Hashtbl.find(htbl, name);
+};
+
 let middleware:
-  (~context: OidcClient.t(Hashtbl.t(string, string))) =>
+  (~context: Hashtbl.t(string, OidcClient.t(Hashtbl.t(string, string)))) =>
   Morph.Server.middleware =
   (~context, handler, request) => {
     let next_request = {

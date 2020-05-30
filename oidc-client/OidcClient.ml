@@ -74,7 +74,9 @@ let get_and_validate_id_token ~code t =
   ( match Jose.Jwt.of_string token_response.id_token with
   | Ok jwt -> (
       match Jose.Jwks.find_key jwks jwt.header.kid with
-      | Some jwk -> Jose.Jwt.validate ~jwk jwt
+      | Some jwk ->
+          (* TODO: Validate more things than just the basic JWT validation *)
+          Jose.Jwt.validate ~jwk jwt
       | None -> Error (`Msg "Could not find JWK") )
   | Error e -> Error e )
   |> Lwt.return
