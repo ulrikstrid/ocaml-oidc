@@ -9,7 +9,8 @@ type 'store t = {
   redirect_uri : Uri.t;
 }
 
-let map_piaf_err (x : ('a, Piaf.Error.t) Lwt_result.t) =
+let map_piaf_err (x : ('a, Piaf.Error.t) Lwt_result.t) :
+    ('a, [> `Msg of string ]) Lwt_result.t =
   Lwt_result.map_err (fun e -> `Msg (Piaf.Error.to_string e)) x
 
 let make (type store)
@@ -67,28 +68,43 @@ let get_token ~code t =
     ~body token_path
   >>= Internal.to_string_body >|= Oidc.TokenResponse.of_string
 
-let get_and_validate_id_token ~code t =
+let get_and_validate_id_token ?nonce ~code t =
   let open Lwt_result.Syntax in
   let* jwks = get_jwks t |> map_piaf_err in
   let* token_response = get_token ~code t |> map_piaf_err in
+  let* discovery = discover t |> map_piaf_err in
   ( match Jose.Jwt.of_string token_response.id_token with
   | Ok jwt -> (
-      match Jose.Jwks.find_key jwks jwt.header.kid with
-      | Some jwk ->
-          (* TODO: Validate more things than just the basic JWT validation *)
-          Jose.Jwt.validate ~jwk jwt
-      | None -> Error (`Msg "Could not find JWK") )
+      if jwt.header.alg = `None then
+        Oidc.Jwt.validate ?nonce ~client:t.client ~issuer:discovery.issuer jwt
+        |> CCResult.map (fun _ -> token_response)
+      else
+        match Oidc.Jwks.find_jwk ~jwt jwks with
+        | Some jwk ->
+            let () = print_endline "found with kid" in
+            Oidc.Jwt.validate ?nonce ~client:t.client ~issuer:discovery.issuer
+              ~jwk jwt
+            |> CCResult.map (fun _ -> token_response)
+        (* When there is only 1 key in the jwks we can try with that according to the OIDC spec *)
+        | None when List.length jwks.keys = 1 ->
+            let () = print_endline "found without kid" in
+            let jwk = List.hd jwks.keys in
+            Oidc.Jwt.validate ?nonce ~client:t.client ~issuer:discovery.issuer
+              ~jwk jwt
+            |> CCResult.map (fun _ -> token_response)
+        | None -> Error (`Msg "Could not find JWK") )
   | Error e -> Error e )
   |> Lwt.return
 
-let get_auth_result ~uri ~state t =
+let get_auth_result ?nonce ~uri ~state t =
+  CCOpt.iter print_endline nonce;
   match (Uri.get_query_param uri "state", Uri.get_query_param uri "code") with
   | None, _ -> Error (`Msg "No state returned") |> Lwt.return
   | _, None -> Error (`Msg "No code returned") |> Lwt.return
   | Some returned_state, Some code ->
       if returned_state <> state then
         Error (`Msg "State doesn't match") |> Lwt.return
-      else get_and_validate_id_token ~code t
+      else get_and_validate_id_token ?nonce ~code t
 
 let register t client_meta =
   discover t
@@ -107,6 +123,21 @@ let get_auth_uri ?scope ?claims ~nonce ~state t =
   discover t
   |> Lwt_result.map (fun (discovery : Oidc.Discover.t) ->
          discovery.authorization_endpoint ^ query)
+
+let get_userinfo ~jwt ~token t =
+  let open Lwt_result.Infix in
+  let open Lwt_result.Syntax in
+  let* discovery = discover t |> map_piaf_err in
+  let user_info_path = Uri.of_string discovery.userinfo_endpoint |> Uri.path in
+  let userinfo =
+    Piaf.Client.get t.http_client
+      ~headers:
+        [ ("Authorization", "Bearer " ^ token); ("Accept", "application/json") ]
+      user_info_path
+    >>= Internal.to_string_body |> map_piaf_err
+  in
+  Lwt_result.bind userinfo (fun userinfo ->
+      Internal.validate_userinfo ~jwt userinfo |> Lwt.return)
 
 module Microsoft = struct
   let make (type store)

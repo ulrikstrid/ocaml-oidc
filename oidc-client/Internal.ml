@@ -21,6 +21,7 @@ let discover (type store)
   let open Lwt_result.Infix in
   let (module KV) = kv in
   let save discovery =
+    Logs.info (fun m -> m "discovery: %s" discovery);
     KV.set ~store "discovery" discovery |> Lwt_result.ok >|= fun _ -> discovery
   in
   Lwt.bind (KV.get ~store "discovery") (fun result ->
@@ -53,3 +54,17 @@ let jwks (type store)
           Piaf.Client.get http_client jwks_path >>= to_string_body >>= save)
   >|= log_body "JWKS: %s"
   |> Lwt_result.map Jose.Jwks.of_string
+
+let validate_userinfo ~(jwt : Jose.Jwt.t) userinfo =
+  let userinfo_json = Yojson.Safe.from_string userinfo in
+  let userinfo_sub =
+    Yojson.Safe.Util.member "sub" userinfo_json
+    |> Yojson.Safe.Util.to_string_option
+  in
+  let sub =
+    Yojson.Safe.Util.member "sub" jwt.payload |> Yojson.Safe.Util.to_string
+  in
+  match userinfo_sub with
+  | Some s when s = sub -> Ok userinfo
+  | Some _ -> Error `Sub_missmatch
+  | None -> Error `Missing_sub

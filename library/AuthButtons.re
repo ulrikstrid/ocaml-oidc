@@ -2,12 +2,14 @@ open Tyxml;
 
 let auth_route = Routes.(s("auth") / str /? nil);
 
-let createElement = (~providers, ()) => {
+let createElement = (~providers: list(CertificationClients.t), ()) => {
   let buttons =
     List.map(
-      ((name, buttonContent)) => {
-        let href = Routes.sprintf(auth_route, name);
-        <Button.Link href> {Html.txt(buttonContent)} </Button.Link>;
+      (provider: CertificationClients.t) => {
+        let href = Routes.sprintf(auth_route, provider.name);
+        <Button.Link href title={provider.info}>
+          {Html.txt(provider.name)}
+        </Button.Link>;
       },
       providers,
     );

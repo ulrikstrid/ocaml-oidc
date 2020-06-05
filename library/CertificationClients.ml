@@ -153,13 +153,14 @@ let to_client_meta (data : t) : Oidc.Client.meta =
 
 let metas = List.map to_client_meta datas
 
-let get_clients ~kv ~store ~provider_uri =
+let get_clients ~kv ~make_store ~provider_uri =
   let open Lwt_result.Infix in
   List.map
     (fun data ->
+      let store = make_store () in
       let meta = to_client_meta data in
       let uri = Uri.with_path provider_uri ("morph_auth_local/" ^ data.name) in
-      let () = print_endline (Uri.to_string uri) in
+      let () = Logs.info (fun m -> m "%s" (Uri.to_string uri)) in
       OidcClient.make ~kv ~store
         ~redirect_uri:(Uri.of_string redirect_uri)
         ~provider_uri:uri ~client:(OidcClient.Register meta)

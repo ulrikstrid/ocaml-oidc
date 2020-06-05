@@ -20,7 +20,7 @@
     "@opam/containers": "*",
     "@opam/dune": "^2.5.0",
     "@opam/fmt": "*",
-    "@opam/jose": "^0.3.0",
+    "@opam/jose": "^0.4.0",
     "@opam/logs": "*",
     "@opam/lwt": "^5.0.0",
     "@opam/ppx_deriving_yojson": "*",
@@ -46,7 +46,6 @@
     "@reason-native/rely": "^3.1.0"
   },
   "resolutions": {
-    "@opam/session": "inhabitedtype/ocaml-session:session.opam#6180413",
-    "@opam/jose": "ulrikstrid/reason-jose:jose.opam#c2e64e2bf605729d1e7d57cc21560fafd4bd4b78"
+    "@opam/session": "inhabitedtype/ocaml-session:session.opam#6180413"
   }
 }

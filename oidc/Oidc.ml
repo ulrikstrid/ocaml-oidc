@@ -6,3 +6,5 @@ module Provider = Provider
 module Scopes = Scopes
 module States = States
 module TokenResponse = TokenResponse
+module Jwt = Jwt
+module Jwks = Jwks

@@ -1,10 +1,10 @@
 module OidcClient = {
-  open Lwt_result.Syntax;
+  open Lwt.Syntax;
 
   let start = () => {
     let provider_uri =
       Uri.of_string("https://" ++ Sys.getenv("PROVIDER_HOST"));
-    let redirect_uri = Uri.of_string(Sys.getenv("OIDC_REDIRECT_URI"));
+    let _redirect_uri = Uri.of_string(Sys.getenv("OIDC_REDIRECT_URI"));
 
     let kv:
       module OidcClient.KeyValue.KV with
@@ -12,57 +12,42 @@ module OidcClient = {
       (module OidcClient.KeyValue.MemoryKV);
 
     /*
-         let client_meta =
-           Oidc.Client.make_meta(
-             ~client_name="rp-response_type-code",
-             ~redirect_uris=[Uri.to_string(redirect_uri)],
-             ~contacts=["ulrik.strid@outlook.com"],
-             ~response_types=["code"],
-             ~grant_types=["authorization_code"],
-             ~token_endpoint_auth_method="client_secret_post",
-             (),
-           );
+     let+ microsoft_client =
+       OidcClient.Microsoft.make(
+         ~kv,
+         ~store=Hashtbl.create(128),
+         ~app_id="2824b599-24f1-4595-b63b-0cab4bb26c24",
+         ~tenant_id="5c26a08a-b3ca-475d-abfc-a96df0a5593e",
+         ~redirect_uri,
+         ~secret=Sys.getenv_opt("OIDC_SECRET"),
+       )
+       |> Lwt_result.map_err(Piaf.Error.to_string);
+       Hashtbl.add(oidc_clients_tbl, "microsoft", microsoft_client);
+       */
 
-         let* oidc_client =
-           OidcClient.make(
-             ~kv,
-             ~store=Hashtbl.create(128),
-             ~redirect_uri,
-             ~provider_uri,
-             ~client=OidcClient.Register(client_meta),
-           )
-           |> Lwt_result.map_err(Piaf.Error.to_string);
-     */
-    let certification_clients =
-      CertificationClients.get_clients(
+    let+ certification_clients =
+      Library.CertificationClients.get_clients(
         ~kv,
-        ~store=Hashtbl.create(128),
+        ~make_store=() => Hashtbl.create(128),
         ~provider_uri,
-      )
-      |> Lwt.map(clients => List.filter_map(CCOpt.of_result, clients));
+      );
 
-    let+ microsoft_client =
-      OidcClient.Microsoft.make(
-        ~kv,
-        ~store=Hashtbl.create(128),
-        ~app_id="2824b599-24f1-4595-b63b-0cab4bb26c24",
-        ~tenant_id="5c26a08a-b3ca-475d-abfc-a96df0a5593e",
-        ~redirect_uri,
-        ~secret=Sys.getenv_opt("OIDC_SECRET"),
-      )
-      |> Lwt_result.map_err(Piaf.Error.to_string);
-    open Lwt.Infix;
     let oidc_clients_tbl = Hashtbl.create(16);
-    Hashtbl.add(oidc_clients_tbl, "microsoft", microsoft_client);
-    // Hashtbl.add(oidc_clients_tbl, "rp-response_type-code", oidc_client);
-    let _ =
-      certification_clients
-      >|= List.iter(((data, client)) => {
-            CertificationClients.(
+
+    let () =
+      List.iter(
+        x => {
+          switch (x) {
+          | Ok((data, client)) =>
+            Library.CertificationClients.(
               Hashtbl.add(oidc_clients_tbl, data.name, client)
             )
-          });
-    oidc_clients_tbl;
+          | Error(e) => Logs.err(m => m("%s", Piaf.Error.to_string(e)))
+          }
+        },
+        certification_clients,
+      );
+    Ok(oidc_clients_tbl);
   };
 
   let stop = oidc_clients_tbl => {
@@ -87,19 +72,14 @@ module WebServer = {
 
   let start = ((), context) => {
     Logs.info(m => m("Starting server"));
-    let providers = [
-      ("microsoft", "Login with Microsoft"),
-      ...List.map(
-           (data: CertificationClients.t) => (data.name, data.name),
-           CertificationClients.datas,
-         ),
-    ];
 
     let handler =
       Morph.Session.middleware(
         Context.middleware(
           ~context,
-          Router.handler(Router.routes(~providers)),
+          Router.handler(
+            Router.routes(~providers=Library.CertificationClients.datas),
+          ),
         ),
       );
 
@@ -128,7 +108,7 @@ open Lwt.Infix;
 
 let main = () => {
   Fmt_tty.setup_std_outputs();
-  Logs.set_level(~all=true, Some(Logs.Debug));
+  Logs.set_level(~all=true, Some(Logs.Info));
   Logs.set_reporter(Logs_fmt.reporter());
   let () = Mirage_crypto_rng_unix.initialize();
 

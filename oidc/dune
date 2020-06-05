@@ -1,7 +1,6 @@
 (library
  (name Oidc)
  (public_name oidc)
- (libraries lwt logs uri yojson str containers jose
-   ppx_deriving_yojson.runtime)
+ (libraries logs uri yojson containers jose ppx_deriving_yojson.runtime)
  (preprocess
   (pps ppx_deriving_yojson ppx_deriving.make)))

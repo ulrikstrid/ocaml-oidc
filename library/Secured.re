@@ -1,5 +1,11 @@
 let markup =
-    (~id_token: string, ~header: string, ~payload: string, ~signature: string) =>
+    (
+      ~id_token: string,
+      ~header: string,
+      ~payload: string,
+      ~signature: string,
+      ~userinfo,
+    ) =>
   Tyxml.(
     <Layout title="Secured">
       <h3> "Header" </h3>
@@ -14,25 +20,56 @@ let markup =
       </pre>
       <h3> "id_token" </h3>
       <pre> <code> {Html.txt(id_token)} </code> </pre>
+      <h3> "userinfo" </h3>
+      <pre> <code> {Html.txt(userinfo)} </code> </pre>
     </Layout>
   );
 
 let handle: Morph.Server.handler =
   req => {
     open Lwt.Syntax;
+    open Lwt.Infix;
+    let* provider =
+      Morph.Session.get(req, ~key="provider") |> Lwt.map(CCResult.get_exn);
 
-    let+ id_token_result = Morph.Session.get(req, ~key="id_token");
+    let oidc_client = Context.get_client(req, provider);
 
-    switch (id_token_result) {
-    | Ok(id_token) =>
-      let jwt = Jose.Jwt.of_string(id_token) |> Result.get_ok;
-      let header =
-        Yojson.Safe.pretty_to_string(jwt.header |> Jose.Header.to_json);
-      let payload = Yojson.Safe.pretty_to_string(jwt.payload);
+    let* id_token_result = Morph.Session.get(req, ~key="id_token");
+    let* access_token_result = Morph.Session.get(req, ~key="access_token");
 
-      TyxmlRender.respond_html(
-        markup(~id_token, ~header, ~payload, ~signature=jwt.signature),
-      );
-    | Error(_) => Morph.Response.redirect("/")
+    switch (id_token_result, access_token_result) {
+    | (Ok(id_token), Ok(access_token)) =>
+      OidcClient.get_userinfo(
+        ~jwt=Jose.Jwt.of_string(id_token) |> CCResult.get_exn,
+        ~token=access_token,
+        oidc_client,
+      )
+      >|= (
+        userinfo => {
+          let userinfo =
+            switch (userinfo) {
+            | Ok(userinfo) => userinfo
+            | Error(`Sub_missmatch) => "sub doesn't match id_token"
+            | Error(`Missing_sub) => "Could not find sub in userinfo"
+            | Error(`Msg(msg)) => msg
+            };
+          let () = Logs.info(m => m("userinfo: %s", userinfo));
+          let jwt = Jose.Jwt.of_string(id_token) |> Result.get_ok;
+          let header =
+            Yojson.Safe.pretty_to_string(jwt.header |> Jose.Header.to_json);
+          let payload = Yojson.Safe.pretty_to_string(jwt.payload);
+
+          TyxmlRender.respond_html(
+            markup(
+              ~id_token,
+              ~header,
+              ~payload,
+              ~signature=jwt.signature,
+              ~userinfo,
+            ),
+          );
+        }
+      )
+    | _ => Morph.Response.redirect("/") |> Lwt.return
     };
   };
