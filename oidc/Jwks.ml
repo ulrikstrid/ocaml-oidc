@@ -8,7 +8,7 @@ let find_jwk ~(jwt : Jose.Jwt.t) jwks =
   match jwt.header.kid with
   | Some kid ->
       Jose.Jwks.find_key jwks kid
-      (* If there is no kid supplied well try with the first RSA signing key *)
+      (* If there is no kid supplied we'll try with the first RSA signing key *)
   | None ->
       let matching_keys = List.filter (matching_jwt jwt) jwks.keys in
       if List.length matching_keys = 1 then Some (List.hd matching_keys)

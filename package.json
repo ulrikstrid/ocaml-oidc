@@ -7,7 +7,7 @@
   },
   "scripts": {
     "start": "reenv -e .env -- redemon -p ./oidc -p ./oidc-client -p ./library -p ./executable dune exec executable/MorphOidcClient.exe",
-    "test": "esy x RunTests.exe",
+    "test": "dune runtest --no-buffer",
     "watch:test": "redemon -p ./oidc -p ./oidc-client -p ./test esy x RunTests.exe",
     "docs": "dune build @doc --root .",
     "fmt": "dune build @fmt --auto-promote --root .",
@@ -38,12 +38,14 @@
     "ocaml": ">4.7.0"
   },
   "devDependencies": {
+    "@opam/junit": "*",
+    "@opam/junit_alcotest": "*",
     "@opam/luv": "*",
     "@opam/merlin": "*",
     "@opam/ocaml-lsp-server": "ocaml/ocaml-lsp:ocaml-lsp-server.opam",
     "@opam/ocamlformat": "*",
     "@opam/odoc": "*",
-    "@reason-native/rely": "^3.1.0"
+    "@opam/bisect_ppx": "^2.3.0"
   },
   "resolutions": {
     "@opam/session": "inhabitedtype/ocaml-session:session.opam#6180413"

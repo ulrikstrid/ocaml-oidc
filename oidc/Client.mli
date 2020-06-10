@@ -2,10 +2,20 @@ type t = {
   id : string;
   response_types : string list;
   grant_types : string list;
-  redirect_uris : string list;
+  redirect_uris : string list;  (** TODO: Use Uri.t list*)
   secret : string option;
   token_endpoint_auth_method : string;
 }
+
+(* *)
+val make :
+  ?secret:string ->
+  response_types:string list ->
+  grant_types:string list ->
+  redirect_uris:string list ->
+  token_endpoint_auth_method:string ->
+  string ->
+  t
 
 type meta = {
   redirect_uris : string list;  (** TODO: use Uri.t *)

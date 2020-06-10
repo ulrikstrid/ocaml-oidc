@@ -15,7 +15,7 @@
   Optional fields:
   - acr
   - amr
-  - azp
+  - azp (required if aud is a list)
 *)
 let ( >|= ) = CCResult.( >|= )
 
@@ -38,7 +38,7 @@ let validate_exp (jwt : Jose.Jwt.t) =
   match get_int_member "exp" jwt.payload with
   | Some exp when exp > int_of_float (Unix.time ()) -> Ok jwt
   | Some _exp -> Error `Expired
-  | None -> Ok jwt
+  | None -> Error `Missing_exp
 
 let validate_iat (jwt : Jose.Jwt.t) =
   let now = int_of_float (Unix.time ()) in

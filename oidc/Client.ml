@@ -7,6 +7,17 @@ type t = {
   token_endpoint_auth_method : string;
 }
 
+let make ?secret ~response_types ~grant_types ~redirect_uris
+    ~token_endpoint_auth_method id =
+  {
+    id;
+    response_types;
+    grant_types;
+    redirect_uris;
+    token_endpoint_auth_method;
+    secret;
+  }
+
 type meta = {
   redirect_uris : string list;
   response_types : string list option;
