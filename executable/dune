@@ -3,7 +3,7 @@
  (package morph_oidc_client)
  (public_name MorphOidcClient)
  (libraries lwt logs logs.fmt fmt.tty morph_oidc_client.library oidc morph
-   archi archi-lwt luv dynlink mirage-crypto-rng.unix piaf routes))
+   archi archi-lwt mirage-crypto-rng.unix piaf routes))
 
 (env
  (docker

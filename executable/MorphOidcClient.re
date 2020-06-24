@@ -67,11 +67,16 @@ module OidcClient = {
 
 module WebServer = {
   open Library;
-  let server =
-    Morph.Server.make(~port=4040, ~address=Unix.inet_addr_loopback, ());
+
+  let port =
+    try(Sys.getenv("PORT") |> int_of_string) {
+    | _ => 4040
+    };
+
+  let server = Morph.Server.make(~port, ~address=Unix.inet_addr_any, ());
 
   let start = ((), context) => {
-    Logs.info(m => m("Starting server"));
+    Logs.info(m => m("Starting server on %n", port));
 
     let handler =
       Morph.Session.middleware(

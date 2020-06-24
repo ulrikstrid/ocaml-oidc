@@ -81,13 +81,11 @@ let get_and_validate_id_token ?nonce ~code t =
       else
         match Oidc.Jwks.find_jwk ~jwt jwks with
         | Some jwk ->
-            let () = print_endline "found with kid" in
             Oidc.Jwt.validate ?nonce ~client:t.client ~issuer:discovery.issuer
               ~jwk jwt
             |> CCResult.map (fun _ -> token_response)
         (* When there is only 1 key in the jwks we can try with that according to the OIDC spec *)
         | None when List.length jwks.keys = 1 ->
-            let () = print_endline "found without kid" in
             let jwk = List.hd jwks.keys in
             Oidc.Jwt.validate ?nonce ~client:t.client ~issuer:discovery.issuer
               ~jwk jwt
@@ -97,7 +95,6 @@ let get_and_validate_id_token ?nonce ~code t =
   |> Lwt.return
 
 let get_auth_result ?nonce ~uri ~state t =
-  CCOpt.iter print_endline nonce;
   match (Uri.get_query_param uri "state", Uri.get_query_param uri "code") with
   | None, _ -> Error (`Msg "No state returned") |> Lwt.return
   | _, None -> Error (`Msg "No code returned") |> Lwt.return

@@ -1,3 +1,13 @@
 _esy
+_coverage
+_build
 .ci
+.vscode
 node_modules
+*.yml
+*.xml
+*.install
+*.sh
+Dockerfile
+Dockerfile.dev
+cypress

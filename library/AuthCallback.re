@@ -44,6 +44,8 @@ let make = (req: Morph.Request.t) => {
          fun
          | Ok(_) => Morph.Response.redirect("/secure")
          | Error(`Expired) => Morph.Response.unauthorized("expired session")
+         | Error(`Missing_exp) =>
+           Morph.Response.unauthorized("exp missing in JWT")
          | Error(`Msg(str)) => Morph.Response.unauthorized(str)
          | Error(`Invalid_signature) =>
            Morph.Response.unauthorized("Invalid signature")

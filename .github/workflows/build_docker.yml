@@ -1,0 +1,25 @@
+name: build_docker
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "executable/**"
+      - "library/**"
+      - "oidc/**"
+      - "oidc-client/**"
+      - "Dockerfile"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: azure/docker-login@v1
+        with:
+          login-server: oidclient.azurecr.io
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - run: |
+          docker build . -t oidclientacr.azurecr.io/morph-oidc-client:${{ github.sha }}
+          docker push oidclientacr.azurecr.io/morph-oidc-client:${{ github.sha }}

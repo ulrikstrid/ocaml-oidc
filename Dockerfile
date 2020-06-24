@@ -1,12 +1,15 @@
+FROM alpine:latest as certs
+RUN apk --update add ca-certificates
+
 FROM reasonnative/web:4.10.0 as builder
 
 RUN mkdir /app
 WORKDIR /app
 
-COPY package.json /app/package.json
-COPY esy.lock /app/esy.lock
+COPY package.json esy.lock /app/
 
-RUN esy
+RUN esy install
+RUN esy build --release
 
 COPY . /app
 
@@ -16,7 +19,12 @@ RUN esy mv "#{self.target_dir / 'default' / 'executable' / 'MorphOidcClient.exe'
 
 RUN strip main.exe
 
-FROM gcr.io/distroless/static
+FROM scratch as runtime
+
+ENV OPENSSL_STATIC=1
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+ENV SSL_CERT_DIR=/etc/ssl/certs
+COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 WORKDIR /app
 
