@@ -1,5 +1,3 @@
-type client = Register of Oidc.Client.meta | Client of Oidc.Client.t
-
 type 'store t = {
   kv : (module KeyValue.KV with type value = string and type store = 'store);
   store : 'store;
@@ -15,23 +13,14 @@ let map_piaf_err (x : ('a, Piaf.Error.t) Lwt_result.t) :
 
 let make (type store)
     ~(kv : (module KeyValue.KV with type value = string and type store = store))
-    ~(store : store) ~redirect_uri ~provider_uri ~client :
-    (store t, Piaf.Error.t) Lwt_result.t =
+    ~(store : store) ?(http_client : Piaf.Client.t option) ~redirect_uri
+    ~provider_uri ~client : (store t, Piaf.Error.t) Lwt_result.t =
   let (module KV) = kv in
-  let open Lwt_result.Syntax in
   let open Lwt_result.Infix in
-  let* http_client = Piaf.Client.create provider_uri in
-  let+ client =
-    match client with
-    | Client c -> Lwt_result.return c
-    | Register client_meta ->
-        let* discovery =
-          Internal.discover ~kv ~store ~http_client ~provider_uri
-        in
-        Internal.register ~http_client ~client_meta ~discovery
-        >|= fun dynamic ->
-        Oidc.Client.of_dynamic_and_meta ~dynamic ~meta:client_meta
-  in
+  ( match http_client with
+  | Some hc -> Lwt_result.return hc
+  | None -> Piaf.Client.create provider_uri )
+  >|= fun http_client ->
   { kv; store; client; http_client; provider_uri; redirect_uri }
 
 let discover t =
@@ -103,10 +92,10 @@ let get_auth_result ?nonce ~uri ~state t =
         Error (`Msg "State doesn't match") |> Lwt.return
       else get_and_validate_id_token ?nonce ~code t
 
-let register t client_meta =
+let register t meta =
   discover t
   |> Lwt_result.map (fun discovery ->
-         Internal.register ~http_client:t.http_client ~client_meta ~discovery)
+         Internal.register ~http_client:t.http_client ~meta ~discovery)
 
 let get_auth_parameters ?scope ?claims ~nonce ~state t =
   Oidc.Parameters.make ?scope ?claims t.client ~nonce ~state
@@ -136,6 +125,34 @@ let get_userinfo ~jwt ~token t =
   Lwt_result.bind userinfo (fun userinfo ->
       Internal.validate_userinfo ~jwt userinfo |> Lwt.return)
 
+module Dynamic = struct
+  type 'store t = {
+    kv : (module KeyValue.KV with type value = string and type store = 'store);
+    store : 'store;
+    http_client : Piaf.Client.t;
+    meta : Oidc.Client.meta;
+    provider_uri : Uri.t;
+  }
+
+  let get_or_create_client { kv; store; http_client; provider_uri; meta } =
+    let open Lwt_result.Infix in
+    Internal.discover ~kv ~store ~http_client ~provider_uri >>= fun discovery ->
+    ( Internal.register ~kv ~store ~http_client ~meta ~discovery
+    >|= fun dynamic -> Oidc.Client.of_dynamic_and_meta ~dynamic ~meta )
+    >>= fun client ->
+    make ~kv ~store ~http_client
+      ~redirect_uri:(Uri.of_string (List.hd meta.redirect_uris))
+      ~provider_uri ~client
+
+  let make (type store)
+      ~(kv :
+         (module KeyValue.KV with type value = string and type store = store))
+      ~(store : store) ~provider_uri (meta : Oidc.Client.meta) =
+    let open Lwt_result.Syntax in
+    let+ http_client = Piaf.Client.create provider_uri in
+    { kv; store; http_client; meta; provider_uri }
+end
+
 module Microsoft = struct
   let make (type store)
       ~(kv :
@@ -144,16 +161,15 @@ module Microsoft = struct
     let provider_uri =
       Uri.of_string "https://login.microsoftonline.com/common/v2.0"
     in
-    let client =
-      Client
-        {
-          id = app_id;
-          response_types = [ "code" ];
-          grant_types = [ "authorization_code" ];
-          redirect_uris = [ "https://login.microsoftonline.com/common/v2.0" ];
-          secret;
-          token_endpoint_auth_method = "client_secret_post";
-        }
+    let client : Oidc.Client.t =
+      {
+        id = app_id;
+        response_types = [ "code" ];
+        grant_types = [ "authorization_code" ];
+        redirect_uris = [ "https://login.microsoftonline.com/common/v2.0" ];
+        secret;
+        token_endpoint_auth_method = "client_secret_post";
+      }
     in
     make ~kv ~store ~redirect_uri ~provider_uri ~client
 end

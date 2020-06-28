@@ -4,14 +4,33 @@ let log_body fmterr body =
   let () = Logs.info (fun m -> m fmterr body) in
   body
 
-let register ~http_client ~client_meta ~(discovery : Oidc.Discover.t) =
+let read_registration ~http_client ~client_id ~(discovery : Oidc.Discover.t) =
   match discovery.registration_endpoint with
   | Some endpoint ->
       let open Lwt_result.Infix in
-      let meta_string = Oidc.Client.meta_to_string client_meta in
+      let registration_path = Uri.of_string endpoint |> Uri.path in
+      let query = Uri.encoded_of_query [ ("client_id", [ client_id ]) ] in
+      let uri = registration_path ^ query in
+      Piaf.Client.get http_client uri >>= to_string_body >>= fun s ->
+      Oidc.Client.dynamic_of_string s |> Lwt.return
+  | None -> Lwt_result.fail (`Msg "No_registration_endpoint")
+
+let register (type store)
+    ~(kv : (module KeyValue.KV with type value = string and type store = store))
+    ~(store : store) ~http_client ~meta ~(discovery : Oidc.Discover.t) =
+  let (module KV) = kv in
+  match discovery.registration_endpoint with
+  | Some endpoint ->
+      let open Lwt_result.Infix in
+      let meta_string = Oidc.Client.meta_to_string meta in
       let body = Piaf.Body.of_string meta_string in
       let registration_path = Uri.of_string endpoint |> Uri.path in
-      Piaf.Client.post http_client ~body registration_path >>= to_string_body
+      ( Piaf.Client.post http_client ~body registration_path >>= to_string_body
+      >>= fun dynamic_string ->
+        let open Lwt.Syntax in
+        let* () = KV.set ~store "meta_string" meta_string in
+        let+ () = KV.set ~store "dynamic_string" dynamic_string in
+        Ok dynamic_string )
       >>= fun s -> Oidc.Client.dynamic_of_string s |> Lwt.return
   | None -> Lwt_result.fail (`Msg "No_registration_endpoint")
 
