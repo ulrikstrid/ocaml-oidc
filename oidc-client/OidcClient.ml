@@ -92,11 +92,6 @@ let get_auth_result ?nonce ~uri ~state t =
         Error (`Msg "State doesn't match") |> Lwt.return
       else get_and_validate_id_token ?nonce ~code t
 
-let register t meta =
-  discover t
-  |> Lwt_result.map (fun discovery ->
-         Internal.register ~http_client:t.http_client ~meta ~discovery)
-
 let get_auth_parameters ?scope ?claims ~nonce ~state t =
   Oidc.Parameters.make ?scope ?claims t.client ~nonce ~state
     ~redirect_uri:t.redirect_uri
@@ -148,9 +143,44 @@ module Dynamic = struct
       ~(kv :
          (module KeyValue.KV with type value = string and type store = store))
       ~(store : store) ~provider_uri (meta : Oidc.Client.meta) =
-    let open Lwt_result.Syntax in
-    let+ http_client = Piaf.Client.create provider_uri in
-    { kv; store; http_client; meta; provider_uri }
+    Piaf.Client.create provider_uri
+    |> Lwt_result.map (fun http_client ->
+           { kv; store; http_client; meta; provider_uri })
+
+  let get_jwks t = Lwt_result.bind (get_or_create_client t) get_jwks
+
+  let get_token ~code t =
+    Lwt_result.bind (get_or_create_client t) (get_token ~code)
+
+  let get_and_validate_id_token ~nonce ~code t =
+    Lwt_result.bind
+      (get_or_create_client t |> map_piaf_err)
+      (get_and_validate_id_token ~nonce ~code)
+
+  let get_auth_result ~nonce ~uri ~state t =
+    Lwt_result.bind
+      (get_or_create_client t |> map_piaf_err)
+      (get_auth_result ~nonce ~uri ~state)
+
+  let get_auth_parameters ?scope ?claims ~nonce ~state t =
+    get_or_create_client t |> map_piaf_err
+    |> Lwt_result.map (get_auth_parameters ?scope ?claims ~nonce ~state)
+
+  let get_auth_uri ?scope ?claims ~nonce ~state t =
+    get_or_create_client t |> map_piaf_err
+    |> Lwt_result.map (get_auth_uri ?scope ?claims ~nonce ~state)
+
+  let get_userinfo ~jwt ~token t =
+    Lwt_result.bind
+      (get_or_create_client t |> map_piaf_err)
+      (get_userinfo ~jwt ~token)
+
+  let register t meta =
+    Lwt_result.bind
+      (discover t |> map_piaf_err)
+      (fun discovery ->
+        Internal.register ~kv:t.kv ~store:t.store ~http_client:t.http_client
+          ~meta ~discovery)
 end
 
 module Microsoft = struct
