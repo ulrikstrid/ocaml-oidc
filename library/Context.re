@@ -11,7 +11,12 @@ let get_client = (request, name) => {
 };
 
 let middleware:
-  (~context: Hashtbl.t(string, OidcClient.t(Hashtbl.t(string, string)))) =>
+  (
+    ~context: Hashtbl.t(
+                string,
+                OidcClient.Dynamic.t(Hashtbl.t(string, string)),
+              )
+  ) =>
   Morph.Server.middleware =
   (~context, handler, request) => {
     let next_request = {

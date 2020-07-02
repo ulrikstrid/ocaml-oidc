@@ -1,4 +1,4 @@
-module OidcClient = {
+module DynamicOidcClient = {
   open Lwt.Syntax;
 
   let start = () => {
@@ -55,7 +55,7 @@ module OidcClient = {
 
     Hashtbl.to_seq(oidc_clients_tbl)
     |> Array.of_seq
-    |> Array.map(((_, client): (string, OidcClient.t('a))) =>
+    |> Array.map(((_, client): (string, OidcClient.Dynamic.t('a))) =>
          Piaf.Client.shutdown(client.http_client)
        )
     |> Array.to_list
@@ -99,13 +99,13 @@ module WebServer = {
     Archi_lwt.Component.using(
       ~start,
       ~stop,
-      ~dependencies=[OidcClient.component],
+      ~dependencies=[DynamicOidcClient.component],
     );
 };
 
 let system =
   Archi_lwt.System.make([
-    ("oidc_client", OidcClient.component),
+    ("oidc_client", DynamicOidcClient.component),
     ("web_server", WebServer.component),
   ]);
 

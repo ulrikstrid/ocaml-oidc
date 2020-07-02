@@ -167,8 +167,9 @@ module Dynamic = struct
     |> Lwt_result.map (get_auth_parameters ?scope ?claims ~nonce ~state)
 
   let get_auth_uri ?scope ?claims ~nonce ~state t =
+    let open Lwt_result.Infix in
     get_or_create_client t |> map_piaf_err
-    |> Lwt_result.map (get_auth_uri ?scope ?claims ~nonce ~state)
+    >>= get_auth_uri ?scope ?claims ~nonce ~state
 
   let get_userinfo ~jwt ~token t =
     Lwt_result.bind

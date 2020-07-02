@@ -19,20 +19,30 @@ let register (type store)
     ~(kv : (module KeyValue.KV with type value = string and type store = store))
     ~(store : store) ~http_client ~meta ~(discovery : Oidc.Discover.t) =
   let (module KV) = kv in
-  match discovery.registration_endpoint with
-  | Some endpoint ->
-      let open Lwt_result.Infix in
-      let meta_string = Oidc.Client.meta_to_string meta in
-      let body = Piaf.Body.of_string meta_string in
-      let registration_path = Uri.of_string endpoint |> Uri.path in
-      ( Piaf.Client.post http_client ~body registration_path >>= to_string_body
-      >>= fun dynamic_string ->
-        let open Lwt.Syntax in
-        let* () = KV.set ~store "meta_string" meta_string in
-        let+ () = KV.set ~store "dynamic_string" dynamic_string in
-        Ok dynamic_string )
-      >>= fun s -> Oidc.Client.dynamic_of_string s |> Lwt.return
-  | None -> Lwt_result.fail (`Msg "No_registration_endpoint")
+  let open Lwt_result.Infix in
+  ( KV.get ~store "dynamic_string" >>= fun dynamic_string ->
+    Lwt.return
+      ( match Oidc.Client.dynamic_of_string dynamic_string with
+      | Error e -> Error e
+      | Ok dynamic ->
+          if Oidc.Client.dynamic_is_expired dynamic then Error `Expired_client
+          else Ok dynamic ) )
+  |> fun r ->
+  Lwt.bind r (fun x ->
+      match (x, discovery.registration_endpoint) with
+      | Ok dynamic, _ -> Lwt_result.return dynamic
+      | Error _, Some endpoint ->
+          let meta_string = Oidc.Client.meta_to_string meta in
+          let body = Piaf.Body.of_string meta_string in
+          let registration_path = Uri.of_string endpoint |> Uri.path in
+          ( Piaf.Client.post http_client ~body registration_path
+          >>= to_string_body
+          >>= fun dynamic_string ->
+            let open Lwt.Syntax in
+            let+ () = KV.set ~store "dynamic_string" dynamic_string in
+            Ok dynamic_string )
+          >>= fun s -> Oidc.Client.dynamic_of_string s |> Lwt.return
+      | Error _, None -> Lwt_result.fail (`Msg "No_registration_endpoint"))
 
 let discover (type store)
     ~(kv : (module KeyValue.KV with type value = string and type store = store))

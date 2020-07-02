@@ -39,7 +39,7 @@ let handle: Morph.Server.handler =
 
     switch (id_token_result, access_token_result) {
     | (Ok(id_token), Ok(access_token)) =>
-      OidcClient.get_userinfo(
+      OidcClient.Dynamic.get_userinfo(
         ~jwt=Jose.Jwt.of_string(id_token) |> CCResult.get_exn,
         ~token=access_token,
         oidc_client,

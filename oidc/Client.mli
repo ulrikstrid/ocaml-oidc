@@ -55,6 +55,8 @@ type dynamic_response = {
  The [response] also includes the {! ClientMeta.t }
  *)
 
+val dynamic_is_expired : dynamic_response -> bool
+
 val dynamic_of_json :
   Yojson.Safe.t -> (dynamic_response, [> `Msg of string ]) result
 

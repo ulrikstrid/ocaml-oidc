@@ -52,6 +52,12 @@ type dynamic_response = {
   application_type : string option;
 }
 
+let dynamic_is_expired dynamic =
+  let now = Unix.time () |> int_of_float in
+  match dynamic.client_id_expires_at with Some i -> i < now | None -> false
+
+(* If it's not provided we assume it's valid forever *)
+
 let dynamic_of_json (json : Yojson.Safe.t) :
     (dynamic_response, [> `Msg of string ]) result =
   CCResult.guard_str (fun () ->

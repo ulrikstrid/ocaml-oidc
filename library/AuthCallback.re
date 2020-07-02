@@ -27,7 +27,12 @@ let make = (req: Morph.Request.t) => {
         |> Lwt_result.map_err(_ => `Msg("State not found in session"));
 
       let* auth_result =
-        OidcClient.get_auth_result(~uri=req_uri, ~nonce, ~state, oidc_client);
+        OidcClient.Dynamic.get_auth_result(
+          ~uri=req_uri,
+          ~nonce,
+          ~state,
+          oidc_client,
+        );
 
       let* _ =
         switch (auth_result.access_token) {
