@@ -26,7 +26,7 @@ reason-guest-login-oidc-client@0.0.0
 ## Developing:
 
 ```
-npm install -g esy
+npm install -g esy redemon reenv
 git clone <this-repo>
 esy install
 esy build
