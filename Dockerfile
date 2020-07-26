@@ -13,7 +13,9 @@ RUN esy build --release
 
 COPY . /app
 
-RUN esy dune build --profile=docker
+RUN esy install
+
+RUN esy dune build --profile=docker --release
 
 RUN esy mv "#{self.target_dir / 'default' / 'executable' / 'MorphOidcClient.exe'}" main.exe
 

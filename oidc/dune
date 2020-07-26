@@ -2,7 +2,7 @@
 
 let preprocess =
   match Sys.getenv "BISECT_ENABLE" with
-  | "yes" -> "bisect_ppx"
+  | "yes" -> "(preprocess (pps bisect_ppx))"
   | _ -> ""
   | exception Not_found -> ""
 
@@ -10,7 +10,6 @@ let () = Jbuild_plugin.V1.send @@ {|
 (library
  (name Oidc)
  (public_name oidc)
- (libraries logs uri yojson containers jose ppx_deriving_yojson.runtime)
- (preprocess
-  (pps ppx_deriving_yojson ppx_deriving.make |} ^ preprocess ^ {|)))
+ (libraries logs uri yojson containers jose)
+ |} ^ preprocess ^ {|)
 |}

@@ -38,6 +38,9 @@ let register (type store)
           ( Piaf.Client.post http_client ~body registration_path
           >>= to_string_body
           >>= fun dynamic_string ->
+            let () =
+              Logs.info (fun m -> m "dynamic string: %s" dynamic_string)
+            in
             let open Lwt.Syntax in
             let+ () = KV.set ~store "dynamic_string" dynamic_string in
             Ok dynamic_string )
@@ -60,6 +63,8 @@ let discover (type store)
           let discover_path =
             Uri.path provider_uri ^ "/.well-known/openid-configuration"
           in
+
+          let () = print_endline (Uri.to_string provider_uri) in
 
           Piaf.Client.get http_client discover_path >>= to_string_body >>= save)
   >|= log_body "discovery: %s"

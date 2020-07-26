@@ -33,11 +33,32 @@ type meta = {
   sector_identifier_uri : string option;  (** TODO: use Uri.t *)
   subject_type : string option;
       (** TODO: Use subject_type type; "pairwise" or "public" *)
+  id_token_signed_response_alg : Jose.Jwa.alg option;
 }
-[@@deriving yojson, make]
 (**
  [ clientMetadata ] used in registration
  *)
+
+val make_meta :
+  ?response_types:string list ->
+  ?grant_types:string list ->
+  ?application_type:string ->
+  ?contacts:string list ->
+  ?client_name:string ->
+  ?token_endpoint_auth_method:string ->
+  ?logo_uri:string ->
+  ?client_uri:string ->
+  ?policy_uri:string ->
+  ?tos_uri:string ->
+  ?jwks_uri:string ->
+  ?sector_identifier_uri:string ->
+  ?subject_type:string ->
+  ?id_token_signed_response_alg:Jose.Jwa.alg ->
+  redirect_uris:string list ->
+  unit ->
+  meta
+
+val meta_to_json : meta -> Yojson.Safe.t
 
 val meta_to_string : meta -> string
 

@@ -33,11 +33,76 @@ type meta = {
   jwks_uri : string option;
   sector_identifier_uri : string option;
   subject_type : string option;
+  id_token_signed_response_alg : Jose.Jwa.alg option;
 }
-[@@deriving yojson { exn = true }, make]
+
+let make_meta ?(response_types : string list option)
+    ?(grant_types : string list option) ?(application_type : string option)
+    ?(contacts : string list option) ?(client_name : string option)
+    ?(token_endpoint_auth_method : string option) ?(logo_uri : string option)
+    ?(client_uri : string option) ?(policy_uri : string option)
+    ?(tos_uri : string option) ?(jwks_uri : string option)
+    ?(sector_identifier_uri : string option) ?(subject_type : string option)
+    ?(id_token_signed_response_alg : Jose.Jwa.alg option)
+    ~(redirect_uris : string list) () =
+  {
+    redirect_uris;
+    response_types;
+    grant_types;
+    application_type;
+    contacts;
+    client_name;
+    token_endpoint_auth_method;
+    logo_uri;
+    client_uri;
+    policy_uri;
+    tos_uri;
+    jwks_uri;
+    sector_identifier_uri;
+    subject_type;
+    id_token_signed_response_alg;
+  }
+
+let meta_to_json meta =
+  let open Utils in
+  let values =
+    [
+      Some
+        ( "redirect_uris",
+          `List (List.map (fun s -> `String s) meta.redirect_uris) );
+      Option.map
+        (fun response_types ->
+          ( "response_types",
+            `List (List.map (fun s -> `String s) response_types) ))
+        meta.response_types;
+      Option.map
+        (fun grant_types ->
+          ("grant_types", `List (List.map (fun s -> `String s) grant_types)))
+        meta.grant_types;
+      RJson.to_json_string_opt "application_type" meta.application_type;
+      Option.map
+        (fun contacts ->
+          ("contacts", `List (List.map (fun s -> `String s) contacts)))
+        meta.contacts;
+      RJson.to_json_string_opt "client_name" meta.client_name;
+      RJson.to_json_string_opt "token_endpoint_auth_method"
+        meta.token_endpoint_auth_method;
+      RJson.to_json_string_opt "logo_uri" meta.logo_uri;
+      RJson.to_json_string_opt "client_uri" meta.client_uri;
+      RJson.to_json_string_opt "policy_uri" meta.policy_uri;
+      RJson.to_json_string_opt "tos_uri" meta.tos_uri;
+      RJson.to_json_string_opt "jwks_uri" meta.jwks_uri;
+      RJson.to_json_string_opt "sector_identifier_uri"
+        meta.sector_identifier_uri;
+      RJson.to_json_string_opt "subject_type" meta.subject_type;
+      RJson.to_json_string_opt "id_token_signed_response_alg"
+        (Option.map Jose.Jwa.alg_to_string meta.id_token_signed_response_alg);
+    ]
+  in
+  `Assoc (List.filter_map (fun x -> x) values)
 
 let meta_to_string c =
-  meta_to_yojson c |> Yojson.Safe.Util.to_assoc
+  meta_to_json c |> Yojson.Safe.Util.to_assoc
   |> List.filter (function _, `Null -> false | _ -> true)
   |> fun l -> `Assoc l |> Yojson.Safe.to_string
 

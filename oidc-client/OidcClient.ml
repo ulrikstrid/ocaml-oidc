@@ -48,13 +48,21 @@ let get_token ~code t =
       ]
     |> Uri.query |> Uri.encoded_of_query |> Piaf.Body.of_string
   in
-  Piaf.Client.post t.http_client
-    ~headers:
-      [
-        ("Content-Type", "application/x-www-form-urlencoded");
-        ("Accept", "application/json");
-      ]
-    ~body token_path
+  let headers =
+    [
+      ("Content-Type", "application/x-www-form-urlencoded");
+      ("Accept", "application/json");
+    ]
+  in
+  let headers =
+    match t.client.token_endpoint_auth_method with
+    | "client_secret_basic" ->
+        Utils.RHeader.basic_auth t.client.id
+          (Option.value ~default:"" t.client.secret)
+        :: headers
+    | _ -> headers
+  in
+  Piaf.Client.post t.http_client ~headers ~body token_path
   >>= Internal.to_string_body >|= Oidc.TokenResponse.of_string
 
 let get_and_validate_id_token ?nonce ~code t =
@@ -83,14 +91,14 @@ let get_and_validate_id_token ?nonce ~code t =
   | Error e -> Error e )
   |> Lwt.return
 
-let get_auth_result ?nonce ~uri ~state t =
-  match (Uri.get_query_param uri "state", Uri.get_query_param uri "code") with
+let get_auth_result ?nonce ~params ~state t =
+  match (List.assoc_opt "state" params, List.assoc_opt "code" params) with
   | None, _ -> Error (`Msg "No state returned") |> Lwt.return
   | _, None -> Error (`Msg "No code returned") |> Lwt.return
   | Some returned_state, Some code ->
-      if returned_state <> state then
+      if List.hd returned_state <> state then
         Error (`Msg "State doesn't match") |> Lwt.return
-      else get_and_validate_id_token ?nonce ~code t
+      else get_and_validate_id_token ?nonce ~code:(List.hd code) t
 
 let get_auth_parameters ?scope ?claims ~nonce ~state t =
   Oidc.Parameters.make ?scope ?claims t.client ~nonce ~state
@@ -157,10 +165,10 @@ module Dynamic = struct
       (get_or_create_client t |> map_piaf_err)
       (get_and_validate_id_token ~nonce ~code)
 
-  let get_auth_result ~nonce ~uri ~state t =
+  let get_auth_result ~nonce ~params ~state t =
     Lwt_result.bind
       (get_or_create_client t |> map_piaf_err)
-      (get_auth_result ~nonce ~uri ~state)
+      (get_auth_result ~nonce ~params ~state)
 
   let get_auth_parameters ?scope ?claims ~nonce ~state t =
     get_or_create_client t |> map_piaf_err

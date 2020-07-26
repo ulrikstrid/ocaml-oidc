@@ -58,7 +58,14 @@ let validate_aud ~(client : Client.t) (jwt : Jose.Jwt.t) =
   match Yojson.Safe.Util.member "aud" jwt.payload with
   | `String aud when aud = client.id -> Ok jwt
   | `String aud -> Error (`Wrong_aud_value aud)
-  | `List _json -> Ok jwt (* TODO: validate the list and azp *)
+  | `List json -> (
+      let maybe_client_id =
+        List.find_opt (fun v -> v = `String client.id) json
+      in
+      match maybe_client_id with
+      | Some _ -> Ok jwt
+      | None -> Error (`Wrong_aud_value "")
+      (* TODO: Check azp as well if audience is longer than 1 *) )
   | _ -> Error `Missing_aud
 
 let validate_nonce ?nonce (jwt : Jose.Jwt.t) =

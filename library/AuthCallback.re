@@ -1,10 +1,24 @@
 let make = (req: Morph.Request.t) => {
   Lwt_result.Syntax.(
     {
-      let req_uri = req.request.target |> Uri.of_string;
+      let* params =
+        (
+          switch (req.request.meth) {
+          | `GET =>
+            req.request.target
+            |> Uri.of_string
+            |> Uri.query
+            |> Lwt_result.return
+          | `POST =>
+            Piaf.Body.to_string(req.request.body)
+            |> Lwt_result.map(Uri.query_of_encoded)
+          | _ => Lwt_result.fail(`Msg("Method not supported"))
+          }
+        )
+        |> Lwt_result.map_err(_ => `Msg("No params provided"));
 
       let* provider =
-        Morph.Session.get(req, ~key="provider")
+        Morph.Middlewares.Session.get(req, ~key="provider")
         |> Lwt_result.map_err(_ => `Msg("No provider set in session"));
 
       Logs.info(m => m("Handling callback with client %s", provider));
@@ -17,18 +31,18 @@ let make = (req: Morph.Request.t) => {
       );
 
       let* nonce =
-        Morph.Session.get(req, ~key="nonce")
+        Morph.Middlewares.Session.get(req, ~key="nonce")
         |> Lwt_result.map_err(_ => `Msg("No nonce set in session"));
 
       Logs.warn(m => m("nonce: %s", nonce));
 
       let* state =
-        Morph.Session.get(req, ~key="state")
+        Morph.Middlewares.Session.get(req, ~key="state")
         |> Lwt_result.map_err(_ => `Msg("State not found in session"));
 
       let* auth_result =
         OidcClient.Dynamic.get_auth_result(
-          ~uri=req_uri,
+          ~params,
           ~nonce,
           ~state,
           oidc_client,
@@ -38,12 +52,20 @@ let make = (req: Morph.Request.t) => {
         switch (auth_result.access_token) {
         | Some(access_token) =>
           Lwt_result.ok @@
-          Morph.Session.set(req, ~value=access_token, ~key="access_token")
+          Morph.Middlewares.Session.set(
+            req,
+            ~value=access_token,
+            ~key="access_token",
+          )
         | None => Lwt_result.return()
         };
 
       Lwt_result.ok @@
-      Morph.Session.set(req, ~value=auth_result.id_token, ~key="id_token");
+      Morph.Middlewares.Session.set(
+        req,
+        ~value=auth_result.id_token,
+        ~key="id_token",
+      );
     }
     |> Lwt.map(
          fun

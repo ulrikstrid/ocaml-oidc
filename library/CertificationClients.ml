@@ -149,7 +149,7 @@ let to_client_meta (data : t) : Oidc.Client.meta =
   Oidc.Client.make_meta ~client_name:data.name ~redirect_uris:[ redirect_uri ]
     ~contacts:[ "ulrik.strid@outlook.com" ]
     ~response_types:[ "code" ] ~grant_types:[ "authorization_code" ]
-    ~token_endpoint_auth_method:"client_secret_post" ()
+    ~token_endpoint_auth_method:"client_secret_basic" ()
 
 let metas = List.map to_client_meta datas
 
@@ -165,3 +165,11 @@ let get_clients ~kv ~make_store ~provider_uri =
       >|= fun client -> (data, client))
     datas
   |> Lwt.all
+
+let new_certification_client_data =
+  {
+    name = "morph_oidc_client_local";
+    category = "new";
+    description = "new certification procedure";
+    info = "the new certification";
+  }

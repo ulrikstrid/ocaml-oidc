@@ -30,12 +30,15 @@ let handle: Morph.Server.handler =
     open Lwt.Syntax;
     open Lwt.Infix;
     let* provider =
-      Morph.Session.get(req, ~key="provider") |> Lwt.map(CCResult.get_exn);
+      Morph.Middlewares.Session.get(req, ~key="provider")
+      |> Lwt.map(CCResult.get_exn);
 
     let oidc_client = Context.get_client(req, provider);
 
-    let* id_token_result = Morph.Session.get(req, ~key="id_token");
-    let* access_token_result = Morph.Session.get(req, ~key="access_token");
+    let* id_token_result =
+      Morph.Middlewares.Session.get(req, ~key="id_token");
+    let* access_token_result =
+      Morph.Middlewares.Session.get(req, ~key="access_token");
 
     switch (id_token_result, access_token_result) {
     | (Ok(id_token), Ok(access_token)) =>

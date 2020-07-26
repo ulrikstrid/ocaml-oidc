@@ -11,28 +11,36 @@ module DynamicOidcClient = {
         type value = string and type store = Hashtbl.t(string, string) =
       (module OidcClient.KeyValue.MemoryKV);
 
-    /*
-     let+ microsoft_client =
-       OidcClient.Microsoft.make(
-         ~kv,
-         ~store=Hashtbl.create(128),
-         ~app_id="2824b599-24f1-4595-b63b-0cab4bb26c24",
-         ~tenant_id="5c26a08a-b3ca-475d-abfc-a96df0a5593e",
-         ~redirect_uri,
-         ~secret=Sys.getenv_opt("OIDC_SECRET"),
-       )
-       |> Lwt_result.map_err(Piaf.Error.to_string);
-       Hashtbl.add(oidc_clients_tbl, "microsoft", microsoft_client);
-       */
-
-    let+ certification_clients =
+    let* certification_clients =
       Library.CertificationClients.get_clients(
         ~kv,
         ~make_store=() => Hashtbl.create(128),
         ~provider_uri,
       );
 
-    let oidc_clients_tbl = Hashtbl.create(16);
+    let+ certification_clients =
+      Lwt.Infix.(
+        OidcClient.Dynamic.make(
+          ~kv,
+          ~store=Hashtbl.create(128),
+          ~provider_uri=
+            Uri.of_string(
+              "https://www.certification.openid.net/test/a/morph_oidc_client_local",
+            ),
+          Library.CertificationClients.to_client_meta(
+            Library.CertificationClients.new_certification_client_data,
+          ),
+        )
+        >|= Result.map(client =>
+              (
+                Library.CertificationClients.new_certification_client_data,
+                client,
+              )
+            )
+        >|= (c => [c, ...certification_clients])
+      );
+
+    let oidc_clients_tbl = Hashtbl.create(32);
 
     let () =
       List.iter(
@@ -73,17 +81,22 @@ module WebServer = {
     | _ => 4040
     };
 
-  let server = Morph.Server.make(~port, ~address=Unix.inet_addr_any, ());
+  let server = Morph.Server.make(~port, ~address=Unix.inet_addr_loopback, ());
 
   let start = ((), context) => {
     Logs.info(m => m("Starting server on %n", port));
 
     let handler =
-      Morph.Session.middleware(
+      Morph.Middlewares.Session.middleware(
         Context.middleware(
           ~context,
           Router.handler(
-            Router.routes(~providers=Library.CertificationClients.datas),
+            Router.routes(
+              ~providers=[
+                Library.CertificationClients.new_certification_client_data,
+                ...Library.CertificationClients.datas,
+              ],
+            ),
           ),
         ),
       );

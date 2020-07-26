@@ -24,4 +24,6 @@ let of_json json =
     id_token = json |> Json.member "id_token" |> Json.to_string;
   }
 
-let of_string str = Yojson.Safe.from_string str |> of_json
+let of_string str =
+  let () = Logs.info (fun m -> m "of_string: %s" str) in
+  Yojson.Safe.from_string str |> of_json
