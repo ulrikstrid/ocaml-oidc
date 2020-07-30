@@ -7,5 +7,5 @@ module Scopes = Scopes
 module States = States
 module TokenResponse = TokenResponse
 module TokenEndpoint = TokenEndpoint
-module Jwt = Jwt
+module IDToken = IDToken
 module Jwks = Jwks

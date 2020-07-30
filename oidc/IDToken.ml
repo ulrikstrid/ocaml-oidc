@@ -1,25 +1,23 @@
 open Utils
 
-(* https://openid.net/specs/openid-connect-core-1_0.html#IDToken *)
-(* https://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation *)
-
-(*
-  Required fields:
-  - iss
-  - sub - not longer than 256 ASCII chars
-  - aud
-  - exp
-  - iat
-  
-  Fields to be validated if exists
-  - nonce
-
-  Optional fields:
-  - acr
-  - amr
-  - azp (required if aud is a list)
-*)
-let ( >|= ) = RResult.( >|= )
+type validation_error =
+  [ `Expired
+  | `Iat_in_future
+  | `Invalid_nonce
+  | `Invalid_signature
+  | `Invalid_sub_length
+  | `Missing_aud
+  | `Missing_exp
+  | `Missing_iat
+  | `Missing_iss
+  | `Missing_nonce
+  | `Missing_sub
+  | `Msg of string
+  | `No_jwk_provided
+  | `Unexpected_nonce
+  | `Unsafe
+  | `Wrong_aud_value of string
+  | `Wrong_iss_value of string ]
 
 let ( >>= ) = RResult.( >>= )
 

@@ -29,7 +29,7 @@ let client =
 
 let validate_valid () =
   let validated =
-    Oidc.Jwt.validate ~nonce:"nonce" ~jwk ~client ~issuer valid_jwt
+    Oidc.IDToken.validate ~nonce:"nonce" ~jwk ~client ~issuer valid_jwt
   in
   let get_aud (jwt : Jose.Jwt.t) =
     jwt.payload |> Yojson.Safe.Util.member "aud" |> Yojson.Safe.Util.to_string

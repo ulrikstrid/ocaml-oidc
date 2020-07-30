@@ -82,6 +82,7 @@ let make = (req: Morph.Request.t) => {
            Morph.Response.unauthorized("nonce missing in JWT")
          | Error(`Unexpected_nonce) =>
            Morph.Response.unauthorized("nonce in JWT but not provided")
+         | Error(`Unsafe) => Morph.Response.unauthorized("Unsafe usage")
          | Error(`Invalid_sub_length) =>
            Morph.Response.unauthorized("Invalid sub length")
          | Error(`Missing_sub) => Morph.Response.unauthorized("Missing sub")

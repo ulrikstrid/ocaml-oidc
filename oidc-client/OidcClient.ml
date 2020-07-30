@@ -75,19 +75,20 @@ let get_and_validate_id_token ?nonce ~code t =
   ( match Jose.Jwt.of_string token_response.id_token with
   | Ok jwt -> (
       if jwt.header.alg = `None then
-        Oidc.Jwt.validate ?nonce ~client:t.client ~issuer:discovery.issuer jwt
+        Oidc.IDToken.validate ?nonce ~client:t.client ~issuer:discovery.issuer
+          jwt
         |> Result.map (fun _ -> token_response)
       else
         match Oidc.Jwks.find_jwk ~jwt jwks with
         | Some jwk ->
-            Oidc.Jwt.validate ?nonce ~client:t.client ~issuer:discovery.issuer
-              ~jwk jwt
+            Oidc.IDToken.validate ?nonce ~client:t.client
+              ~issuer:discovery.issuer ~jwk jwt
             |> Result.map (fun _ -> token_response)
         (* When there is only 1 key in the jwks we can try with that according to the OIDC spec *)
         | None when List.length jwks.keys = 1 ->
             let jwk = List.hd jwks.keys in
-            Oidc.Jwt.validate ?nonce ~client:t.client ~issuer:discovery.issuer
-              ~jwk jwt
+            Oidc.IDToken.validate ?nonce ~client:t.client
+              ~issuer:discovery.issuer ~jwk jwt
             |> Result.map (fun _ -> token_response)
         | None -> Error (`Msg "Could not find JWK") )
   | Error e -> Error e )

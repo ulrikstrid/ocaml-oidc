@@ -8,5 +8,5 @@ module States = States
 module TokenResponse = TokenResponse
 module TokenEndpoint = TokenEndpoint (* Move into TokenResponse? *)
 
-module Jwt = Jwt
+module IDToken = IDToken
 module Jwks = Jwks
