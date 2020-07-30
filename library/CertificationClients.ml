@@ -146,7 +146,12 @@ let datas =
 let redirect_uri = Sys.getenv "OIDC_REDIRECT_URI"
 
 let to_client_meta (data : t) : Oidc.Client.meta =
-  Oidc.Client.make_meta ~client_name:data.name ~redirect_uris:[ redirect_uri ]
+  Oidc.Client.make_meta ~client_name:data.name
+    ~redirect_uris:
+      [
+        redirect_uri;
+        "https://www.certification.openid.net/test/a/morph_oidc_client/callback";
+      ]
     ~contacts:[ "ulrik.strid@outlook.com" ]
     ~response_types:[ "code" ] ~grant_types:[ "authorization_code" ]
     ~token_endpoint_auth_method:"client_secret_basic" ()
@@ -168,7 +173,7 @@ let get_clients ~kv ~make_store ~provider_uri =
 
 let new_certification_client_data =
   {
-    name = "morph_oidc_client_local";
+    name = "morph_oidc_client";
     category = "new";
     description = "new certification procedure";
     info = "the new certification";

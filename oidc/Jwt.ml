@@ -1,3 +1,5 @@
+open Utils
+
 (* https://openid.net/specs/openid-connect-core-1_0.html#IDToken *)
 (* https://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation *)
 
@@ -17,9 +19,9 @@
   - amr
   - azp (required if aud is a list)
 *)
-let ( >|= ) = CCResult.( >|= )
+let ( >|= ) = RResult.( >|= )
 
-let ( >>= ) = CCResult.( >>= )
+let ( >>= ) = RResult.( >>= )
 
 let get_string_member member payload =
   Yojson.Safe.Util.member member payload |> Yojson.Safe.Util.to_string_option
@@ -69,7 +71,6 @@ let validate_aud ~(client : Client.t) (jwt : Jose.Jwt.t) =
   | _ -> Error `Missing_aud
 
 let validate_nonce ?nonce (jwt : Jose.Jwt.t) =
-  let () = CCOpt.iter print_endline nonce in
   let jwt_nonce = get_string_member "nonce" jwt.payload in
   match (nonce, jwt_nonce) with
   | Some nonce, Some jwt_nonce ->

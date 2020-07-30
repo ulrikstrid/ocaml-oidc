@@ -125,8 +125,9 @@ let dynamic_is_expired dynamic =
 
 let dynamic_of_json (json : Yojson.Safe.t) :
     (dynamic_response, [> `Msg of string ]) result =
-  CCResult.guard_str (fun () ->
-      let module Json = Yojson.Safe.Util in
+  try
+    let module Json = Yojson.Safe.Util in
+    Ok
       {
         client_id = json |> Json.member "client_id" |> Json.to_string;
         client_secret =
@@ -145,20 +146,20 @@ let dynamic_of_json (json : Yojson.Safe.t) :
           json |> Json.member "client_id_expires_at" |> Json.to_int_option;
         application_type =
           json |> Json.member "application_type" |> Json.to_string_option;
-      })
-  |> CCResult.map_err (fun e -> `Msg e)
+      }
+  with Yojson.Safe.Util.Type_error (str, _) -> Error (`Msg str)
 
 let dynamic_of_string response =
   Yojson.Safe.from_string response |> dynamic_of_json
 
 let of_dynamic_and_meta ~dynamic ~meta =
+  let open Utils in
   {
     id = dynamic.client_id;
     redirect_uris = meta.redirect_uris;
     secret = dynamic.client_secret;
-    grant_types =
-      CCOpt.get_or meta.grant_types ~default:[ "authorization_code" ];
-    response_types = CCOpt.get_or meta.response_types ~default:[ "code" ];
+    grant_types = ROpt.get_or meta.grant_types ~default:[ "authorization_code" ];
+    response_types = ROpt.get_or meta.response_types ~default:[ "code" ];
     token_endpoint_auth_method =
-      CCOpt.get_or meta.token_endpoint_auth_method ~default:"client_secret_post";
+      ROpt.get_or meta.token_endpoint_auth_method ~default:"client_secret_post";
   }

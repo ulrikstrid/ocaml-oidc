@@ -1,3 +1,5 @@
+open Utils
+
 type 'store t = {
   kv : (module KeyValue.KV with type value = string and type store = 'store);
   store : 'store;
@@ -43,7 +45,7 @@ let get_token ~code t =
         ("scope", "openid");
         ("code", code);
         ("client_id", t.client.id);
-        ("client_secret", t.client.secret |> CCOpt.get_or ~default:"secret");
+        ("client_secret", t.client.secret |> ROpt.get_or ~default:"secret");
         ("redirect_uri", t.redirect_uri |> Uri.to_string);
       ]
     |> Uri.query |> Uri.encoded_of_query |> Piaf.Body.of_string
@@ -57,8 +59,8 @@ let get_token ~code t =
   let headers =
     match t.client.token_endpoint_auth_method with
     | "client_secret_basic" ->
-        Utils.RHeader.basic_auth t.client.id
-          (Option.value ~default:"" t.client.secret)
+        Oidc.TokenEndpoint.basic_auth ~client_id:t.client.id
+          ~secret:(Option.value ~default:"" t.client.secret)
         :: headers
     | _ -> headers
   in
@@ -74,19 +76,19 @@ let get_and_validate_id_token ?nonce ~code t =
   | Ok jwt -> (
       if jwt.header.alg = `None then
         Oidc.Jwt.validate ?nonce ~client:t.client ~issuer:discovery.issuer jwt
-        |> CCResult.map (fun _ -> token_response)
+        |> Result.map (fun _ -> token_response)
       else
         match Oidc.Jwks.find_jwk ~jwt jwks with
         | Some jwk ->
             Oidc.Jwt.validate ?nonce ~client:t.client ~issuer:discovery.issuer
               ~jwk jwt
-            |> CCResult.map (fun _ -> token_response)
+            |> Result.map (fun _ -> token_response)
         (* When there is only 1 key in the jwks we can try with that according to the OIDC spec *)
         | None when List.length jwks.keys = 1 ->
             let jwk = List.hd jwks.keys in
             Oidc.Jwt.validate ?nonce ~client:t.client ~issuer:discovery.issuer
               ~jwk jwt
-            |> CCResult.map (fun _ -> token_response)
+            |> Result.map (fun _ -> token_response)
         | None -> Error (`Msg "Could not find JWK") )
   | Error e -> Error e )
   |> Lwt.return

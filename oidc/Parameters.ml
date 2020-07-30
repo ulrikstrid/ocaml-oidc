@@ -1,3 +1,5 @@
+open Utils
+
 type display = Page | Popup | Touch | Wap
 
 let string_to_display_opt = function
@@ -53,14 +55,14 @@ let to_query t =
         Some ("response_type", t.response_type);
         Some ("client_id", [ t.client.id ]);
         Some ("redirect_uri", [ t.redirect_uri ]);
-        Some ("scope", [ CCString.concat " " t.scope ]);
-        CCOpt.map (fun state -> ("state", [ state ])) t.state;
+        Some ("scope", [ String.concat " " t.scope ]);
+        Option.map (fun state -> ("state", [ state ])) t.state;
         Some ("nonce", [ t.nonce ]);
-        CCOpt.map
+        Option.map
           (fun claims -> ("claims", [ Yojson.Basic.to_string claims ]))
           t.claims;
       ]
-    |> CCList.filter_map identity |> Uri.encoded_of_query )
+    |> List.filter_map identity |> Uri.encoded_of_query )
 
 type parse_state =
   | Invalid of string
@@ -71,46 +73,45 @@ type parse_state =
   | Valid of t
 
 let get_client ~clients ~client_id =
-  CCList.find_opt (fun (client : Client.t) -> client.id == client_id) clients
+  List.find_opt (fun (client : Client.t) -> client.id == client_id) clients
   |> function
   | Some client -> Ok client
   | None -> Error "No client found"
 
 let parse_query ~clients uri =
   let getQueryParam param =
-    Uri.get_query_param uri param
-    |> CCResult.of_opt
-    |> CCResult.map_err (fun _ -> param ^ " not found")
+    Uri.get_query_param uri param |> function
+    | Some x -> Ok x
+    | None -> Error () |> Result.map_error (fun _ -> param ^ " not found")
   in
 
   let claims =
-    getQueryParam "claims"
-    |> CCResult.map Yojson.Basic.from_string
-    |> CCOpt.of_result
+    getQueryParam "claims" |> Result.map Yojson.Basic.from_string |> function
+    | Ok x -> Some x
+    | Error _ -> None
   in
 
   let response_type =
-    getQueryParam "response_type"
-    |> CCResult.map (String.split_on_char ' ')
-    |> CCResult.flat_map (fun response_type ->
-           if CCList.exists (fun rt -> rt == "code") response_type then
-             Ok response_type
-           else Error "response_type doesn't include code")
+    getQueryParam "response_type" |> Result.map (String.split_on_char ' ')
+    |> function
+    | Ok response_type ->
+        if List.exists (fun rt -> rt == "code") response_type then
+          Ok response_type
+        else Error "response_type doesn't include code"
+    | Error x -> Error x
   in
 
   let redirect_uri = getQueryParam "redirect_uri" in
 
   let client =
     getQueryParam "client_id"
-    |> CCResult.flat_map (fun client_id -> get_client ~clients ~client_id)
+    |> RResult.flat_map (fun client_id -> get_client ~clients ~client_id)
   in
 
-  let scope =
-    getQueryParam "scope" |> CCResult.map (String.split_on_char ' ')
-  in
+  let scope = getQueryParam "scope" |> Result.map (String.split_on_char ' ') in
 
   let max_age =
-    getQueryParam "max_age" |> CCOpt.of_result |> CCOpt.flat_map CCInt.of_string
+    getQueryParam "max_age" |> ROpt.of_result |> ROpt.flat_map int_of_string_opt
   in
 
   match (client, response_type, redirect_uri, scope) with
@@ -122,16 +123,16 @@ let parse_query ~clients uri =
           client;
           redirect_uri;
           scope;
-          state = CCOpt.of_result (getQueryParam "state");
-          nonce = CCResult.get_or ~default:"12345" (getQueryParam "nonce");
+          state = ROpt.of_result (getQueryParam "state");
+          nonce = Result.value ~default:"12345" (getQueryParam "nonce");
           claims;
           max_age;
           display =
-            CCResult.flat_map string_to_display_opt (getQueryParam "display")
-            |> CCOpt.of_result;
+            RResult.flat_map string_to_display_opt (getQueryParam "display")
+            |> ROpt.of_result;
           prompt =
-            CCResult.flat_map string_to_prompt_opt (getQueryParam "prompt")
-            |> CCOpt.of_result;
+            RResult.flat_map string_to_prompt_opt (getQueryParam "prompt")
+            |> ROpt.of_result;
         }
   | Ok client, Ok _, _, Ok _ -> UnauthorizedClient client
   | Ok client, Error _e, _, _ -> InvalidWithClient client

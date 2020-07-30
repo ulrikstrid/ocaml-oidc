@@ -11,5 +11,7 @@ reason-guest-login-oidc-client.install
 _esy
 
 deploy.sh
+restart-pod.sha
+app.yml
 junit.xml
 _coverage

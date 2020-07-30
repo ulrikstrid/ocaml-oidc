@@ -25,7 +25,7 @@ module DynamicOidcClient = {
           ~store=Hashtbl.create(128),
           ~provider_uri=
             Uri.of_string(
-              "https://www.certification.openid.net/test/a/morph_oidc_client_local",
+              "https://www.certification.openid.net/test/a/morph_oidc_client",
             ),
           Library.CertificationClients.to_client_meta(
             Library.CertificationClients.new_certification_client_data,
@@ -81,7 +81,7 @@ module WebServer = {
     | _ => 4040
     };
 
-  let server = Morph.Server.make(~port, ~address=Unix.inet_addr_loopback, ());
+  let server = Morph.Server.make(~port, ~address=Unix.inet_addr_any, ());
 
   let start = ((), context) => {
     Logs.info(m => m("Starting server on %n", port));

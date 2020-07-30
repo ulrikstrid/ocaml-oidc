@@ -1,3 +1,5 @@
+open Utils
+
 type key = string
 
 type claim = Essential of key | NonEssential of key
@@ -13,16 +15,16 @@ let from_json json =
       id_token =
         json |> Util.member "id_token"
         |> Util.to_option Util.to_assoc
-        |> CCOpt.map_or ~default:[]
-             (CCList.map (fun (key, value) ->
+        |> ROpt.map_or ~default:[]
+             (List.map (fun (key, value) ->
                   match get_essential value with
                   | Some true -> Essential key
                   | _ -> NonEssential key));
       userinfo =
         json |> Util.member "userinfo"
         |> Util.to_option Util.to_assoc
-        |> CCOpt.map_or ~default:[]
-             (CCList.map (fun (key, value) ->
+        |> ROpt.map_or ~default:[]
+             (List.map (fun (key, value) ->
                   match get_essential value with
                   | Some true -> Essential key
                   | _ -> NonEssential key));

@@ -1,8 +1,8 @@
 (executable
  (name MorphOidcClient)
- (package morph_oidc_client)
+ (package morph-oidc-client)
  (public_name MorphOidcClient)
- (libraries lwt logs logs.fmt fmt.tty morph_oidc_client.library oidc morph
+ (libraries lwt logs logs.fmt fmt.tty morph-oidc-client.library oidc morph
    archi archi-lwt mirage-crypto-rng.unix piaf routes))
 
 (env

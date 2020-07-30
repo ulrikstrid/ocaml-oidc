@@ -1,4 +1,4 @@
 (library
  (name OidcClient)
- (public_name oidc_client)
- (libraries oidc piaf yojson uri uunf uunf.string))
+ (public_name oidc-client)
+ (libraries oidc piaf yojson uri))
