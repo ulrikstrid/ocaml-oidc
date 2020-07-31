@@ -26,7 +26,7 @@ type t = {
   (* Must include at least the openid scope *)
   state : string option;
   nonce : string;
-  claims : Yojson.Basic.t option;
+  claims : Yojson.Safe.t option;
   max_age : int option;
   display : display option;
   prompt : prompt option;
@@ -59,7 +59,7 @@ let to_query t =
         Option.map (fun state -> ("state", [ state ])) t.state;
         Some ("nonce", [ t.nonce ]);
         Option.map
-          (fun claims -> ("claims", [ Yojson.Basic.to_string claims ]))
+          (fun claims -> ("claims", [ Yojson.Safe.to_string claims ]))
           t.claims;
       ]
     |> List.filter_map identity |> Uri.encoded_of_query )
@@ -86,7 +86,7 @@ let parse_query ~clients uri =
   in
 
   let claims =
-    getQueryParam "claims" |> Result.map Yojson.Basic.from_string |> function
+    getQueryParam "claims" |> Result.map Yojson.Safe.from_string |> function
     | Ok x -> Some x
     | Error _ -> None
   in

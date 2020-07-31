@@ -17,3 +17,9 @@ module RResult = struct
 
   let ( >>= ) e f = flat_map f e
 end
+
+module RPiaf = struct
+  let map_piaf_err (x : ('a, Piaf.Error.t) Lwt_result.t) :
+      ('a, [> `Msg of string ]) Lwt_result.t =
+    Lwt_result.map_err (fun e -> `Msg (Piaf.Error.to_string e)) x
+end

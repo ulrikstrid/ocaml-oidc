@@ -8,7 +8,7 @@ type t = {
 }
 
 let of_json json =
-  Yojson.Basic.Util.
+  Yojson.Safe.Util.
     {
       authorization_endpoint =
         json |> member "authorization_endpoint" |> to_string;
@@ -20,4 +20,4 @@ let of_json json =
         json |> member "registration_endpoint" |> to_string_option;
     }
 
-let of_string body = Yojson.Basic.from_string body |> of_json
+let of_string body = Yojson.Safe.from_string body |> of_json

@@ -9,7 +9,7 @@ type t = {
   scope : string list;
   state : string option;
   nonce : string;
-  claims : Yojson.Basic.t option;
+  claims : Yojson.Safe.t option;
   max_age : int option;
   display : display option;
   prompt : prompt option;
@@ -19,7 +19,7 @@ val make :
   ?response_type:string list ->
   ?scope:string list ->
   ?state:string ->
-  ?claims:Yojson.Basic.t ->
+  ?claims:Yojson.Safe.t ->
   ?max_age:int ->
   ?display:display ->
   ?prompt:prompt ->
