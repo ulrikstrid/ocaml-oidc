@@ -2,7 +2,7 @@ type t = {
   id : string;
   response_types : string list;
   grant_types : string list;
-  redirect_uris : string list;
+  redirect_uris : Uri.t list;
   secret : string option;
   token_endpoint_auth_method : string;
 }
@@ -19,19 +19,19 @@ let make ?secret ~response_types ~grant_types ~redirect_uris
   }
 
 type meta = {
-  redirect_uris : string list;
+  redirect_uris : Uri.t list;
   response_types : string list option;
   grant_types : string list option;
   application_type : string option;
   contacts : string list option;
   client_name : string option;
   token_endpoint_auth_method : string option;
-  logo_uri : string option;
-  client_uri : string option;
-  policy_uri : string option;
-  tos_uri : string option;
-  jwks_uri : string option;
-  sector_identifier_uri : string option;
+  logo_uri : Uri.t option;
+  client_uri : Uri.t option;
+  policy_uri : Uri.t option;
+  tos_uri : Uri.t option;
+  jwks_uri : Uri.t option;
+  sector_identifier_uri : Uri.t option;
   subject_type : string option;
   id_token_signed_response_alg : Jose.Jwa.alg option;
 }
@@ -39,12 +39,12 @@ type meta = {
 let make_meta ?(response_types : string list option)
     ?(grant_types : string list option) ?(application_type : string option)
     ?(contacts : string list option) ?(client_name : string option)
-    ?(token_endpoint_auth_method : string option) ?(logo_uri : string option)
-    ?(client_uri : string option) ?(policy_uri : string option)
-    ?(tos_uri : string option) ?(jwks_uri : string option)
-    ?(sector_identifier_uri : string option) ?(subject_type : string option)
+    ?(token_endpoint_auth_method : string option) ?(logo_uri : Uri.t option)
+    ?(client_uri : Uri.t option) ?(policy_uri : Uri.t option)
+    ?(tos_uri : Uri.t option) ?(jwks_uri : Uri.t option)
+    ?(sector_identifier_uri : Uri.t option) ?(subject_type : string option)
     ?(id_token_signed_response_alg : Jose.Jwa.alg option)
-    ~(redirect_uris : string list) () =
+    ~(redirect_uris : Uri.t list) () =
   {
     redirect_uris;
     response_types;
@@ -69,7 +69,9 @@ let meta_to_json meta =
     [
       Some
         ( "redirect_uris",
-          `List (List.map (fun s -> `String s) meta.redirect_uris) );
+          `List
+            (List.map (fun s -> `String (Uri.to_string s)) meta.redirect_uris)
+        );
       Option.map
         (fun response_types ->
           ( "response_types",
@@ -87,13 +89,17 @@ let meta_to_json meta =
       RJson.to_json_string_opt "client_name" meta.client_name;
       RJson.to_json_string_opt "token_endpoint_auth_method"
         meta.token_endpoint_auth_method;
-      RJson.to_json_string_opt "logo_uri" meta.logo_uri;
-      RJson.to_json_string_opt "client_uri" meta.client_uri;
-      RJson.to_json_string_opt "policy_uri" meta.policy_uri;
-      RJson.to_json_string_opt "tos_uri" meta.tos_uri;
-      RJson.to_json_string_opt "jwks_uri" meta.jwks_uri;
+      RJson.to_json_string_opt "logo_uri"
+        (Option.map Uri.to_string meta.logo_uri);
+      RJson.to_json_string_opt "client_uri"
+        (Option.map Uri.to_string meta.client_uri);
+      RJson.to_json_string_opt "policy_uri"
+        (Option.map Uri.to_string meta.policy_uri);
+      RJson.to_json_string_opt "tos_uri" (Option.map Uri.to_string meta.tos_uri);
+      RJson.to_json_string_opt "jwks_uri"
+        (Option.map Uri.to_string meta.jwks_uri);
       RJson.to_json_string_opt "sector_identifier_uri"
-        meta.sector_identifier_uri;
+        (Option.map Uri.to_string meta.sector_identifier_uri);
       RJson.to_json_string_opt "subject_type" meta.subject_type;
       RJson.to_json_string_opt "id_token_signed_response_alg"
         (Option.map Jose.Jwa.alg_to_string meta.id_token_signed_response_alg);

@@ -5,10 +5,10 @@ type prompt = None | Login | Consent | Select_account
 type t = {
   response_type : string list;
   client : Client.t;
-  redirect_uri : string;
+  redirect_uri : Uri.t;
   scope : string list;
   state : string option;
-  nonce : string;
+  nonce : string option;
   claims : Yojson.Safe.t option;
   max_age : int option;
   display : display option;
@@ -23,8 +23,8 @@ val make :
   ?max_age:int ->
   ?display:display ->
   ?prompt:prompt ->
+  ?nonce:string ->
   Client.t ->
-  nonce:string ->
   redirect_uri:Uri.t ->
   t
 

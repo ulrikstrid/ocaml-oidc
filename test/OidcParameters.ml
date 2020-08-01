@@ -6,7 +6,7 @@ let client =
       id = "s6BhdRkqt3";
       response_types = [ "code" ];
       grant_types = [ "authorization_code" ];
-      redirect_uris = [ "https://client.example.org/cb" ];
+      redirect_uris = [ Uri.of_string "https://client.example.org/cb" ];
       secret = Some "secret";
       token_endpoint_auth_method = "client_secret_post";
     }
@@ -26,8 +26,8 @@ let parse_query () =
   | Valid valid_parameters ->
       check_string "client_id" "s6BhdRkqt3" valid_parameters.client.id;
       check_string "redirect_uri" "https://client.example.org/cb"
-        valid_parameters.redirect_uri;
-      check_string "nonce" "n-0S6_WzA2Mj" valid_parameters.nonce
+        (Uri.to_string valid_parameters.redirect_uri);
+      check_option_string "nonce" "n-0S6_WzA2Mj" valid_parameters.nonce
   | _ -> ()
 
 let to_query () =
@@ -36,10 +36,10 @@ let to_query () =
       {
         response_type = [ "code" ];
         client;
-        redirect_uri = "https://client.example.org/cb";
+        redirect_uri = Uri.of_string "https://client.example.org/cb";
         scope = [ "openid"; "profile" ];
         state = Some "af0ifjsldkj";
-        nonce = "n-0S6_WzA2Mj";
+        nonce = Some "n-0S6_WzA2Mj";
         claims = None;
         max_age = None;
         display = None;

@@ -13,7 +13,7 @@ let get_or_create_client { kv; store; http_client; provider_uri; meta } =
     Oidc.Client.of_dynamic_and_meta ~dynamic ~meta )
   >>= fun client ->
   StaticClient.make ~kv ~store ~http_client
-    ~redirect_uri:(Uri.of_string (List.hd meta.redirect_uris))
+    ~redirect_uri:(List.hd meta.redirect_uris)
     ~provider_uri ~client
 
 let make (type store)

@@ -21,11 +21,11 @@ let string_to_prompt_opt = function
 type t = {
   response_type : string list;
   client : Client.t;
-  redirect_uri : string;
+  redirect_uri : Uri.t;
   scope : string list;
   (* Must include at least the openid scope *)
   state : string option;
-  nonce : string;
+  nonce : string option;
   claims : Yojson.Safe.t option;
   max_age : int option;
   display : display option;
@@ -33,11 +33,11 @@ type t = {
 }
 
 let make ?(response_type = [ "code" ]) ?(scope = [ "openid" ]) ?state ?claims
-    ?max_age ?display ?prompt client ~nonce ~redirect_uri =
+    ?max_age ?display ?prompt ?nonce client ~redirect_uri =
   {
     response_type;
     client;
-    redirect_uri = Uri.to_string redirect_uri;
+    redirect_uri;
     scope;
     state;
     nonce;
@@ -54,10 +54,10 @@ let to_query t =
   ^ ( [
         Some ("response_type", t.response_type);
         Some ("client_id", [ t.client.id ]);
-        Some ("redirect_uri", [ t.redirect_uri ]);
+        Some ("redirect_uri", [ Uri.to_string t.redirect_uri ]);
         Some ("scope", [ String.concat " " t.scope ]);
         Option.map (fun state -> ("state", [ state ])) t.state;
-        Some ("nonce", [ t.nonce ]);
+        Option.map (fun nonce -> ("nonce", [ nonce ])) t.nonce;
         Option.map
           (fun claims -> ("claims", [ Yojson.Safe.to_string claims ]))
           t.claims;
@@ -116,15 +116,17 @@ let parse_query ~clients uri =
 
   match (client, response_type, redirect_uri, scope) with
   | Ok client, Ok response_type, Ok redirect_uri, Ok scope
-    when List.exists (fun uri -> uri == redirect_uri) client.redirect_uris ->
+    when List.exists
+           (fun uri -> Uri.to_string uri = redirect_uri)
+           client.redirect_uris ->
       Valid
         {
           response_type;
           client;
-          redirect_uri;
+          redirect_uri = Uri.of_string redirect_uri;
           scope;
           state = ROpt.of_result (getQueryParam "state");
-          nonce = Result.value ~default:"12345" (getQueryParam "nonce");
+          nonce = ROpt.of_result (getQueryParam "nonce");
           claims;
           max_age;
           display =

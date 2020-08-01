@@ -99,13 +99,13 @@ let get_auth_result ?nonce ~params ~state t =
         Error (`Msg "State doesn't match") |> Lwt.return
       else get_and_validate_id_token ?nonce ~code:(List.hd code) t
 
-let get_auth_parameters ?scope ?claims ~nonce ~state t =
-  Oidc.Parameters.make ?scope ?claims t.client ~nonce ~state
+let get_auth_parameters ?scope ?claims ?nonce ~state t =
+  Oidc.Parameters.make ?scope ?claims t.client ?nonce ~state
     ~redirect_uri:t.redirect_uri
 
-let get_auth_uri ?scope ?claims ~nonce ~state t =
+let get_auth_uri ?scope ?claims ?nonce ~state t =
   let query =
-    get_auth_parameters ?scope ?claims ~nonce ~state t
+    get_auth_parameters ?scope ?claims ?nonce ~state t
     |> Oidc.Parameters.to_query
   in
   discover t

@@ -13,7 +13,8 @@ module Microsoft = struct
         id = app_id;
         response_types = [ "code" ];
         grant_types = [ "authorization_code" ];
-        redirect_uris = [ "https://login.microsoftonline.com/common/v2.0" ];
+        redirect_uris =
+          [ Uri.of_string "https://login.microsoftonline.com/common/v2.0" ];
         secret;
         token_endpoint_auth_method = "client_secret_post";
       }
