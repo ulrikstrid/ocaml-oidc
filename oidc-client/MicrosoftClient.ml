@@ -15,4 +15,4 @@ let make (type store)
       token_endpoint_auth_method = "client_secret_post";
     }
   in
-  StaticClient.make ~kv ~store ~redirect_uri ~provider_uri ~client
+  Static.make ~kv ~store ~redirect_uri ~provider_uri ~client

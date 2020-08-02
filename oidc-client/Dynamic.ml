@@ -12,7 +12,7 @@ let get_or_create_client { kv; store; http_client; provider_uri; meta } =
   ( Internal.register ~kv ~store ~http_client ~meta ~discovery >|= fun dynamic ->
     Oidc.Client.of_dynamic_and_meta ~dynamic ~meta )
   >>= fun client ->
-  StaticClient.make ~kv ~store ~http_client
+  Static.make ~kv ~store ~http_client
     ~redirect_uri:(List.hd meta.redirect_uris)
     ~provider_uri ~client
 
@@ -23,35 +23,34 @@ let make (type store)
   |> Lwt_result.map (fun http_client ->
          { kv; store; http_client; meta; provider_uri })
 
-let get_jwks t = Lwt_result.bind (get_or_create_client t) StaticClient.get_jwks
+let get_jwks t = Lwt_result.bind (get_or_create_client t) Static.get_jwks
 
 let get_token ~code t =
-  Lwt_result.bind (get_or_create_client t) (StaticClient.get_token ~code)
+  Lwt_result.bind (get_or_create_client t) (Static.get_token ~code)
 
 let get_and_validate_id_token ?nonce ~code t =
   Lwt_result.bind
     (get_or_create_client t |> Utils.RPiaf.map_piaf_err)
-    (StaticClient.get_and_validate_id_token ?nonce ~code)
+    (Static.get_and_validate_id_token ?nonce ~code)
 
 let get_auth_result ~nonce ~params ~state t =
   Lwt_result.bind
     (get_or_create_client t |> Utils.RPiaf.map_piaf_err)
-    (StaticClient.get_auth_result ~nonce ~params ~state)
+    (Static.get_auth_result ~nonce ~params ~state)
 
 let get_auth_parameters ?scope ?claims ~nonce ~state t =
   get_or_create_client t |> Utils.RPiaf.map_piaf_err
-  |> Lwt_result.map
-       (StaticClient.get_auth_parameters ?scope ?claims ~nonce ~state)
+  |> Lwt_result.map (Static.get_auth_parameters ?scope ?claims ~nonce ~state)
 
 let get_auth_uri ?scope ?claims ~nonce ~state t =
   let open Lwt_result.Infix in
   get_or_create_client t |> Utils.RPiaf.map_piaf_err
-  >>= StaticClient.get_auth_uri ?scope ?claims ~nonce ~state
+  >>= Static.get_auth_uri ?scope ?claims ~nonce ~state
 
 let get_userinfo ~jwt ~token t =
   Lwt_result.bind
     (get_or_create_client t |> Utils.RPiaf.map_piaf_err)
-    (StaticClient.get_userinfo ~jwt ~token)
+    (Static.get_userinfo ~jwt ~token)
 
 let register (t : 'store t) meta =
   Lwt_result.bind

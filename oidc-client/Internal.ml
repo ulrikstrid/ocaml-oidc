@@ -1,9 +1,5 @@
 let to_string_body (res : Piaf.Response.t) = Piaf.Body.to_string res.body
 
-let log_body fmterr body =
-  let () = Logs.info (fun m -> m fmterr body) in
-  body
-
 let read_registration ~http_client ~client_id ~(discovery : Oidc.Discover.t) =
   match discovery.registration_endpoint with
   | Some endpoint ->
@@ -67,7 +63,6 @@ let discover (type store)
           let () = print_endline (Uri.to_string provider_uri) in
 
           Piaf.Client.get http_client discover_path >>= to_string_body >>= save)
-  >|= log_body "discovery: %s"
   |> Lwt_result.map Oidc.Discover.of_string
 
 let jwks (type store)
@@ -86,7 +81,6 @@ let jwks (type store)
           let* discovery = discover ~kv ~store ~http_client ~provider_uri in
           let jwks_path = Uri.of_string discovery.jwks_uri |> Uri.path in
           Piaf.Client.get http_client jwks_path >>= to_string_body >>= save)
-  >|= log_body "JWKS: %s"
   |> Lwt_result.map Jose.Jwks.of_string
 
 let validate_userinfo ~(jwt : Jose.Jwt.t) userinfo =
