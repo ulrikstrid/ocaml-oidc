@@ -2,7 +2,7 @@ open Utils
 
 type display = Page | Popup | Touch | Wap
 
-let string_to_display_opt = function
+let string_to_display = function
   | "page" -> Ok Page
   | "popup" -> Ok Popup
   | "touch" -> Ok Touch
@@ -130,7 +130,7 @@ let parse_query ~clients uri =
           claims;
           max_age;
           display =
-            RResult.flat_map string_to_display_opt (getQueryParam "display")
+            RResult.flat_map string_to_display (getQueryParam "display")
             |> ROpt.of_result;
           prompt =
             RResult.flat_map string_to_prompt_opt (getQueryParam "prompt")

@@ -55,13 +55,13 @@ let get_token ~code t =
   let headers =
     match t.client.token_endpoint_auth_method with
     | "client_secret_basic" ->
-        Oidc.TokenEndpoint.basic_auth ~client_id:t.client.id
+        Oidc.Token.basic_auth ~client_id:t.client.id
           ~secret:(Option.value ~default:"" t.client.secret)
         :: headers
     | _ -> headers
   in
   Piaf.Client.post t.http_client ~headers ~body token_path
-  >>= Internal.to_string_body >|= Oidc.TokenResponse.of_string
+  >>= Internal.to_string_body >|= Oidc.Token.of_string
 
 let get_and_validate_id_token ?nonce ~code t =
   let open Lwt_result.Syntax in

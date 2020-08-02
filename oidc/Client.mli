@@ -1,3 +1,9 @@
+(**
+  Types and functions to work with clients
+*)
+
+(** {2 Standard client} *)
+
 type t = {
   id : string;
   response_types : string list;
@@ -6,6 +12,7 @@ type t = {
   secret : string option;
   token_endpoint_auth_method : string;
 }
+(** OIDC Client *)
 
 val make :
   ?secret:string ->
@@ -15,6 +22,9 @@ val make :
   token_endpoint_auth_method:string ->
   string ->
   t
+(** Create a {{! t}OIDC Client} *)
+
+(** {2 Dynamic registration } *)
 
 type meta = {
   redirect_uris : Uri.t list;
@@ -35,7 +45,7 @@ type meta = {
   id_token_signed_response_alg : Jose.Jwa.alg option;
 }
 (**
- [ clientMetadata ] used in registration
+Metadata used in registration of dunamic clients
  *)
 
 val make_meta :
@@ -72,10 +82,11 @@ type dynamic_response = {
   application_type : string option;
 }
 (**
- The [response] also includes the {! ClientMeta.t }
+The actual response response should also include the {{! meta }metadata}
  *)
 
 val dynamic_is_expired : dynamic_response -> bool
+(** This is useful to know if you have to re-register your client *)
 
 val dynamic_of_json :
   Yojson.Safe.t -> (dynamic_response, [> `Msg of string ]) result
@@ -83,3 +94,4 @@ val dynamic_of_json :
 val dynamic_of_string : string -> (dynamic_response, [> `Msg of string ]) result
 
 val of_dynamic_and_meta : dynamic:dynamic_response -> meta:meta -> t
+(** Createa a {{! t}OIDC Client} from {!dynamic} and {!meta} *)

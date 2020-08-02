@@ -1,3 +1,5 @@
+(** Auth parameters *)
+
 type display = Page | Popup | Touch | Wap
 
 type prompt = None | Login | Consent | Select_account
@@ -28,14 +30,17 @@ val make :
   redirect_uri:Uri.t ->
   t
 
+val to_query : t -> string
+(** Used when starting a authentication *)
+
+(** {2 Parsing in the provider } *)
+
 type parse_state =
   | Invalid of string
   | UnauthorizedClient of Client.t
   | InvalidScope of Client.t
   | InvalidWithClient of Client.t
   | InvalidWithRedirectUri of string
-  | Valid of t
-
-val to_query : t -> string
+  | Valid of t  (** Possible states when parsing the query *)
 
 val parse_query : clients:Client.t list -> Uri.t -> parse_state

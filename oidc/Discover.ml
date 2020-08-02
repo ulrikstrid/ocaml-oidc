@@ -1,3 +1,4 @@
+(* TODO: Add more fields *)
 type t = {
   authorization_endpoint : string;
   token_endpoint : string;
@@ -7,6 +8,7 @@ type t = {
   registration_endpoint : string option;
 }
 
+(* TODO: Should maybe be a result? *)
 let of_json json =
   Yojson.Safe.Util.
     {
@@ -20,4 +22,5 @@ let of_json json =
         json |> member "registration_endpoint" |> to_string_option;
     }
 
+(* TODO: Should maybe be a result? *)
 let of_string body = Yojson.Safe.from_string body |> of_json

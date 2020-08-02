@@ -1,4 +1,4 @@
-(** {1 ID Token}
+(** ID Token validation and creation
 
 {{:https://openid.net/specs/openid-connect-core-1_0.html#IDToken} Spec link} *)
 
@@ -30,7 +30,7 @@ val validate :
   Jose.Jwt.t ->
   (Jose.Jwt.t, validation_error) result
 (** Validation of the ID Token according to the spec.
-  
+
   [jwk] is not needed when ["alg": "none"]
 
 {{:https://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation} Spec link}
