@@ -1,4 +1,4 @@
-name: Build master - Deploy to GitHub Pages and publish npm
+name: Build master - Build and deploy docs to GitHub Pages
 on:
   push:
     branches:
