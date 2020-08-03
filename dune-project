@@ -1,6 +1,6 @@
 (lang dune 2.5)
 
-(name morph_oidc_client)
+(name oidc)
 
 (license BSD3)
 
