@@ -27,4 +27,4 @@ jobs:
 
       - run: |
           docker build . -t oidclientacr.azurecr.io/morph-oidc-client:${{ github.sha }}
-          docker push oidclientacr.azurecr.io/morph-oidc-client:${{ github.sha }}
+#         docker push oidclientacr.azurecr.io/morph-oidc-client:${{ github.sha }}
