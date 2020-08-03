@@ -1,26 +1,22 @@
+# ocaml-oidc
 
-# reason-guest-login-oidc-client
+OpenID connect implementation in OCaml.
 
-
-[![CircleCI](https://circleci.com/gh/yourgithubhandle/reason-guest-login-oidc-client/tree/master.svg?style=svg)](https://circleci.com/gh/yourgithubhandle/reason-guest-login-oidc-client/tree/master)
-
-
-**Contains the following libraries and executables:**
+## Folder structure
 
 ```
-reason-guest-login-oidc-client@0.0.0
+ocaml-oidc
 │
-├─test/
-│   name:    TestReasonGuestLoginOidcClient.exe
-│   require: reason-guest-login-oidc-client/library
+├─executable/  Entrypoint for a webserver/OIDC client
 │
-├─library/
-│   library name: reason-guest-login-oidc-client/library
-│   require:
+├─library/     Implementation for the webserver
 │
-└─executable/
-    name:    ReasonGuestLoginOidcClientApp.exe
-    require: reason-guest-login-oidc-client/library
+├─oidc/        Core OIDC implementation
+│
+├─oidc-client/ OIDC Client implementation
+│
+├─test/        tests
+│
 ```
 
 ## Developing:
@@ -34,10 +30,10 @@ esy build
 
 ## Running Binary:
 
-After building the project, you can run the main binary that is produced.
+After building the project, you can run the main binary that is produced. This will start a webserver with a OIDC client configured for certification.
 
 ```
-esy x ReasonGuestLoginOidcClientApp.exe 
+esy start
 ```
 
 ## Running Tests:

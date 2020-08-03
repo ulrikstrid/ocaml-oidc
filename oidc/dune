@@ -8,8 +8,12 @@ let preprocess =
 
 let () = Jbuild_plugin.V1.send @@ {|
 (library
- (name Oidc)
+ (name oidc)
  (public_name oidc)
  (libraries logs uri yojson jose uunf uunf.string base64)
  |} ^ preprocess ^ {|)
+
+(documentation
+ (package oidc)
+ (mld_files (:standard)))
 |}

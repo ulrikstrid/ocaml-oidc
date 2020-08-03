@@ -1,0 +1,6 @@
+{0 OpenID Connect Client}
+
+A library implementing a high-level OpenID Connect Relaying Party (client).
+
+The entry point of this library is the module:
+{!module-OidcClient}.

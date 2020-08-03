@@ -12,4 +12,8 @@ let () = Jbuild_plugin.V1.send @@ {|
  (public_name oidc-client)
  (libraries oidc piaf yojson uri)
  |} ^ preprocess ^ {|)
+
+(documentation
+ (package oidc-client)
+ (mld_files (:standard)))
 |}
