@@ -31,6 +31,11 @@
    (>= 0.5.1))
   uri
   uunf
+  uutf
+  (containers :with-test)
+  (mirage-crypto :with-test)
+  (mirage-crypto-rng :with-test)
+  (mirage-crypto-pk :with-test)
   yojson
   logs))
 

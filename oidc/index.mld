@@ -2,5 +2,8 @@
 
 A library implementing core pieces for OpenID Connect client and provider.
 
+
+{{:https://openid.net/specs/openid-connect-core-1_0.html} OpenID Connect specification}
+
 The entry point of this library is the module:
 {!module-Oidc}.

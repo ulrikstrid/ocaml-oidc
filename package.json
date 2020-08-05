@@ -20,7 +20,7 @@
     "@opam/containers": "*",
     "@opam/dune": "^2.5.0",
     "@opam/fmt": "*",
-    "@opam/jose": "^0.5.0",
+    "@opam/jose": "^0.5.1",
     "@opam/logs": "*",
     "@opam/lwt": "^5.0.0",
     "@opam/routes": "*",
@@ -52,7 +52,6 @@
     "@opam/mirage-crypto": "mirage/mirage-crypto:mirage-crypto.opam#77365d9e252e3186e8d53904cbe16a9e2e6c7bd9",
     "@opam/mirage-crypto-rng": "mirage/mirage-crypto:mirage-crypto-rng.opam#77365d9e252e3186e8d53904cbe16a9e2e6c7bd9",
     "@opam/mirage-crypto-pk": "mirage/mirage-crypto:mirage-crypto-pk.opam#77365d9e252e3186e8d53904cbe16a9e2e6c7bd9",
-    "@opam/jose": "ulrikstrid/reason-jose:jose.opam#83ee245397f7f287c2aae6fa65a41dc6fa48cc78",
     "@opam/session": "inhabitedtype/ocaml-session:session.opam#6180413"
   }
 }
