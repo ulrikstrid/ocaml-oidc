@@ -33,9 +33,18 @@
   uunf
   uutf
   (containers :with-test)
-  (mirage-crypto :with-test)
-  (mirage-crypto-rng :with-test)
-  (mirage-crypto-pk :with-test)
+  (mirage-crypto
+   (and
+    :with-test
+    (>= "0.8.1")))
+  (mirage-crypto-rng
+   (and
+    :with-test
+    (>= "0.8.1")))
+  (mirage-crypto-pk
+   (and
+    :with-test
+    (>= "0.8.1")))
   yojson
   logs))
 
