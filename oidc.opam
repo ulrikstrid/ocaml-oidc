@@ -16,6 +16,9 @@ depends: [
   "uri"
   "uunf"
   "uutf"
+  "alcotest" {with-test}
+  "junit" {with-test}
+  "junit_alcotest" {with-test}
   "containers" {with-test}
   "mirage-crypto" {with-test & >= "0.8.1"}
   "mirage-crypto-rng" {with-test & >= "0.8.1"}

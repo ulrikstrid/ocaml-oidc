@@ -32,6 +32,9 @@
   uri
   uunf
   uutf
+  (alcotest :with-test)
+  (junit :with-test)
+  (junit_alcotest :with-test)
   (containers :with-test)
   (mirage-crypto
    (and
@@ -49,7 +52,7 @@
   logs))
 
 (package
- (version 0.1.0)
+ (version 1.0.0)
  (name oidc-client)
  (synopsis "OIDC client based on Piaf")
  (description
