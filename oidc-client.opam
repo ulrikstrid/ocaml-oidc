@@ -36,3 +36,16 @@ build: [
   ]
 ]
 dev-repo: "git+https://github.com/ulrikstrid/ocaml-oidc.git"
+pin-depends: [
+  [ "piaf.dev" "git+https://github.com/anmonteiro/piaf.git#master" ]
+  [ "httpaf.dev" "git+https://github.com/anmonteiro/httpaf.git#fork" ]
+  [ "httpaf-lwt.dev" "git+https://github.com/anmonteiro/httpaf.git#fork" ]
+  [ "httpaf-lwt-unix.dev" "git+https://github.com/anmonteiro/httpaf.git#fork" ]
+  [ "h2.dev" "git+https://github.com/anmonteiro/ocaml-h2.git#master" ]
+  [ "h2-lwt.dev" "git+https://github.com/anmonteiro/ocaml-h2.git#master" ]
+  [ "h2-lwt-unix.dev" "git+https://github.com/anmonteiro/ocaml-h2.git#master" ]
+  [ "gluten.dev" "git+https://github.com/anmonteiro/gluten.git#master" ]
+  [ "gluten-lwt.dev" "git+https://github.com/anmonteiro/gluten.git#master" ]
+  [ "gluten-lwt-unix.dev" "git+https://github.com/anmonteiro/gluten.git#master" ]
+  [ "ssl.dev" "git+https://github.com/savonet/ocaml-ssl.git" ]
+]
