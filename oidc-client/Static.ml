@@ -60,6 +60,7 @@ let get_token ~code t =
         :: headers
     | _ -> headers
   in
+  Log.debug (fun m -> m "Getting token with client_id: %s" t.client.id);
   Piaf.Client.post t.http_client ~headers ~body token_path
   >>= Internal.to_string_body >|= Oidc.Token.of_string
 
@@ -77,16 +78,24 @@ let get_and_validate_id_token ?nonce ~code t =
       else
         match Oidc.Jwks.find_jwk ~jwt jwks with
         | Some jwk ->
+            Log.debug (fun m -> m "Found JWK in JWKs");
+
             Oidc.IDToken.validate ?nonce ~client:t.client
               ~issuer:discovery.issuer ~jwk jwt
             |> Result.map (fun _ -> token_response)
         (* When there is only 1 key in the jwks we can try with that according to the OIDC spec *)
         | None when List.length jwks.keys = 1 ->
+            Log.debug (fun m ->
+                m
+                  "No matching JWK found but only 1 JWK in JWKs, try \
+                   validating with it");
             let jwk = List.hd jwks.keys in
             Oidc.IDToken.validate ?nonce ~client:t.client
               ~issuer:discovery.issuer ~jwk jwt
             |> Result.map (fun _ -> token_response)
-        | None -> Error (`Msg "Could not find JWK") )
+        | None ->
+            Log.debug (fun m -> m "No matching JWK found in JWKs");
+            Error (`Msg "Could not find JWK") )
   | Error e -> Error e )
   |> Lwt.return
 

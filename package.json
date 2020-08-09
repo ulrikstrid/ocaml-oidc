@@ -6,7 +6,7 @@
     "build": "dune build --root=. --promote-install-file"
   },
   "scripts": {
-    "start": "reenv -e .env -- redemon -e re,ml -p ./oidc -p ./oidc-client -p ./library -p ./executable dune exec executable/MorphOidcClient.exe",
+    "start": "reenv -e .env -- redemon -e re,rei,ml,mli -p ./oidc -p ./oidc-client -p ./library -p ./executable dune exec executable/MorphOidcClient.exe",
     "test": "dune runtest --no-buffer",
     "watch:test": "redemon -p ./oidc -p ./oidc-client -p ./test esy x RunTests.exe",
     "docs": "dune build @doc --root .",

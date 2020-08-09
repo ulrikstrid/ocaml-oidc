@@ -34,7 +34,7 @@ let make = (req: Morph.Request.t) => {
         Morph.Middlewares.Session.get(req, ~key="nonce")
         |> Lwt_result.map_err(_ => `Msg("No nonce set in session"));
 
-      Logs.warn(m => m("nonce: %s", nonce));
+      Logs.info(m => m("nonce on auth callback: %s", nonce));
 
       let* state =
         Morph.Middlewares.Session.get(req, ~key="state")

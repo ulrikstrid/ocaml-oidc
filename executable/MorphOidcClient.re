@@ -4,7 +4,6 @@ module DynamicOidcClient = {
   let start = () => {
     let provider_uri =
       Uri.of_string("https://" ++ Sys.getenv("PROVIDER_HOST"));
-    let _redirect_uri = Uri.of_string(Sys.getenv("OIDC_REDIRECT_URI"));
 
     let kv:
       module OidcClient.KeyValue.KV with
@@ -25,7 +24,7 @@ module DynamicOidcClient = {
           ~store=Hashtbl.create(128),
           ~provider_uri=
             Uri.of_string(
-              "https://www.certification.openid.net/test/a/morph_oidc_client",
+              "https://www.certification.openid.net/test/a/morph_oidc_client_local_basic",
             ),
           Library.CertificationClients.to_client_meta(
             Library.CertificationClients.new_certification_client_data,
@@ -81,10 +80,10 @@ module WebServer = {
     | _ => 4040
     };
 
-  let server = Morph.Server.make(~port, ~address=Unix.inet_addr_any, ());
+  let server = Morph.Server.make(~port, ~address=Unix.inet_addr_loopback, ());
 
   let start = ((), context) => {
-    Logs.info(m => m("Starting server on %n", port));
+    Logs.app(m => m("Starting server on %n", port));
 
     let handler =
       Morph.Middlewares.Session.middleware(
@@ -125,9 +124,20 @@ let system =
 open Lwt.Infix;
 
 let main = () => {
-  Fmt_tty.setup_std_outputs();
-  Logs.set_level(~all=true, Some(Logs.Info));
-  Logs.set_reporter(Logs_fmt.reporter());
+  Logger.setup_log(Some(Logs.Info));
+  List.iter(
+    (src: Logs.src) => {
+      switch (Logs.Src.name(src)) {
+      | a when CCString.is_sub(~sub="oidc", 0, a, 0, ~sub_len=4) =>
+        Logs.Src.set_level(src, Some(Logs.Debug))
+      | a when CCString.is_sub(~sub="piaf", 0, a, 0, ~sub_len=4) =>
+        Logs.Src.set_level(src, Some(Logs.Warning))
+      | _ => ()
+      }
+    },
+    Logs.Src.list(),
+  );
+
   let () = Mirage_crypto_rng_unix.initialize();
 
   Archi_lwt.System.start((), system)

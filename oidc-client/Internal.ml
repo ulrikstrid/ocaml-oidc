@@ -1,3 +1,5 @@
+open Utils
+
 let to_string_body (res : Piaf.Response.t) = Piaf.Body.to_string res.body
 
 let read_registration ~http_client ~client_id ~(discovery : Oidc.Discover.t) =
@@ -35,7 +37,7 @@ let register (type store)
           >>= to_string_body
           >>= fun dynamic_string ->
             let () =
-              Logs.info (fun m -> m "dynamic string: %s" dynamic_string)
+              Log.debug (fun m -> m "dynamic string: %s" dynamic_string)
             in
             let open Lwt.Syntax in
             let+ () = KV.set ~store "dynamic_string" dynamic_string in
@@ -49,7 +51,7 @@ let discover (type store)
   let open Lwt_result.Infix in
   let (module KV) = kv in
   let save discovery =
-    Logs.info (fun m -> m "discovery: %s" discovery);
+    Log.debug (fun m -> m "discovery: %s" discovery);
     KV.set ~store "discovery" discovery |> Lwt_result.ok >|= fun _ -> discovery
   in
   Lwt.bind (KV.get ~store "discovery") (fun result ->
@@ -83,6 +85,7 @@ let jwks (type store)
           Piaf.Client.get http_client jwks_path >>= to_string_body >>= save)
   |> Lwt_result.map Jose.Jwks.of_string
 
+(* TODO: Move to oidc lib *)
 let validate_userinfo ~(jwt : Jose.Jwt.t) userinfo =
   let userinfo_json = Yojson.Safe.from_string userinfo in
   let userinfo_sub =
@@ -93,6 +96,13 @@ let validate_userinfo ~(jwt : Jose.Jwt.t) userinfo =
     Yojson.Safe.Util.member "sub" jwt.payload |> Yojson.Safe.Util.to_string
   in
   match userinfo_sub with
-  | Some s when s = sub -> Ok userinfo
-  | Some _ -> Error `Sub_missmatch
-  | None -> Error `Missing_sub
+  | Some s when s = sub ->
+      Log.debug (fun m -> m "Userinfo is valid");
+      Ok userinfo
+  | Some s ->
+      Log.debug (fun m ->
+          m "Userinfo has invalid sub, expected %s got %s" sub s);
+      Error `Sub_missmatch
+  | None ->
+      Log.debug (fun m -> m "Userinfo is missing sub");
+      Error `Missing_sub

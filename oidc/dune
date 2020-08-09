@@ -10,7 +10,7 @@ let () = Jbuild_plugin.V1.send @@ {|
 (library
  (name oidc)
  (public_name oidc)
- (libraries uri yojson jose uunf uunf.string base64)
+ (libraries logs uri yojson jose uunf uunf.string base64)
  |} ^ preprocess ^ {|)
 
 (documentation

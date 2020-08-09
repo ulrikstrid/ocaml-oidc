@@ -24,8 +24,8 @@ module ROpt = struct
 end
 
 module RBase64 = struct
-  let encode_string_url str =
-    Base64.encode_string ~alphabet:Base64.uri_safe_alphabet str
+  let encode_string str =
+    Base64.encode_string ~alphabet:Base64.default_alphabet str
 end
 
 module RString = struct
@@ -33,3 +33,7 @@ module RString = struct
     Astring.String.cuts ~empty:false ~sep:sub str
     |> Astring.String.concat ~sep:by
 end
+
+let src = Logs.Src.create "oidc" ~doc:"logs OIDC events"
+
+module Log = (val Logs.src_log src : Logs.LOG)

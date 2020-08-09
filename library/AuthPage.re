@@ -12,7 +12,7 @@ let make: string => Morph.Server.handler =
     let nonce =
       Uuidm.v4_gen(Random.State.make_self_init(), ()) |> Uuidm.to_string;
 
-    Logs.warn(m => m("nonce: %s", nonce));
+    Logs.info(m => m("nonce on auth page: %s", nonce));
 
     let* () =
       Morph.Middlewares.Session.set(
@@ -45,7 +45,9 @@ let make: string => Morph.Server.handler =
 
     switch (auth_uri) {
     | Ok(auth_uri) =>
-      Logs.info(m => m("auth_uri %s", auth_uri));
+      Logs.info(m =>
+        m("Starting new authentication with auth_uri %s", auth_uri)
+      );
       Morph.Response.redirect(auth_uri);
     | Error(e) => Error(`Server(Piaf.Error.to_string(e)))
     };

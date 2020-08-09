@@ -23,3 +23,7 @@ module RPiaf = struct
       ('a, [> `Msg of string ]) Lwt_result.t =
     Lwt_result.map_err (fun e -> `Msg (Piaf.Error.to_string e)) x
 end
+
+let src = Logs.Src.create "oidc_client" ~doc:"logs OIDC Client events"
+
+module Log = (val Logs.src_log src : Logs.LOG)
