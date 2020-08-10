@@ -33,12 +33,7 @@ let of_json json =
 
 let of_string str = Yojson.Safe.from_string str |> of_json
 
-let clean_string str =
-  str
-  |> Uunf_string.normalize_utf_8 `NFD
-  |> Uri.pct_encode
-  |> RString.replace ~sub:"+" ~by:"%2B"
-  |> RString.replace ~sub:":" ~by:"%3A"
+let clean_string str = str |> Uri.pct_encode ~component:`Userinfo
 
 let basic_auth ~client_id ~secret =
   (* https://tools.ietf.org/html/rfc6749#appendix-B *)

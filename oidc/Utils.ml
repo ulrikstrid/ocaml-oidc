@@ -28,12 +28,6 @@ module RBase64 = struct
     Base64.encode_string ~alphabet:Base64.default_alphabet str
 end
 
-module RString = struct
-  let replace ~sub ~by str =
-    Astring.String.cuts ~empty:false ~sep:sub str
-    |> Astring.String.concat ~sep:by
-end
-
 let src = Logs.Src.create "oidc" ~doc:"logs OIDC events"
 
 module Log = (val Logs.src_log src : Logs.LOG)

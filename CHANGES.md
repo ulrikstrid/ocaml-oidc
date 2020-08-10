@@ -1,7 +1,8 @@
 0.1.1
 --------------
 - Add more logging
-- Correct basic auth encoding
+- Correct basic auth encoding (with tests!)
+- Remove uunf dependency
 
 0.1.0
 --------------

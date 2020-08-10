@@ -2,41 +2,14 @@ module DynamicOidcClient = {
   open Lwt.Syntax;
 
   let start = () => {
-    let provider_uri =
-      Uri.of_string("https://" ++ Sys.getenv("PROVIDER_HOST"));
-
     let kv:
       module OidcClient.KeyValue.KV with
         type value = string and type store = Hashtbl.t(string, string) =
       (module OidcClient.KeyValue.MemoryKV);
 
-    let* certification_clients =
-      Library.CertificationClients.get_clients(
-        ~kv,
-        ~make_store=() => Hashtbl.create(128),
-        ~provider_uri,
-      );
-
     let+ certification_clients =
-      Lwt.Infix.(
-        OidcClient.Dynamic.make(
-          ~kv,
-          ~store=Hashtbl.create(128),
-          ~provider_uri=
-            Uri.of_string(
-              "https://www.certification.openid.net/test/a/morph_oidc_client_local_basic",
-            ),
-          Library.CertificationClients.to_client_meta(
-            Library.CertificationClients.new_certification_client_data,
-          ),
-        )
-        >|= Result.map(client =>
-              (
-                Library.CertificationClients.new_certification_client_data,
-                client,
-              )
-            )
-        >|= (c => [c, ...certification_clients])
+      Library.CertificationClients.get_clients(~kv, ~make_store=() =>
+        Hashtbl.create(128)
       );
 
     let oidc_clients_tbl = Hashtbl.create(32);
@@ -90,12 +63,7 @@ module WebServer = {
         Context.middleware(
           ~context,
           Router.handler(
-            Router.routes(
-              ~providers=[
-                Library.CertificationClients.new_certification_client_data,
-                ...Library.CertificationClients.datas,
-              ],
-            ),
+            Router.routes(~providers=Library.CertificationClients.datas),
           ),
         ),
       );

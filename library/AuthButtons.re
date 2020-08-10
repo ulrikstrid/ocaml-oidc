@@ -15,7 +15,7 @@ let createElement = (~providers: list(CertificationClients.t), ()) => {
     );
 
   [
-    <p className="text-md mb-1 pb-2 border-b-2 border-gray-500 text-center">
+    <p className="text-md mb-2 pb-2 border-b-2 border-gray-500 text-center">
       "Login alternatives"
     </p>,
     ...buttons,

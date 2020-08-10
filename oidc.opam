@@ -14,8 +14,6 @@ depends: [
   "dune" {>= "1.11"}
   "jose" {>= "0.5.1"}
   "uri"
-  "uunf"
-  "uutf"
   "alcotest" {with-test}
   "junit" {with-test}
   "junit_alcotest" {with-test}

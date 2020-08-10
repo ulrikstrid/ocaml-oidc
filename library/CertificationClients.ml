@@ -3,8 +3,10 @@ type t = {
   category : string;
   description : string;
   info : string;
+  provider_uri : string;
 }
 
+(*
 let _datas =
   [
     {
@@ -142,42 +144,53 @@ let _datas =
       info = "A UserInfo Response.";
     };
   ]
-
-let datas : t list = []
+*)
 
 let redirect_uri = Sys.getenv "OIDC_REDIRECT_URI"
+
+let form_post_certification_client_data =
+  let provider_uri = Sys.getenv "FORM_POST_PROVIDER_HOST" in
+  {
+    name = "form_post_morph_oidc_client";
+    category = "new";
+    description = "Form Post";
+    info = "the new certification";
+    provider_uri;
+  }
+
+let basic_certification_client_data =
+  let provider_uri = Sys.getenv "BASIC_PROVIDER_HOST" in
+  {
+    name = "basic_morph_oidc_client";
+    category = "new";
+    description = "Form Post";
+    info = "the new certification";
+    provider_uri;
+  }
 
 let to_client_meta (data : t) : Oidc.Client.meta =
   Oidc.Client.make_meta ~client_name:data.name
     ~redirect_uris:
-      (List.map Uri.of_string
-         [
-           redirect_uri;
-           "https://www.certification.openid.net/test/a/morph_oidc_client_local_basic/callback";
-         ])
+      (List.map Uri.of_string [ redirect_uri; data.provider_uri ^ "/callback" ])
     ~contacts:[ "ulrik.strid@outlook.com" ]
     ~response_types:[ "code" ] ~grant_types:[ "authorization_code" ]
     ~token_endpoint_auth_method:"client_secret_basic" ()
 
-let metas = List.map to_client_meta datas
+let datas : t list =
+  [ form_post_certification_client_data; basic_certification_client_data ]
 
-let get_clients ~kv ~make_store ~provider_uri =
+let get_clients ~kv ~make_store =
   let open Lwt_result.Infix in
   List.map
     (fun data ->
       let store = make_store () in
       let meta = to_client_meta data in
-      let uri = Uri.with_path provider_uri ("morph_auth_local/" ^ data.name) in
-      let () = Logs.info (fun m -> m "%s" (Uri.to_string uri)) in
+      let uri = Uri.of_string data.provider_uri in
+      let () =
+        Logs.info (fun m ->
+            m "Creating client for provider with uri: %s" data.provider_uri)
+      in
       OidcClient.Dynamic.make ~kv ~store ~provider_uri:uri meta
       >|= fun client -> (data, client))
     datas
   |> Lwt.all
-
-let new_certification_client_data =
-  {
-    name = "morph_oidc_client";
-    category = "new";
-    description = "new certification procedure";
-    info = "the new certification";
-  }

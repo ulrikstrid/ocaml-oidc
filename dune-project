@@ -30,8 +30,6 @@
   (jose
    (>= 0.5.1))
   uri
-  uunf
-  uutf
   (alcotest :with-test)
   (junit :with-test)
   (junit_alcotest :with-test)
@@ -68,8 +66,7 @@
   uri
   yojson
   logs
-  piaf
-  astring))
+  piaf))
 
 (package
  (version 0.1.0)

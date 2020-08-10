@@ -37,5 +37,4 @@ pin-depends: [
   [ "gluten-lwt.dev" "git+https://github.com/anmonteiro/gluten.git#master" ]
   [ "gluten-lwt-unix.dev" "git+https://github.com/anmonteiro/gluten.git#master" ]
   [ "ssl.dev" "git+https://github.com/savonet/ocaml-ssl.git" ]
-  [ "session.dev" "git+https://github.com/inhabitedtype/ocaml-session#master" ]
 ]

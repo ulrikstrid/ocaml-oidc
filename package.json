@@ -6,7 +6,7 @@
     "build": "dune build --root=. --promote-install-file"
   },
   "scripts": {
-    "start": "reenv -e .env -- redemon -e re,rei,ml,mli -p ./oidc -p ./oidc-client -p ./library -p ./executable dune exec executable/MorphOidcClient.exe",
+    "start": "reenv -e .env -- redemon -p ./oidc -p ./oidc-client -p ./library -p ./executable dune exec executable/MorphOidcClient.exe",
     "test": "dune runtest --no-buffer",
     "watch:test": "redemon -p ./oidc -p ./oidc-client -p ./test esy x RunTests.exe",
     "docs": "dune build @doc --root .",
@@ -28,9 +28,7 @@
     "@opam/tyxml": "*",
     "@opam/uri": "*",
     "@opam/uuidm": "*",
-    "@opam/uunf": "*",
     "@opam/yojson": "*",
-    "@opam/astring": "*",
     "@opam/mirage-crypto": "^0.8.1",
     "@opam/mirage-crypto-rng": "^0.8.1",
     "@opam/mirage-crypto-pk": "^0.8.1",
@@ -49,9 +47,7 @@
     "@opam/bisect_ppx": "^2.3.0"
   },
   "resolutions": {
-    "@opam/mirage-crypto": "mirage/mirage-crypto:mirage-crypto.opam#77365d9e252e3186e8d53904cbe16a9e2e6c7bd9",
-    "@opam/mirage-crypto-rng": "mirage/mirage-crypto:mirage-crypto-rng.opam#77365d9e252e3186e8d53904cbe16a9e2e6c7bd9",
-    "@opam/mirage-crypto-pk": "mirage/mirage-crypto:mirage-crypto-pk.opam#77365d9e252e3186e8d53904cbe16a9e2e6c7bd9",
+    "@opam/conf-pkg-config": "esy-ocaml/yarn-pkg-config#db3a0b63883606dd57c54a7158d560d6cba8cd79",
     "@opam/session": "inhabitedtype/ocaml-session:session.opam#6180413"
   }
 }
