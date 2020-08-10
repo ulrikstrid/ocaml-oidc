@@ -30,6 +30,8 @@
   (jose
    (>= 0.5.1))
   uri
+  yojson
+  logs
   (alcotest :with-test)
   (junit :with-test)
   (junit_alcotest :with-test)
@@ -45,9 +47,7 @@
   (mirage-crypto-pk
    (and
     :with-test
-    (>= "0.8.1")))
-  yojson
-  logs))
+    (>= "0.8.1")))))
 
 (package
  (version 1.0.0)
