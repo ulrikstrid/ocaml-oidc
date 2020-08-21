@@ -2,6 +2,8 @@
 
 OpenID connect implementation in OCaml.
 
+![Certified OpenID Connect mark](https://openid.net/wordpress-content/uploads/2016/04/oid-l-certification-mark-l-rgb-150dpi-90mm.png)
+
 ## Folder structure
 
 ```
