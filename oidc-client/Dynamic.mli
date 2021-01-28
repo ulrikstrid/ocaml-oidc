@@ -45,7 +45,7 @@ val get_auth_uri :
   nonce:string ->
   state:string ->
   'store t ->
-  (string, Piaf.Error.t) result Lwt.t
+  (Uri.t, Piaf.Error.t) result Lwt.t
 
 val get_and_validate_id_token :
   ?nonce:string ->

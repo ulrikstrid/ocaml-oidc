@@ -46,7 +46,8 @@ let to_query () =
         prompt = None;
       }
   in
-  check_string "valid_query" valid_query (Oidc.Parameters.to_query parameters)
+  check_string "valid_query" valid_query
+    (Oidc.Parameters.to_query parameters |> Uri.encoded_of_query)
 
 let tests =
   List.map make_test_case

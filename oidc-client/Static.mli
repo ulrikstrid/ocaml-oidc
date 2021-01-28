@@ -53,7 +53,7 @@ val get_auth_uri :
   ?nonce:string ->
   state:string ->
   'store t ->
-  (string, Piaf.Error.t) result Lwt.t
+  (Uri.t, Piaf.Error.t) result Lwt.t
 (** Create a valid auth uri that can be used to redirect the user to the OIDC Provider *)
 
 (** {3 Authentication callback}
