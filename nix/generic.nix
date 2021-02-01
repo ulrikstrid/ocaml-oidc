@@ -81,6 +81,7 @@ rec {
       reason
       tyxml
       tyxml-jsx
+      tyxml-ppx
       archi
       archi-lwt
       fmt

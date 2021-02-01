@@ -23,9 +23,7 @@ module WebServer = {
 
     let handler =
       Morph.Middlewares.Session.middleware(
-        ProviderLibrary.Router.handler(
-          ProviderLibrary.Router.routes(clients),
-        ),
+        ProviderLibrary.Router.handler(clients),
       );
 
     server.start(handler) |> Lwt_result.ok;

@@ -16,14 +16,14 @@ let clients = [ client ]
 let base_url = "http://localhost:3000/authorize"
 
 let valid_query =
-  "?response_type=code&client_id=s6BhdRkqt3&redirect_uri=https://client.example.org/cb&scope=openid%20profile&state=af0ifjsldkj&nonce=n-0S6_WzA2Mj"
+  "response_type=code&client_id=s6BhdRkqt3&redirect_uri=https://client.example.org/cb&scope=openid%20profile&state=af0ifjsldkj&nonce=n-0S6_WzA2Mj"
 
 let parse_query () =
   match
     Oidc.Parameters.parse_query ~clients
       (Uri.of_string (base_url ^ valid_query))
   with
-  | Valid valid_parameters ->
+  | Ok valid_parameters ->
       check_string "client_id" "s6BhdRkqt3" valid_parameters.client.id;
       check_string "redirect_uri" "https://client.example.org/cb"
         (Uri.to_string valid_parameters.redirect_uri);

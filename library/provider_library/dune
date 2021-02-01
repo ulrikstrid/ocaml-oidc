@@ -3,4 +3,4 @@
  (public_name morph-oidc.provider)
  (libraries routes uri str lwt uuidm morph oidc tyxml piaf)
  (preprocess
-  (pps tyxml-jsx)))
+  (pps tyxml-ppx)))

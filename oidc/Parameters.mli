@@ -17,6 +17,16 @@ type t = {
   prompt : prompt option;
 }
 
+type error =
+  [ `Unauthorized_client of Client.t
+  | `Missing_client
+  | `Invalid_scope of string list
+  | `Invalid_redirect_uri of string
+  | `Missing_parameter of string
+  | `Invalid_display of string
+  | `Invalid_prompt of string ]
+(** Possible states when parsing the query *)
+
 val make :
   ?response_type:string list ->
   ?scope:string list ->
@@ -33,17 +43,8 @@ val make :
 val to_query : t -> (string * string list) list
 (** Used when starting a authentication *)
 
+val to_json : t -> Yojson.Safe.t
+
 (** {2 Parsing in the provider } *)
 
-type error = [
-  | `Unauthorized_client of Client.t
-  | `Missing_client
-  | `Invalid_scope of string list
-  | `Invalid_redirect_uri of string
-  | `Missing_parameter of string
-  | `Invalid_display of string
-  | `Invalid_prompt of string
-]
-(** Possible states when parsing the query *)
-
-val parse_query : clients:Client.t list -> Uri.t -> (t, [> error]) result
+val parse_query : clients:Client.t list -> Uri.t -> (t, [> error ]) result
