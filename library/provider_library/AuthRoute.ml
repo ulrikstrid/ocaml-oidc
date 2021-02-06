@@ -24,3 +24,5 @@ let handler clients (req : Morph.Request.t) =
       Morph.Response.text ("Invalid_display " ^ s) |> Lwt.return
   | Error (`Invalid_prompt s) ->
       Morph.Response.text ("Invalid_prompt " ^ s) |> Lwt.return
+  | Error `Invalid_parameters ->
+      Morph.Response.text "Invalid_parameters" |> Lwt.return

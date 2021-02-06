@@ -14,10 +14,9 @@ let get_routes clients =
       InteractionRoute.get_route;
     ]
 
-let post_routes =
-  [ InteractionRoute.post_route ]
+let post_routes clients = [ InteractionRoute.post_route clients ]
 
 let handler clients =
-  Morph.Router.make ~get:(get_routes clients) ~post:post_routes
+  Morph.Router.make ~get:(get_routes clients) ~post:(post_routes clients)
     ~not_found_handler:(fun _ -> Morph.Response.not_found () |> Lwt.return)
     ()
