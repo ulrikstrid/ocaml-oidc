@@ -1,18 +1,13 @@
-let metadata =
-  let issuer = Uri.of_string "http://localhost:4040" in
-  Oidc.Discover.
-    {
-      issuer;
-      authorization_endpoint = Uri.with_path issuer "auth";
-      token_endpoint = Uri.with_path issuer "token";
-      jwks_uri = Uri.with_path issuer ".well-known/jwks";
-      userinfo_endpoint = None;
-      registration_endpoint = None;
-      response_types_supported = [ "code"; "id_token" ];
-      subject_types_supported = [ "public" ];
-      id_token_signing_alg_values_supported = [ "RS256" ];
-    }
+let handler (req : Morph.Request.t) =
+  let open Lwt.Syntax in
+  let* body = Piaf.Body.to_string req.request.body in
+  Logs.info (fun m -> m "%s" (body |> Result.get_ok));
 
-let handler _ =
-  Morph.Response.json (Oidc.Discover.to_json metadata |> Yojson.Safe.to_string)
-  |> Lwt.return
+  match Result.bind body Oidc.Token.Request.of_body_string with
+  | Ok token_request ->
+      Logs.info (fun m -> m "test2");
+      let+ email, client_id = CodeStore.use_code token_request.code in
+
+      Morph.Response.text (email ^ client_id)
+  | Error (`Msg s) -> Morph.Response.text s |> Lwt.return
+  | Error e -> Morph.Response.text (Piaf.Error.to_string e) |> Lwt.return

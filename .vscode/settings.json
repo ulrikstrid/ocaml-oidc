@@ -1,6 +1,7 @@
 {
   "ocaml.sandbox": {
-    "root": "/Users/ulrik.strid/dev/private/morph-oidc-client",
-    "kind": "esy"
-  }
+    "kind": "custom",
+    "template": "$prog $args"
+  },
+  "nixEnvSelector.nixShellConfig": "${workspaceRoot}/shell.nix"
 }

@@ -13,7 +13,10 @@ module WebServer = {
         ~secret="secret",
         ~response_types=["code id_token"],
         ~grant_types=[],
-        ~redirect_uris=[Uri.of_string("http://localhost:4141")],
+        ~redirect_uris=[
+          Uri.of_string("http://localhost:4141"),
+          Uri.of_string("https://oidcdebugger.com/debug"),
+        ],
         ~token_endpoint_auth_method="",
         "test",
       ),

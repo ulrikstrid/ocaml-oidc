@@ -10,11 +10,11 @@ let get_routes clients =
     [
       well_known_openid @--> WellKnown.handler;
       auth @--> AuthRoute.handler clients;
-      token @--> TokenRoute.handler;
       InteractionRoute.get_route;
     ]
 
-let post_routes clients = [ InteractionRoute.post_route clients ]
+let post_routes clients =
+  Routes.[ InteractionRoute.post_route clients; token @--> TokenRoute.handler ]
 
 let handler clients =
   Morph.Router.make ~get:(get_routes clients) ~post:(post_routes clients)

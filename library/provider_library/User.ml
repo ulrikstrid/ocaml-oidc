@@ -21,3 +21,5 @@ let users =
 let find_valid email password =
   let user = List.assoc email users in
   if user.password = password then Some user else None
+
+let find email = List.assoc email users

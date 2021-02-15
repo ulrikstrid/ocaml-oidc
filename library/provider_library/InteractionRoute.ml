@@ -32,7 +32,7 @@ let post_handler clients interaction_id (req : Morph.Request.t) =
   let open Lwt.Syntax in
   let* body = Piaf.Body.to_string req.request.body in
 
-  let+ params = Morph.Middlewares.Session.get req ~key:interaction_id in
+  let* params = Morph.Middlewares.Session.get req ~key:interaction_id in
   match (body, params) with
   | Ok b, Ok params ->
       let parsed = Uri.query_of_encoded b in
@@ -43,13 +43,19 @@ let post_handler clients interaction_id (req : Morph.Request.t) =
         Oidc.Parameters.of_json ~clients (Yojson.Safe.from_string params)
         |> Result.get_ok
       in
-      Morph.Response.text
-        (Printf.sprintf "username: %s\nfullName: %s\nredirect_uri: %s"
-           user.email user.full_name
-           (Uri.to_string auth_params.redirect_uri))
+      let code = CodeStore.create_code () in
+      let+ () =
+        CodeStore.save_code ~email:user.email ~client_id:auth_params.client.id
+          code
+      in
+      let redirect_uri =
+        Uri.with_query' auth_params.redirect_uri [ ("code", code) ]
+      in
+      Morph.Response.redirect (Uri.to_string redirect_uri)
   | _, Error Session.S.Not_found ->
-      Morph.Response.text "no params session found"
-  | _, Error Session.S.Not_set -> Morph.Response.text "no params session set"
-  | _ -> Morph.Response.text "unknown"
+      Morph.Response.text "no params session found" |> Lwt.return
+  | _, Error Session.S.Not_set ->
+      Morph.Response.text "no params session set" |> Lwt.return
+  | _ -> Morph.Response.text "unknown" |> Lwt.return
 
 let post_route clients = Routes.(route_target () @--> post_handler clients)

@@ -34,17 +34,11 @@ let get_token ~code t =
   let open Lwt_result.Syntax in
   let* discovery = discover t in
   let token_path = discovery.token_endpoint |> Uri.path in
+  (* TODO: Move this into Oidc.Token *)
   let body =
-    Uri.add_query_params' Uri.empty
-      [
-        ("grant_type", "authorization_code");
-        ("scope", "openid");
-        ("code", code);
-        ("client_id", t.client.id);
-        ("client_secret", t.client.secret |> ROpt.get_or ~default:"secret");
-        ("redirect_uri", t.redirect_uri |> Uri.to_string);
-      ]
-    |> Uri.query |> Uri.encoded_of_query |> Piaf.Body.of_string
+    Oidc.Token.Request.make ~client:t.client ~grant_type:"authorization_code"
+      ~scope:[ "openid" ] ~redirect_uri:t.redirect_uri ~code
+    |> Oidc.Token.Request.to_body_string |> Piaf.Body.of_string
   in
   let headers =
     [
@@ -62,7 +56,7 @@ let get_token ~code t =
   in
   Log.debug (fun m -> m "Getting token with client_id: %s" t.client.id);
   Piaf.Client.post t.http_client ~headers ~body token_path
-  >>= Internal.to_string_body >|= Oidc.Token.of_string
+  >>= Internal.to_string_body >|= Oidc.Token.Response.of_string
 
 let get_and_validate_id_token ?nonce ~code t =
   let open Lwt_result.Syntax in
