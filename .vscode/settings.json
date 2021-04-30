@@ -3,5 +3,8 @@
     "kind": "custom",
     "template": "$prog $args"
   },
-  "nixEnvSelector.nixShellConfig": "${workspaceRoot}/shell.nix"
+  "nixEnvSelector.nixShellConfig": "${workspaceRoot}/shell.nix",
+  "files.associations": {
+    "*.yaml": "home-assistant"
+  }
 }
