@@ -117,7 +117,7 @@ rec {
     };
 
     propagatedBuildInputs = [
-      dream.dream
+      dream
     ];
 
     inherit doCheck;
