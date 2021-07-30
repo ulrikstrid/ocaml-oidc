@@ -105,26 +105,4 @@ rec {
       license = stdenv.lib.licenses.bsd3;
     };
   };
-
-  hello_dream = buildDunePackage {
-    pname = "hello";
-    version = "1.0.0-dev";
-
-    src = lib.filterGitSource {
-      src = ./..;
-      dirs = [ "hello" ];
-      # files = [ ];
-    };
-
-    propagatedBuildInputs = [
-      dream
-    ];
-
-    inherit doCheck;
-
-    meta = {
-      description = "Base functions and types to work with OpenID Connect.";
-      license = stdenv.lib.licenses.bsd3;
-    };
-  };
 }
