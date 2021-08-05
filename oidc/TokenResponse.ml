@@ -7,7 +7,7 @@ type t = {
   ext_exipires_in : int option;
   access_token : string option;
   refresh_token : string option;
-  id_token : string;
+  id_token : string; (* Must be optional to work with oauth2 *)
 }
 
 let of_json json =
@@ -24,4 +24,26 @@ let of_json json =
     id_token = json |> Json.member "id_token" |> Json.to_string;
   }
 
-let of_string str = Yojson.Safe.from_string str |> of_json
+let of_query query =
+  print_endline
+    (Uri.get_query_param query "access_token"
+    |> Option.value ~default:"no access_token");
+  {
+    token_type = Bearer;
+    (* Only Bearer is supported by OIDC, TODO = return a error if it is not Bearer *)
+    scope = Uri.get_query_param query "scope";
+    expires_in =
+      Uri.get_query_param query "expires_in" |> Option.map int_of_string;
+    ext_exipires_in =
+      Uri.get_query_param query "ext_exipires_in" |> Option.map int_of_string;
+    access_token = Uri.get_query_param query "access_token";
+    refresh_token = Uri.get_query_param query "refresh_token";
+    id_token =
+      (match Uri.get_query_param query "id_token" with
+      | Some id_token -> id_token
+      | None -> "");
+  }
+
+let of_string str =
+  try Yojson.Safe.from_string str |> of_json with
+  | _ -> of_query (Uri.of_string ("?" ^ str))

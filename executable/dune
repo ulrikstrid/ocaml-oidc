@@ -19,6 +19,25 @@
  (modules MorphOidcClient))
 
 (executable
+ (name DreamOauthClient)
+ (package morph-oidc)
+ (public_name DreamOauthClient)
+ (libraries
+  lwt
+  logs
+  logs.fmt
+  fmt.tty
+  oidc
+  dream
+  archi
+  archi-lwt
+  mirage-crypto-rng.unix
+  routes
+  cohttp
+  cohttp-lwt-unix)
+ (modules DreamOauthClient))
+
+(executable
  (name MorphOidcProvider)
  (package morph-oidc)
  (public_name MorphOidcProvider)

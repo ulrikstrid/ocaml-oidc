@@ -96,6 +96,9 @@ rec {
       logs
       morph
       pkgs.gmp
+      dream
+      cohttp
+      cohttp-lwt-unix
     ];
 
     inherit doCheck;
