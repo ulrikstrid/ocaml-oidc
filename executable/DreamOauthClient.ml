@@ -15,7 +15,8 @@ let () =
        [
          ( Dream.get "/auth" @@ fun request ->
            let params =
-             Oidc.Parameters.make ~scope:["repo"] client ~redirect_uri in
+             Oidc.Parameters.make ~scope:["repo"; "read:user"] client
+               ~redirect_uri in
            let uri = Uri.of_string "https://github.com/login/oauth/authorize" in
            let redirect_uri =
              Uri.with_query uri (Oidc.Parameters.to_query params) in
@@ -31,7 +32,7 @@ let () =
                  ~scope:["repo"] ~redirect_uri ~code
                |> Oidc.Token.Request.to_body_string in
              let open Lwt.Syntax in
-             let headers = Cohttp.Header.init_with "accpet" "application/json" in
+             let headers = Cohttp.Header.init_with "Accept" "application/json" in
              let* token_response =
                Cohttp_lwt_unix.Client.post ~body:(`String request_body) ~headers
                  uri
@@ -39,13 +40,15 @@ let () =
              let* body = Cohttp_lwt.Body.to_string (snd token_response) in
              let () = Dream.info (fun m -> m "body: %s" body) in
              let token_response = Oidc.Token.Response.of_string body in
-             let () =
-               Dream.info (fun m -> m "id_token: %s" token_response.id_token)
+             let* user =
+               Cohttp_lwt_unix.Client.get
+                 ~headers:
+                   (Cohttp.Header.init_with "Authorization"
+                      ("Bearer " ^ Option.get token_response.access_token))
+                 (Uri.of_string "https://api.github.com/user")
              in
-             let+ response =
-               Dream.html
-                 ("auth callback " ^ Option.get token_response.access_token)
-             in
+             let* user = Cohttp_lwt.Body.to_string (snd user) in
+             let+ response = Dream.html ("auth callback " ^ user) in
              response );
        ]
   @@ Dream.not_found

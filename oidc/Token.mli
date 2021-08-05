@@ -12,7 +12,7 @@ module Response : sig
     ext_exipires_in : int option;
     access_token : string option;
     refresh_token : string option;
-    id_token : string;
+    id_token : string option;
   }
   (** A token response *)
 
@@ -45,7 +45,7 @@ module Request : sig
   val to_body_string : t -> string
   (** Creates the body for the token request *)
 
-  val of_body_string : string -> (t, [> `Msg of string ]) result
+  val of_body_string : string -> (t, [> `Msg of string]) result
   (** Parses a request body into a t *)
 
   (** {2 Notes}
