@@ -26,7 +26,7 @@ rec {
 
     meta = {
       description = "Base functions and types to work with OpenID Connect.";
-      license = stdenv.lib.licenses.bsd3;
+      license = lib.licenses.bsd3;
     };
   };
 
@@ -61,7 +61,7 @@ rec {
 
     meta = {
       description = "OpenID Connect Relaying Party implementation built ontop of Piaf.";
-      license = stdenv.lib.licenses.bsd3;
+      license = lib.licenses.bsd3;
     };
   };
 
@@ -105,7 +105,7 @@ rec {
 
     meta = {
       description = "OpenID Connect Relaying Party implementation built ontop of Piaf.";
-      license = stdenv.lib.licenses.bsd3;
+      license = lib.licenses.bsd3;
     };
   };
 }
