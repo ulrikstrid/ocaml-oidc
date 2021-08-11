@@ -71,3 +71,21 @@
 (package
  (version 0.1.0)
  (name morph-oidc))
+
+(package
+ (version 0.2.0)
+ (name oauth)
+ (synopsis "Base package for working with OAuth2")
+ (description "Base functions and types to work with OAuth2.")
+ (depends
+  (ocaml
+   (>= 4.08.0))
+  (dune
+   (>= 2.5))
+  uri
+  yojson
+  logs
+  (alcotest :with-test)
+  (junit :with-test)
+  (junit_alcotest :with-test)
+  (containers :with-test)))

@@ -22,19 +22,7 @@
  (name DreamOauthClient)
  (package morph-oidc)
  (public_name DreamOauthClient)
- (libraries
-  lwt
-  logs
-  logs.fmt
-  fmt.tty
-  oidc
-  dream
-  archi
-  archi-lwt
-  mirage-crypto-rng.unix
-  routes
-  cohttp
-  cohttp-lwt-unix)
+ (libraries lwt logs logs.fmt fmt.tty oauth dream cohttp cohttp-lwt-unix)
  (modules DreamOauthClient))
 
 (executable

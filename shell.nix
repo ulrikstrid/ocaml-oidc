@@ -18,7 +18,7 @@ with pkgs;
 
 (mkShell {
   inputsFrom = lib.attrValues oidcDrvs;
-  buildInputs = with ocamlPackages; [ merlin ocamlformat_0_18_0 utop ocaml-lsp redemon reenv ];
+  buildInputs = with ocamlPackages; [ merlin ocamlformat_0_18_0 odoc utop ocaml-lsp redemon reenv ];
 }).overrideAttrs (o: {
   propagatedBuildInputs = filterDrvs o.propagatedBuildInputs;
   buildInputs = filterDrvs o.buildInputs;
