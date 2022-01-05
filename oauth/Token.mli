@@ -10,9 +10,8 @@ module Response : sig
     scope : string option;
     expires_in : int option;
     ext_exipires_in : int option;
-    access_token : string option;
+    access_token : string;
     refresh_token : string option;
-    id_token : string;
   }
   (** A token response *)
 

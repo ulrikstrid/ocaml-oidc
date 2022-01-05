@@ -103,13 +103,15 @@ let meta_to_json meta =
       RJson.to_json_string_opt "subject_type" meta.subject_type;
       RJson.to_json_string_opt "id_token_signed_response_alg"
         (Option.map Jose.Jwa.alg_to_string meta.id_token_signed_response_alg);
-    ]
-  in
+    ] in
   `Assoc (List.filter_map (fun x -> x) values)
 
 let meta_to_string c =
-  meta_to_json c |> Yojson.Safe.Util.to_assoc
-  |> List.filter (function _, `Null -> false | _ -> true)
+  meta_to_json c
+  |> Yojson.Safe.Util.to_assoc
+  |> List.filter (function
+       | _, `Null -> false
+       | _ -> true)
   |> fun l -> `Assoc l |> Yojson.Safe.to_string
 
 type dynamic_response = {
@@ -125,12 +127,14 @@ type dynamic_response = {
 
 let dynamic_is_expired dynamic =
   let now = Unix.time () |> int_of_float in
-  match dynamic.client_id_expires_at with Some i -> i < now | None -> false
+  match dynamic.client_id_expires_at with
+  | Some i -> i < now
+  | None -> false
 
 (* If it's not provided we assume it's valid forever *)
 
 let dynamic_of_json (json : Yojson.Safe.t) :
-    (dynamic_response, [> `Msg of string ]) result =
+    (dynamic_response, [> `Msg of string]) result =
   try
     let module Json = Yojson.Safe.Util in
     Ok
@@ -153,7 +157,8 @@ let dynamic_of_json (json : Yojson.Safe.t) :
         application_type =
           json |> Json.member "application_type" |> Json.to_string_option;
       }
-  with Yojson.Safe.Util.Type_error (str, _) -> Error (`Msg str)
+  with
+  | Yojson.Safe.Util.Type_error (str, _) -> Error (`Msg str)
 
 let dynamic_of_string response =
   Yojson.Safe.from_string response |> dynamic_of_json
@@ -164,8 +169,8 @@ let of_dynamic_and_meta ~dynamic ~meta =
     id = dynamic.client_id;
     redirect_uris = meta.redirect_uris;
     secret = dynamic.client_secret;
-    grant_types = ROpt.get_or meta.grant_types ~default:[ "authorization_code" ];
-    response_types = ROpt.get_or meta.response_types ~default:[ "code" ];
+    grant_types = ROpt.get_or meta.grant_types ~default:["authorization_code"];
+    response_types = ROpt.get_or meta.response_types ~default:["code"];
     token_endpoint_auth_method =
       ROpt.get_or meta.token_endpoint_auth_method ~default:"client_secret_post";
   }

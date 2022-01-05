@@ -1,4 +1,4 @@
-{ pkgs ? import ./sources.nix {}, doCheck ? false }:
+{ pkgs, doCheck ? false }:
 
 {
   native = pkgs.callPackage ./generic.nix {

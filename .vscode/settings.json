@@ -6,5 +6,6 @@
   "nixEnvSelector.nixShellConfig": "${workspaceRoot}/shell.nix",
   "files.associations": {
     "*.yaml": "home-assistant"
-  }
+  },
+  "nixEnvSelector.nixFile": "${workspaceRoot}/shell.nix"
 }

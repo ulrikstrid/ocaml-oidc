@@ -20,13 +20,40 @@ rec {
       jose
       yojson
       logs
+      base64
     ];
 
     inherit doCheck;
 
     meta = {
       description = "Base functions and types to work with OpenID Connect.";
-      license = stdenv.lib.licenses.bsd3;
+      license = lib.licenses.bsd3;
+    };
+  };
+
+  oauth = buildDunePackage {
+    pname = "oauth";
+    version = "0.0.1-dev";
+
+    src = lib.filterGitSource {
+      src = ./..;
+      dirs = [ "oauth" ];
+      files = [ "dune-project" "oauth.opam" ];
+    };
+
+    useDune2 = true;
+
+    propagatedBuildInputs = [
+      uri
+      yojson
+      base64
+    ];
+
+    inherit doCheck;
+
+    meta = {
+      description = "Base functions and types to work with OAuth2.";
+      license = lib.licenses.bsd3;
     };
   };
 
@@ -53,7 +80,6 @@ rec {
       junit
       junit_alcotest
       alcotest
-      odoc
       bisect_ppx
     ];
 
@@ -61,10 +87,10 @@ rec {
 
     meta = {
       description = "OpenID Connect Relaying Party implementation built ontop of Piaf.";
-      license = stdenv.lib.licenses.bsd3;
+      license = lib.licenses.bsd3;
     };
   };
-
+/*
   morph-oidc-client = buildDunePackage {
     pname = "morph-oidc-client";
     version = "1.0.0-dev";
@@ -96,13 +122,17 @@ rec {
       logs
       morph
       pkgs.gmp
+      dream
+      cohttp
+      cohttp-lwt-unix
     ];
 
     inherit doCheck;
 
     meta = {
       description = "OpenID Connect Relaying Party implementation built ontop of Piaf.";
-      license = stdenv.lib.licenses.bsd3;
+      license = lib.licenses.bsd3;
     };
   };
+  */
 }
