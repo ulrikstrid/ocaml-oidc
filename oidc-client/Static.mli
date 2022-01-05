@@ -16,12 +16,12 @@ type 'store t = {
 *)
 
 val make :
+  ?http_client:Piaf.Client.t ->
   kv:(module KeyValue.KV with type store = 'store and type value = string) ->
   store:'store ->
-  ?http_client:Piaf.Client.t ->
   redirect_uri:Uri.t ->
   provider_uri:Uri.t ->
-  client:Oidc.Client.t ->
+  Oidc.Client.t ->
   ('store t, Piaf.Error.t) result Lwt.t
 (** Creates a [t] with the supplied store type *)
 
@@ -83,5 +83,6 @@ val get_userinfo :
   jwt:Jose.Jwt.t ->
   token:string ->
   'a t ->
-  (string, [> `Missing_sub | `Msg of string | `Sub_missmatch ]) result Lwt.t
+  (string, [> `Missing_sub | `Msg           of string | `Sub_missmatch]) result
+  Lwt.t
 (** Get the userinfo data with the access_token returned in the token response. *)

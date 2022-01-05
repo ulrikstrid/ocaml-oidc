@@ -14,7 +14,7 @@ let get_or_create_client { kv; store; http_client; provider_uri; meta } =
   >>= fun client ->
   Static.make ~kv ~store ~http_client
     ~redirect_uri:(List.hd meta.redirect_uris)
-    ~provider_uri ~client
+    ~provider_uri client
 
 let make (type store)
     ~(kv : (module KeyValue.KV with type value = string and type store = store))
@@ -39,12 +39,14 @@ let get_auth_result ~nonce ~params ~state t =
     (Static.get_auth_result ~nonce ~params ~state)
 
 let get_auth_parameters ?scope ?claims ~nonce ~state t =
-  get_or_create_client t |> Utils.RPiaf.map_piaf_err
+  get_or_create_client t
+  |> Utils.RPiaf.map_piaf_err
   |> Lwt_result.map (Static.get_auth_parameters ?scope ?claims ~nonce ~state)
 
 let get_auth_uri ?scope ?claims ~nonce ~state t =
   let open Lwt_result.Infix in
-  get_or_create_client t |> Utils.RPiaf.map_piaf_err
+  get_or_create_client t
+  |> Utils.RPiaf.map_piaf_err
   >>= Static.get_auth_uri ?scope ?claims ~nonce ~state
 
 let get_userinfo ~jwt ~token t =
