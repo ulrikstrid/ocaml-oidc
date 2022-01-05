@@ -90,7 +90,7 @@ rec {
       license = lib.licenses.bsd3;
     };
   };
-
+/*
   morph-oidc-client = buildDunePackage {
     pname = "morph-oidc-client";
     version = "1.0.0-dev";
@@ -134,4 +134,5 @@ rec {
       license = lib.licenses.bsd3;
     };
   };
+  */
 }
