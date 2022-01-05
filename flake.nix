@@ -39,6 +39,7 @@
             buildInputs = with pkgs; with ocamlPackages; [
                 ocaml-lsp
                 ocamlformat
+                odoc
                 reenv
                 # dune-release
                 cacert
