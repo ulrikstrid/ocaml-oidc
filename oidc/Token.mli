@@ -19,6 +19,14 @@ module Response : sig
   val of_json : Yojson.Safe.t -> t
 
   val of_string : string -> t
+
+  val validate :
+    ?nonce:string ->
+    jwks:Jose.Jwks.t ->
+    client:Client.t ->
+    discovery:Discover.t ->
+    t ->
+    (t, [> IDToken.validation_error]) result
 end
 
 module Request : sig

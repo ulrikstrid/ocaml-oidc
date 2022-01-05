@@ -1,22 +1,22 @@
-(executable
- (name MorphOidcClient)
- (package morph-oidc)
- (public_name MorphOidcClient)
- (libraries
-  lwt
-  logs
-  logs.fmt
-  fmt.tty
-  morph-oidc.client
-  oidc
-  morph
-  archi
-  archi-lwt
-  mirage-crypto-rng.unix
-  piaf
-  routes
-  Logger)
- (modules MorphOidcClient))
+; (executable
+;  (name MorphOidcClient)
+;  (package morph-oidc)
+;  (public_name MorphOidcClient)
+;  (libraries
+;   lwt
+;   logs
+;   logs.fmt
+;   fmt.tty
+;   morph-oidc.client
+;   oidc
+;   morph
+;   archi
+;   archi-lwt
+;   mirage-crypto-rng.unix
+;   piaf
+;   routes
+;   Logger)
+;  (modules MorphOidcClient))
 
 (executable
  (name DreamOauthClient)
@@ -26,30 +26,37 @@
  (modules DreamOauthClient))
 
 (executable
- (name MorphOidcProvider)
+ (name DreamOidcClient)
  (package morph-oidc)
- (public_name MorphOidcProvider)
- (libraries
-  lwt
-  logs
-  logs.fmt
-  fmt.tty
-  morph-oidc.provider
-  oidc
-  morph
-  archi
-  archi-lwt
-  mirage-crypto-rng.unix
-  piaf
-  routes
-  Logger)
- (modules MorphOidcProvider))
+ (public_name DreamOidcClient)
+ (libraries lwt logs logs.fmt fmt.tty oidc oidc-client.simple dream piaf archi archi-lwt)
+ (modules DreamOidcClient))
 
-(library
- (name Logger)
- (package morph-oidc)
- (libraries logs logs.fmt fmt.tty)
- (modules Logger))
+;(executable
+; (name MorphOidcProvider)
+; (package morph-oidc)
+; (public_name MorphOidcProvider)
+; (libraries
+;  lwt
+;  logs
+;  logs.fmt
+;  fmt.tty
+;  morph-oidc.provider
+;  oidc
+;  morph
+;  archi
+;  archi-lwt
+;  mirage-crypto-rng.unix
+;  piaf
+;  routes
+;  Logger)
+; (modules MorphOidcProvider))
+
+; (library
+;  (name Logger)
+;  (package morph-oidc)
+;  (libraries logs logs.fmt fmt.tty)
+;  (modules Logger))
 
 (env
  (docker
