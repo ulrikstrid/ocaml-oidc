@@ -43,21 +43,25 @@ let of_query query =
 
 let of_string str = Yojson.Safe.from_string str |> of_json
 
-let validate ?nonce ~jwks ~(client : Client.t) ~(discovery : Discover.t) t =
+let validate ?clock_tolerance ?nonce ~jwks ~(client : Client.t)
+    ~(discovery : Discover.t) t =
   match Jose.Jwt.of_string t.id_token with
   | Ok jwt -> (
     if jwt.header.alg = `None then
-      IDToken.validate ?nonce ~client ~issuer:discovery.issuer jwt
+      IDToken.validate ?clock_tolerance ?nonce ~client ~issuer:discovery.issuer
+        jwt
       |> Result.map (fun _ -> t)
     else
       match Jwks.find_jwk ~jwt jwks with
       | Some jwk ->
-        IDToken.validate ?nonce ~client ~issuer:discovery.issuer ~jwk jwt
+        IDToken.validate ?clock_tolerance ?nonce ~client
+          ~issuer:discovery.issuer ~jwk jwt
         |> Result.map (fun _ -> t)
       (* When there is only 1 key in the jwks we can try with that according to the OIDC spec *)
       | None when List.length jwks.keys = 1 ->
         let jwk = List.hd jwks.keys in
-        IDToken.validate ?nonce ~client ~issuer:discovery.issuer ~jwk jwt
+        IDToken.validate ?clock_tolerance ?nonce ~client
+          ~issuer:discovery.issuer ~jwk jwt
         |> Result.map (fun _ -> t)
       | None -> Error (`Msg "Could not find JWK"))
   | Error e -> Error e
