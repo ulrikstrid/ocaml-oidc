@@ -179,13 +179,13 @@ let basic_certification_client_data =
 let to_client_meta (data : t) : Oidc.Client.meta =
   Oidc.Client.make_meta ~client_name:data.name
     ~redirect_uris:
-      (List.map Uri.of_string [ redirect_uri; data.provider_uri ^ "/callback" ])
-    ~contacts:[ "ulrik.strid@outlook.com" ]
-    ~response_types:[ "code" ] ~grant_types:[ "authorization_code" ]
+      (List.map Uri.of_string [redirect_uri; data.provider_uri ^ "/callback"])
+    ~contacts:["ulrik.strid@outlook.com"]
+    ~response_types:["code"] ~grant_types:["authorization_code"]
     ~token_endpoint_auth_method:"client_secret_basic" ()
 
 let datas : t list =
-  [ form_post_certification_client_data; basic_certification_client_data ]
+  [form_post_certification_client_data; basic_certification_client_data]
 
 let get_clients ~kv ~make_store =
   let open Lwt_result.Infix in

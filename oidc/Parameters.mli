@@ -1,8 +1,16 @@
 (** Auth parameters *)
 
-type display = [ `Page | `Popup | `Touch | `Wap ]
+type display =
+  [ `Page
+  | `Popup
+  | `Touch
+  | `Wap ]
 
-type prompt = [ `None | `Login | `Consent | `Select_account ]
+type prompt =
+  [ `None
+  | `Login
+  | `Consent
+  | `Select_account ]
 
 type t = {
   response_type : string list;
@@ -45,9 +53,8 @@ val to_query : t -> (string * string list) list
 (** Used when starting a authentication *)
 
 val to_json : t -> Yojson.Safe.t
-
 val of_json : clients:Client.t list -> Yojson.Safe.t -> (t, error) result
 
 (** {2 Parsing in the provider } *)
 
-val parse_query : clients:Client.t list -> Uri.t -> (t, [> error ]) result
+val parse_query : clients:Client.t list -> Uri.t -> (t, [> error]) result

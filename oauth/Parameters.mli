@@ -26,13 +26,13 @@ type t = {
 }
 
 type error =
-  [ `Unauthorized_client  of Client.t
+  [ `Unauthorized_client of Client.t
   | `Missing_client
-  | `Invalid_scope        of string list
+  | `Invalid_scope of string list
   | `Invalid_redirect_uri of string
-  | `Missing_parameter    of string
-  | `Invalid_display      of string
-  | `Invalid_prompt       of string
+  | `Missing_parameter of string
+  | `Invalid_display of string
+  | `Invalid_prompt of string
   | `Invalid_parameters ]
 (** Possible states when parsing the query *)
 
@@ -53,7 +53,6 @@ val to_query : t -> (string * string list) list
 (** Used when starting a authentication *)
 
 val to_json : t -> Yojson.Safe.t
-
 val of_json : clients:Client.t list -> Yojson.Safe.t -> (t, error) result
 
 (** {2 Parsing in the provider } *)

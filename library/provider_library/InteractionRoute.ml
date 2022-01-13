@@ -1,5 +1,4 @@
 let route_target () = Routes.(s "interaction" / str /? nil)
-
 let print_route s = Routes.sprintf (route_target ()) s
 
 let page (title_text : string) interaction_id =
@@ -10,11 +9,11 @@ let page (title_text : string) interaction_id =
       (body
          [
            form
-             ~a:[ a_action uri; a_method `Post ]
+             ~a:[a_action uri; a_method `Post]
              [
-               input ~a:[ a_input_type `Email; a_name "email" ] ();
-               input ~a:[ a_input_type `Password; a_name "password" ] ();
-               input ~a:[ a_input_type `Submit ] ();
+               input ~a:[a_input_type `Email; a_name "email"] ();
+               input ~a:[a_input_type `Password; a_name "password"] ();
+               input ~a:[a_input_type `Submit] ();
              ];
          ]))
 
@@ -35,27 +34,27 @@ let post_handler clients interaction_id (req : Morph.Request.t) =
   let* params = Morph.Middlewares.Session.get req ~key:interaction_id in
   match (body, params) with
   | Ok b, Ok params ->
-      let parsed = Uri.query_of_encoded b in
-      let email = List.assoc "email" parsed |> List.hd in
-      let password = List.assoc "password" parsed |> List.hd in
-      let user = User.find_valid email password |> Option.get in
-      let auth_params =
-        Oidc.Parameters.of_json ~clients (Yojson.Safe.from_string params)
-        |> Result.get_ok
-      in
-      let code = CodeStore.create_code () in
-      let+ () =
-        CodeStore.save_code ~email:user.email ~client_id:auth_params.client.id
-          code
-      in
-      let redirect_uri =
-        Uri.with_query' auth_params.redirect_uri [ ("code", code) ]
-      in
-      Morph.Response.redirect (Uri.to_string redirect_uri)
+    let parsed = Uri.query_of_encoded b in
+    let email = List.assoc "email" parsed |> List.hd in
+    let password = List.assoc "password" parsed |> List.hd in
+    let user = User.find_valid email password |> Option.get in
+    let auth_params =
+      Oidc.Parameters.of_json ~clients (Yojson.Safe.from_string params)
+      |> Result.get_ok
+    in
+    let code = CodeStore.create_code () in
+    let+ () =
+      CodeStore.save_code ~email:user.email ~client_id:auth_params.client.id
+        code
+    in
+    let redirect_uri =
+      Uri.with_query' auth_params.redirect_uri [("code", code)]
+    in
+    Morph.Response.redirect (Uri.to_string redirect_uri)
   | _, Error Session.S.Not_found ->
-      Morph.Response.text "no params session found" |> Lwt.return
+    Morph.Response.text "no params session found" |> Lwt.return
   | _, Error Session.S.Not_set ->
-      Morph.Response.text "no params session set" |> Lwt.return
+    Morph.Response.text "no params session set" |> Lwt.return
   | _ -> Morph.Response.text "unknown" |> Lwt.return
 
 let post_route clients = Routes.(route_target () @--> post_handler clients)

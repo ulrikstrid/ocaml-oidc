@@ -39,19 +39,22 @@ let get_token ~code t =
     Oidc.Token.Request.make ~client:t.client ~grant_type:"authorization_code"
       ~scope:["openid"] ~redirect_uri:t.redirect_uri ~code
     |> Oidc.Token.Request.to_body_string
-    |> Piaf.Body.of_string in
+    |> Piaf.Body.of_string
+  in
   let headers =
     [
       ("Content-Type", "application/x-www-form-urlencoded");
       ("Accept", "application/json");
-    ] in
+    ]
+  in
   let headers =
     match t.client.token_endpoint_auth_method with
     | "client_secret_basic" ->
       Oidc.Token.basic_auth ~client_id:t.client.id
         ~secret:(Option.value ~default:"" t.client.secret)
       :: headers
-    | _ -> headers in
+    | _ -> headers
+  in
   Log.debug (fun m -> m "Getting token with client_id: %s" t.client.id);
   Piaf.Client.post t.http_client ~headers ~body token_path
   >>= Internal.to_string_body
@@ -73,8 +76,7 @@ let get_auth_result ?nonce ~params ~state t =
   | Some returned_state, Some code ->
     if List.hd returned_state <> state then
       Error (`Msg "State doesn't match") |> Lwt.return
-    else
-      get_and_validate_id_token ?nonce ~code:(List.hd code) t
+    else get_and_validate_id_token ?nonce ~code:(List.hd code) t
 
 let get_auth_parameters ?scope ?claims ?nonce ~state t =
   Oidc.Parameters.make ?scope ?claims t.client ?nonce ~state
@@ -83,7 +85,8 @@ let get_auth_parameters ?scope ?claims ?nonce ~state t =
 let get_auth_uri ?scope ?claims ?nonce ~state t =
   let query =
     get_auth_parameters ?scope ?claims ?nonce ~state t
-    |> Oidc.Parameters.to_query in
+    |> Oidc.Parameters.to_query
+  in
   discover t
   |> Lwt_result.map (fun (discovery : Oidc.Discover.t) ->
          Uri.add_query_params discovery.authorization_endpoint query)
@@ -100,7 +103,8 @@ let get_userinfo ~jwt ~token t =
           [("Authorization", "Bearer " ^ token); ("Accept", "application/json")]
         user_info_path
       >>= Internal.to_string_body
-      |> RPiaf.map_piaf_err in
+      |> RPiaf.map_piaf_err
+    in
     Lwt_result.bind userinfo (fun userinfo ->
         Oidc.Userinfo.validate ~jwt userinfo |> Lwt.return)
   (* TODO: Add a separate error for this *)

@@ -5,12 +5,12 @@ let to_string_body (res : Piaf.Response.t) = Piaf.Body.to_string res.body
 let read_registration ~http_client ~client_id ~(discovery : Oidc.Discover.t) =
   match discovery.registration_endpoint with
   | Some endpoint ->
-      let open Lwt_result.Infix in
-      let registration_path = endpoint |> Uri.path in
-      let query = Uri.encoded_of_query [ ("client_id", [ client_id ]) ] in
-      let uri = registration_path ^ query in
-      Piaf.Client.get http_client uri >>= to_string_body >>= fun s ->
-      Oidc.Client.dynamic_of_string s |> Lwt.return
+    let open Lwt_result.Infix in
+    let registration_path = endpoint |> Uri.path in
+    let query = Uri.encoded_of_query [("client_id", [client_id])] in
+    let uri = registration_path ^ query in
+    Piaf.Client.get http_client uri >>= to_string_body >>= fun s ->
+    Oidc.Client.dynamic_of_string s |> Lwt.return
   | None -> Lwt_result.fail (`Msg "No_registration_endpoint")
 
 let register (type store)
@@ -23,26 +23,23 @@ let register (type store)
       (match Oidc.Client.dynamic_of_string dynamic_string with
       | Error e -> Error e
       | Ok dynamic ->
-          if Oidc.Client.dynamic_is_expired dynamic then Error `Expired_client
-          else Ok dynamic) )
+        if Oidc.Client.dynamic_is_expired dynamic then Error `Expired_client
+        else Ok dynamic) )
   |> fun r ->
   Lwt.bind r (fun x ->
       match (x, discovery.registration_endpoint) with
       | Ok dynamic, _ -> Lwt_result.return dynamic
       | Error _, Some endpoint ->
-          let meta_string = Oidc.Client.meta_to_string meta in
-          let body = Piaf.Body.of_string meta_string in
-          let registration_path = endpoint |> Uri.path in
-          ( Piaf.Client.post http_client ~body registration_path
-          >>= to_string_body
-          >>= fun dynamic_string ->
-            let () =
-              Log.debug (fun m -> m "dynamic string: %s" dynamic_string)
-            in
-            let open Lwt.Syntax in
-            let+ () = KV.set ~store "dynamic_string" dynamic_string in
-            Ok dynamic_string )
-          >>= fun s -> Oidc.Client.dynamic_of_string s |> Lwt.return
+        let meta_string = Oidc.Client.meta_to_string meta in
+        let body = Piaf.Body.of_string meta_string in
+        let registration_path = endpoint |> Uri.path in
+        ( Piaf.Client.post http_client ~body registration_path >>= to_string_body
+        >>= fun dynamic_string ->
+          let () = Log.debug (fun m -> m "dynamic string: %s" dynamic_string) in
+          let open Lwt.Syntax in
+          let+ () = KV.set ~store "dynamic_string" dynamic_string in
+          Ok dynamic_string )
+        >>= fun s -> Oidc.Client.dynamic_of_string s |> Lwt.return
       | Error _, None -> Lwt_result.fail (`Msg "No_registration_endpoint"))
 
 let discover (type store)
@@ -58,13 +55,13 @@ let discover (type store)
       match result with
       | Ok discovery -> Lwt_result.return discovery
       | Error _ ->
-          let discover_path =
-            Uri.path provider_uri ^ "/.well-known/openid-configuration"
-          in
+        let discover_path =
+          Uri.path provider_uri ^ "/.well-known/openid-configuration"
+        in
 
-          let () = print_endline (Uri.to_string provider_uri) in
+        let () = print_endline (Uri.to_string provider_uri) in
 
-          Piaf.Client.get http_client discover_path >>= to_string_body >>= save)
+        Piaf.Client.get http_client discover_path >>= to_string_body >>= save)
   |> Lwt_result.map Oidc.Discover.of_string
 
 let jwks (type store)
@@ -80,9 +77,9 @@ let jwks (type store)
       match result with
       | Ok jwks -> Lwt_result.return jwks
       | Error _ ->
-          let* discovery = discover ~kv ~store ~http_client ~provider_uri in
-          let jwks_path = discovery.jwks_uri |> Uri.path in
-          Piaf.Client.get http_client jwks_path >>= to_string_body >>= save)
+        let* discovery = discover ~kv ~store ~http_client ~provider_uri in
+        let jwks_path = discovery.jwks_uri |> Uri.path in
+        Piaf.Client.get http_client jwks_path >>= to_string_body >>= save)
   |> Lwt_result.map Jose.Jwks.of_string
 
 (* TODO: Move to oidc lib *)
@@ -97,12 +94,11 @@ let validate_userinfo ~(jwt : Jose.Jwt.t) userinfo =
   in
   match userinfo_sub with
   | Some s when s = sub ->
-      Log.debug (fun m -> m "Userinfo is valid");
-      Ok userinfo
+    Log.debug (fun m -> m "Userinfo is valid");
+    Ok userinfo
   | Some s ->
-      Log.debug (fun m ->
-          m "Userinfo has invalid sub, expected %s got %s" sub s);
-      Error `Sub_missmatch
+    Log.debug (fun m -> m "Userinfo has invalid sub, expected %s got %s" sub s);
+    Error `Sub_missmatch
   | None ->
-      Log.debug (fun m -> m "Userinfo is missing sub");
-      Error `Missing_sub
+    Log.debug (fun m -> m "Userinfo is missing sub");
+    Error `Missing_sub

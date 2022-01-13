@@ -83,6 +83,5 @@ val get_userinfo :
   jwt:Jose.Jwt.t ->
   token:string ->
   'a t ->
-  (string, [> `Missing_sub | `Msg           of string | `Sub_missmatch]) result
-  Lwt.t
+  (string, [> `Missing_sub | `Msg of string | `Sub_missmatch]) result Lwt.t
 (** Get the userinfo data with the access_token returned in the token response. *)

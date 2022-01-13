@@ -24,25 +24,31 @@ let of_json json =
         json |> member "token_endpoint" |> to_string |> Uri.of_string;
       jwks_uri = json |> member "jwks_uri" |> to_string |> Uri.of_string;
       userinfo_endpoint =
-        json |> member "userinfo_endpoint" |> to_string_option
+        json
+        |> member "userinfo_endpoint"
+        |> to_string_option
         |> Option.map Uri.of_string;
       issuer = json |> member "issuer" |> to_string |> Uri.of_string;
       registration_endpoint =
         json
         |> member "registration_endpoint"
-        |> to_string_option |> Option.map Uri.of_string;
+        |> to_string_option
+        |> Option.map Uri.of_string;
       response_types_supported =
         json
         |> member "response_types_supported"
-        |> to_list |> List.map to_string;
+        |> to_list
+        |> List.map to_string;
       subject_types_supported =
         json
         |> member "subject_types_supported"
-        |> to_list |> List.map to_string;
+        |> to_list
+        |> List.map to_string;
       id_token_signing_alg_values_supported =
         json
         |> member "id_token_signing_alg_values_supported"
-        |> to_list |> List.map to_string;
+        |> to_list
+        |> List.map to_string;
     }
 
 (* TODO: Should maybe be a result? *)

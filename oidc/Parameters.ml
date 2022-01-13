@@ -10,7 +10,11 @@ type error =
   | `Invalid_prompt of string
   | `Invalid_parameters ]
 
-type display = [ `Page | `Popup | `Touch | `Wap ]
+type display =
+  [ `Page
+  | `Popup
+  | `Touch
+  | `Wap ]
 
 let string_to_display = function
   | "page" -> Ok `Page
@@ -25,7 +29,11 @@ let display_to_string = function
   | `Touch -> "touch"
   | `Wap -> "wap"
 
-type prompt = [ `None | `Login | `Consent | `Select_account ]
+type prompt =
+  [ `None
+  | `Login
+  | `Consent
+  | `Select_account ]
 
 let string_to_prompt = function
   | "none" -> Ok `None
@@ -55,7 +63,7 @@ type t = {
   prompt : prompt option;
 }
 
-let make ?(response_type = [ "code" ]) ?(scope = [ "openid" ]) ?state ?claims
+let make ?(response_type = ["code"]) ?(scope = ["openid"]) ?state ?claims
     ?max_age ?display ?prompt ?nonce client ~redirect_uri =
   {
     response_type;
@@ -75,17 +83,17 @@ let identity a = a
 let to_query t =
   [
     Some ("response_type", t.response_type);
-    Some ("client_id", [ t.client.id ]);
-    Some ("redirect_uri", [ Uri.to_string t.redirect_uri ]);
-    Some ("scope", [ String.concat " " t.scope ]);
-    Option.map (fun state -> ("state", [ state ])) t.state;
-    Option.map (fun nonce -> ("nonce", [ nonce ])) t.nonce;
+    Some ("client_id", [t.client.id]);
+    Some ("redirect_uri", [Uri.to_string t.redirect_uri]);
+    Some ("scope", [String.concat " " t.scope]);
+    Option.map (fun state -> ("state", [state])) t.state;
+    Option.map (fun nonce -> ("nonce", [nonce])) t.nonce;
     Option.map
-      (fun claims -> ("claims", [ Yojson.Safe.to_string claims ]))
+      (fun claims -> ("claims", [Yojson.Safe.to_string claims]))
       t.claims;
-    Option.map (fun prompt -> ("prompt", [ prompt_to_string prompt ])) t.prompt;
+    Option.map (fun prompt -> ("prompt", [prompt_to_string prompt])) t.prompt;
     Option.map
-      (fun display -> ("display", [ display_to_string display ]))
+      (fun display -> ("display", [display_to_string display]))
       t.display;
   ]
   |> List.filter_map identity
@@ -137,15 +145,19 @@ let of_json ~clients json : (t, error) result =
         claims = json |> Json.member "claims" |> Option.some;
         max_age = json |> Json.member "max_age" |> Json.to_int_option;
         display =
-          json |> Json.member "display" |> Json.to_string_option
+          json
+          |> Json.member "display"
+          |> Json.to_string_option
           |> ROpt.flat_map (fun d -> string_to_display d |> ROpt.of_result);
         prompt =
-          json |> Json.member "prompt" |> Json.to_string_option
+          json
+          |> Json.member "prompt"
+          |> Json.to_string_option
           |> ROpt.flat_map (fun p -> string_to_prompt p |> ROpt.of_result);
       }
   with _ -> Error `Invalid_parameters
 
-let parse_query ~clients uri : (t, [> error ]) result =
+let parse_query ~clients uri : (t, [> error]) result =
   let getQueryParam param =
     Uri.get_query_param uri param |> function
     | Some x -> Ok x
@@ -155,52 +167,52 @@ let parse_query ~clients uri : (t, [> error ]) result =
   match getQueryParam "client_id" |> RResult.flat_map (get_client ~clients) with
   | Error e -> Error e
   | Ok client -> (
-      let claims =
-        getQueryParam "claims" |> Result.map Yojson.Safe.from_string |> function
-        | Ok x -> Some x
-        | Error _ -> None
-      in
+    let claims =
+      getQueryParam "claims" |> Result.map Yojson.Safe.from_string |> function
+      | Ok x -> Some x
+      | Error _ -> None
+    in
 
-      let response_type =
-        getQueryParam "response_type" |> Result.map (String.split_on_char ' ')
-      in
+    let response_type =
+      getQueryParam "response_type" |> Result.map (String.split_on_char ' ')
+    in
 
-      let redirect_uri = getQueryParam "redirect_uri" in
+    let redirect_uri = getQueryParam "redirect_uri" in
 
-      let scope =
-        getQueryParam "scope" |> Result.map (String.split_on_char ' ')
-        (* TODO: Check for openid *)
-      in
+    let scope =
+      getQueryParam "scope" |> Result.map (String.split_on_char ' ')
+      (* TODO: Check for openid *)
+    in
 
-      let max_age =
-        getQueryParam "max_age" |> ROpt.of_result
-        |> ROpt.flat_map int_of_string_opt
-      in
+    let max_age =
+      getQueryParam "max_age"
+      |> ROpt.of_result
+      |> ROpt.flat_map int_of_string_opt
+    in
 
-      match (response_type, redirect_uri, scope) with
-      | Ok response_type, Ok redirect_uri, Ok scope
-        when List.exists
-               (fun uri -> Uri.to_string uri = redirect_uri)
-               client.redirect_uris ->
-          Ok
-            {
-              response_type;
-              client;
-              redirect_uri = Uri.of_string redirect_uri;
-              scope;
-              state = ROpt.of_result (getQueryParam "state");
-              nonce = ROpt.of_result (getQueryParam "nonce");
-              claims;
-              max_age;
-              display =
-                RResult.flat_map string_to_display (getQueryParam "display")
-                |> ROpt.of_result;
-              prompt =
-                RResult.flat_map string_to_prompt (getQueryParam "prompt")
-                |> ROpt.of_result;
-            }
-      | Ok _, Ok redirect_uri, Ok _ ->
-          Error (`Invalid_redirect_uri redirect_uri)
-      | Error e, _, _ -> Error e
-      | _, Error e, _ -> Error e
-      | _, _, Error e -> Error e)
+    match (response_type, redirect_uri, scope) with
+    | Ok response_type, Ok redirect_uri, Ok scope
+      when List.exists
+             (fun uri -> Uri.to_string uri = redirect_uri)
+             client.redirect_uris ->
+      Ok
+        {
+          response_type;
+          client;
+          redirect_uri = Uri.of_string redirect_uri;
+          scope;
+          state = ROpt.of_result (getQueryParam "state");
+          nonce = ROpt.of_result (getQueryParam "nonce");
+          claims;
+          max_age;
+          display =
+            RResult.flat_map string_to_display (getQueryParam "display")
+            |> ROpt.of_result;
+          prompt =
+            RResult.flat_map string_to_prompt (getQueryParam "prompt")
+            |> ROpt.of_result;
+        }
+    | Ok _, Ok redirect_uri, Ok _ -> Error (`Invalid_redirect_uri redirect_uri)
+    | Error e, _, _ -> Error e
+    | _, Error e, _ -> Error e
+    | _, _, Error e -> Error e)

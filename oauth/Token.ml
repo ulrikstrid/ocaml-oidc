@@ -6,7 +6,8 @@ let basic_auth ~client_id ~secret =
   let password = clean_string secret in
 
   let b64 =
-    Utils.RBase64.encode_string (Printf.sprintf "%s:%s" username password) in
+    Utils.RBase64.encode_string (Printf.sprintf "%s:%s" username password)
+  in
   ("Authorization", "Basic " ^ b64)
 
 module Request = TokenRequest

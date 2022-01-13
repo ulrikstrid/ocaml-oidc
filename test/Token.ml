@@ -27,4 +27,4 @@ let tests =
 
 let suite, _ =
   Junit_alcotest.run_and_report ~package:"oidc" "Token"
-    [ ("OIDC - Token", tests) ]
+    [("OIDC - Token", tests)]

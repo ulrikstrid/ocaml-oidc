@@ -16,23 +16,29 @@ let () =
          ( Dream.get "/auth" @@ fun request ->
            let params =
              Oauth.Parameters.make ~scope:["repo"; "read:user"] client
-               ~redirect_uri in
+               ~redirect_uri
+           in
            let uri = Uri.of_string "https://github.com/login/oauth/authorize" in
            let redirect_uri =
-             Uri.with_query uri (Oauth.Parameters.to_query params) in
+             Uri.with_query uri (Oauth.Parameters.to_query params)
+           in
            Dream.redirect request (Uri.to_string redirect_uri) );
          ( Dream.get "/auth/callback" @@ fun request ->
            match Dream.query "code" request with
            | None -> Dream.html ~status:`Unauthorized "error"
            | Some code ->
              let uri =
-               Uri.of_string "https://github.com/login/oauth/access_token" in
+               Uri.of_string "https://github.com/login/oauth/access_token"
+             in
              let request_body =
                Oauth.Token.Request.make ~client ~grant_type:"code"
                  ~scope:["repo"] ~redirect_uri ~code
-               |> Oauth.Token.Request.to_body_string in
+               |> Oauth.Token.Request.to_body_string
+             in
              let open Lwt.Syntax in
-             let headers = Cohttp.Header.init_with "Accept" "application/json" in
+             let headers =
+               Cohttp.Header.init_with "Accept" "application/json"
+             in
              let* token_response =
                Cohttp_lwt_unix.Client.post ~body:(`String request_body) ~headers
                  uri

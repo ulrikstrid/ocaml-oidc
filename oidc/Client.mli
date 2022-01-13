@@ -68,7 +68,6 @@ val make_meta :
   meta
 
 val meta_to_json : meta -> Yojson.Safe.t
-
 val meta_to_string : meta -> string
 
 type dynamic_response = {
@@ -89,9 +88,9 @@ val dynamic_is_expired : dynamic_response -> bool
 (** This is useful to know if you have to re-register your client *)
 
 val dynamic_of_json :
-  Yojson.Safe.t -> (dynamic_response, [> `Msg of string ]) result
+  Yojson.Safe.t -> (dynamic_response, [> `Msg of string]) result
 
-val dynamic_of_string : string -> (dynamic_response, [> `Msg of string ]) result
+val dynamic_of_string : string -> (dynamic_response, [> `Msg of string]) result
 
 val of_dynamic_and_meta : dynamic:dynamic_response -> meta:meta -> t
 (** Createa a {{! t}OIDC Client} from {!dynamic} and {!meta} *)

@@ -16,7 +16,6 @@ module Response : sig
   (** A token response *)
 
   val of_json : Yojson.Safe.t -> t
-
   val of_string : string -> t
 end
 

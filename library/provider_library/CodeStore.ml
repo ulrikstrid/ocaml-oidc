@@ -1,9 +1,10 @@
 let create_code () =
-  Base64.encode_string ~alphabet:Base64.uri_safe_alphabet (Cstruct.to_string (Mirage_crypto_rng.generate 30))
+  Base64.encode_string ~alphabet:Base64.uri_safe_alphabet
+    (Cstruct.to_string (Mirage_crypto_rng.generate 30))
 
 let save_code ~email ~client_id code =
   let a =
-    (code, `Assoc [ ("email", `String email); ("client_id", `String client_id) ])
+    (code, `Assoc [("email", `String email); ("client_id", `String client_id)])
     :: (Yojson.Safe.from_file "./tokens.json" |> Yojson.Safe.Util.to_assoc)
   in
   `Assoc a |> Yojson.Safe.to_file "./tokens.json" |> Lwt.return
