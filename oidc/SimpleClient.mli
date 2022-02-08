@@ -78,9 +78,9 @@ val make_token_request :
 (** Creates a {!type:request_descr} for the token request *)
 
 val make_userinfo_request :
-  token:(Token.Response.t, ([> Error.t] as 'a)) result ->
+  token:Token.Response.t ->
   discovery:Discover.t ->
-  (request_descr, 'a) result
+  (request_descr, [> Error.t]) result
 (** Creates a {!type:request_descr} for the userinfo request *)
 
 val valid_token_of_string :

@@ -64,10 +64,10 @@ let make_token_request ~code ~discovery t =
   let uri = discovery.Discover.token_endpoint in
   { body = Some body; headers; uri; meth = `POST }
 
-let make_userinfo_request ~(token : (Token.Response.t, [> Error.t]) result)
-    ~(discovery : Discover.t) =
+let make_userinfo_request ~(token : Token.Response.t) ~(discovery : Discover.t)
+    =
   match (discovery.userinfo_endpoint, token) with
-  | Some userinfo_endpoint, Ok { access_token = Some access_token; _ } ->
+  | Some userinfo_endpoint, { access_token = Some access_token; _ } ->
     let headers =
       [
         ("Authorization", "Bearer " ^ access_token);
@@ -78,8 +78,7 @@ let make_userinfo_request ~(token : (Token.Response.t, [> Error.t]) result)
       { headers; uri = userinfo_endpoint; body = None; meth = `GET }
     in
     (Ok request_descr : (request_descr, [> Error.t]) result)
-  | Some _, Ok { access_token = None; _ } -> Error `Missing_access_token
-  | Some _, Error e -> Error e
+  | Some _, { access_token = None; _ } -> Error `Missing_access_token
   | None, _ -> Error `Missing_userinfo_endpoint
 
 let get_auth_parameters ?scope ?claims ?nonce ~state t =

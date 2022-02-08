@@ -32,7 +32,8 @@ let callback_handler ~redirect_to ~discovery ~jwks ~client request =
     in
 
     let userinfo_request =
-      Oidc.SimpleClient.make_userinfo_request ~token:validated_token ~discovery
+      Result.bind validated_token @@ fun token ->
+      Oidc.SimpleClient.make_userinfo_request ~token ~discovery
     in
 
     let* userinfo =
