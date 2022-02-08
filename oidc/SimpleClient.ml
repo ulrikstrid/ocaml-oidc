@@ -20,7 +20,8 @@ let make ?secret ?(response_types = ["code"]) ?(grant_types = [])
   { client; redirect_uri; provider_uri }
 
 let discovery_uri t =
-  Uri.with_path t.provider_uri "/.well-known/openid-configuration"
+  let base_path = Uri.path t.provider_uri in
+  Uri.with_path t.provider_uri (base_path ^ "/.well-known/openid-configuration")
 
 type meth =
   [ `POST
