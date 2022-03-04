@@ -16,3 +16,5 @@ restart-pod.sha
 app.yml
 junit.xml
 _coverage
+.google.env
+.direnv

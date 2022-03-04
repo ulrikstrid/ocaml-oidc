@@ -1,13 +1,13 @@
 open Utils
 
 type error =
-  [ `Unauthorized_client  of Client.t
+  [ `Unauthorized_client of Client.t
   | `Missing_client
-  | `Invalid_scope        of string list
+  | `Invalid_scope of string list
   | `Invalid_redirect_uri of string
-  | `Missing_parameter    of string
-  | `Invalid_display      of string
-  | `Invalid_prompt       of string
+  | `Missing_parameter of string
+  | `Invalid_display of string
+  | `Invalid_prompt of string
   | `Invalid_parameters ]
 
 type display =
@@ -155,14 +155,14 @@ let of_json ~clients json : (t, error) result =
           |> Json.to_string_option
           |> ROpt.flat_map (fun p -> string_to_prompt p |> ROpt.of_result);
       }
-  with
-  | _ -> Error `Invalid_parameters
+  with _ -> Error `Invalid_parameters
 
 let parse_query ~clients uri : (t, [> error]) result =
   let getQueryParam param =
     Uri.get_query_param uri param |> function
     | Some x -> Ok x
-    | None -> Error (`Missing_parameter (param ^ " not found")) in
+    | None -> Error (`Missing_parameter (param ^ " not found"))
+  in
 
   match getQueryParam "client_id" |> RResult.flat_map (get_client ~clients) with
   | Error e -> Error e
@@ -170,7 +170,8 @@ let parse_query ~clients uri : (t, [> error]) result =
     let claims =
       getQueryParam "claims" |> Result.map Yojson.Safe.from_string |> function
       | Ok x -> Some x
-      | Error _ -> None in
+      | Error _ -> None
+    in
 
     let response_type =
       getQueryParam "response_type" |> Result.map (String.split_on_char ' ')
@@ -180,12 +181,14 @@ let parse_query ~clients uri : (t, [> error]) result =
 
     let scope =
       getQueryParam "scope" |> Result.map (String.split_on_char ' ')
-      (* TODO: Check for openid *) in
+      (* TODO: Check for openid *)
+    in
 
     let max_age =
       getQueryParam "max_age"
       |> ROpt.of_result
-      |> ROpt.flat_map int_of_string_opt in
+      |> ROpt.flat_map int_of_string_opt
+    in
 
     match (response_type, redirect_uri, scope) with
     | Ok response_type, Ok redirect_uri, Ok scope

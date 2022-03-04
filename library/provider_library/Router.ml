@@ -2,7 +2,6 @@ let well_known_openid : (Morph.Server.handler, 'a) Routes.target =
   Routes.(s ".well-known" / s "openid-configuration" /? nil)
 
 let auth : (Morph.Server.handler, 'a) Routes.target = Routes.(s "auth" /? nil)
-
 let token : (Morph.Server.handler, 'a) Routes.target = Routes.(s "token" /? nil)
 
 let get_routes clients =
@@ -14,7 +13,7 @@ let get_routes clients =
     ]
 
 let post_routes clients =
-  Routes.[ InteractionRoute.post_route clients; token @--> TokenRoute.handler ]
+  Routes.[InteractionRoute.post_route clients; token @--> TokenRoute.handler]
 
 let handler clients =
   Morph.Router.make ~get:(get_routes clients) ~post:(post_routes clients)

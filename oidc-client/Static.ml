@@ -9,10 +9,10 @@ type 'store t = {
   redirect_uri : Uri.t;
 }
 
-let make (type store)
+let make (type store) ?(http_client : Piaf.Client.t option)
     ~(kv : (module KeyValue.KV with type value = string and type store = store))
-    ~(store : store) ?(http_client : Piaf.Client.t option) ~redirect_uri
-    ~provider_uri ~client : (store t, Piaf.Error.t) Lwt_result.t =
+    ~(store : store) ~redirect_uri ~provider_uri client :
+    (store t, Piaf.Error.t) Lwt_result.t =
   let (module KV) = kv in
   let open Lwt_result.Infix in
   (match http_client with
@@ -37,8 +37,9 @@ let get_token ~code t =
   (* TODO: Move this into Oidc.Token *)
   let body =
     Oidc.Token.Request.make ~client:t.client ~grant_type:"authorization_code"
-      ~scope:[ "openid" ] ~redirect_uri:t.redirect_uri ~code
-    |> Oidc.Token.Request.to_body_string |> Piaf.Body.of_string
+      ~scope:["openid"] ~redirect_uri:t.redirect_uri ~code
+    |> Oidc.Token.Request.to_body_string
+    |> Piaf.Body.of_string
   in
   let headers =
     [
@@ -49,48 +50,23 @@ let get_token ~code t =
   let headers =
     match t.client.token_endpoint_auth_method with
     | "client_secret_basic" ->
-        Oidc.Token.basic_auth ~client_id:t.client.id
-          ~secret:(Option.value ~default:"" t.client.secret)
-        :: headers
+      Oidc.Token.basic_auth ~client_id:t.client.id
+        ~secret:(Option.value ~default:"" t.client.secret)
+      :: headers
     | _ -> headers
   in
   Log.debug (fun m -> m "Getting token with client_id: %s" t.client.id);
   Piaf.Client.post t.http_client ~headers ~body token_path
-  >>= Internal.to_string_body >|= Oidc.Token.Response.of_string
+  >>= Internal.to_string_body
+  >|= Oidc.Token.Response.of_string
 
 let get_and_validate_id_token ?nonce ~code t =
   let open Lwt_result.Syntax in
   let* jwks = get_jwks t |> RPiaf.map_piaf_err in
   let* token_response = get_token ~code t |> RPiaf.map_piaf_err in
   let* discovery = discover t |> RPiaf.map_piaf_err in
-  (match Jose.Jwt.of_string token_response.id_token with
-  | Ok jwt -> (
-      if jwt.header.alg = `None then
-        Oidc.IDToken.validate ?nonce ~client:t.client ~issuer:discovery.issuer
-          jwt
-        |> Result.map (fun _ -> token_response)
-      else
-        match Oidc.Jwks.find_jwk ~jwt jwks with
-        | Some jwk ->
-            Log.debug (fun m -> m "Found JWK in JWKs");
-
-            Oidc.IDToken.validate ?nonce ~client:t.client
-              ~issuer:discovery.issuer ~jwk jwt
-            |> Result.map (fun _ -> token_response)
-        (* When there is only 1 key in the jwks we can try with that according to the OIDC spec *)
-        | None when List.length jwks.keys = 1 ->
-            Log.debug (fun m ->
-                m
-                  "No matching JWK found but only 1 JWK in JWKs, try \
-                   validating with it");
-            let jwk = List.hd jwks.keys in
-            Oidc.IDToken.validate ?nonce ~client:t.client
-              ~issuer:discovery.issuer ~jwk jwt
-            |> Result.map (fun _ -> token_response)
-        | None ->
-            Log.debug (fun m -> m "No matching JWK found in JWKs");
-            Error (`Msg "Could not find JWK"))
-  | Error e -> Error e)
+  Oidc.Token.Response.validate ?nonce ~jwks ~client:t.client ~discovery
+    token_response
   |> Lwt.return
 
 let get_auth_result ?nonce ~params ~state t =
@@ -98,9 +74,9 @@ let get_auth_result ?nonce ~params ~state t =
   | None, _ -> Error (`Msg "No state returned") |> Lwt.return
   | _, None -> Error (`Msg "No code returned") |> Lwt.return
   | Some returned_state, Some code ->
-      if List.hd returned_state <> state then
-        Error (`Msg "State doesn't match") |> Lwt.return
-      else get_and_validate_id_token ?nonce ~code:(List.hd code) t
+    if List.hd returned_state <> state then
+      Error (`Msg "State doesn't match") |> Lwt.return
+    else get_and_validate_id_token ?nonce ~code:(List.hd code) t
 
 let get_auth_parameters ?scope ?claims ?nonce ~state t =
   Oidc.Parameters.make ?scope ?claims t.client ?nonce ~state
@@ -121,17 +97,15 @@ let get_userinfo ~jwt ~token t =
   let* discovery = discover t |> RPiaf.map_piaf_err in
   match discovery.userinfo_endpoint |> Option.map Uri.path with
   | Some user_info_path ->
-      let userinfo =
-        Piaf.Client.get t.http_client
-          ~headers:
-            [
-              ("Authorization", "Bearer " ^ token);
-              ("Accept", "application/json");
-            ]
-          user_info_path
-        >>= Internal.to_string_body |> RPiaf.map_piaf_err
-      in
-      Lwt_result.bind userinfo (fun userinfo ->
-          Internal.validate_userinfo ~jwt userinfo |> Lwt.return)
+    let userinfo =
+      Piaf.Client.get t.http_client
+        ~headers:
+          [("Authorization", "Bearer " ^ token); ("Accept", "application/json")]
+        user_info_path
+      >>= Internal.to_string_body
+      |> RPiaf.map_piaf_err
+    in
+    Lwt_result.bind userinfo (fun userinfo ->
+        Oidc.Userinfo.validate ~jwt userinfo |> Lwt.return)
   (* TODO: Add a separate error for this *)
   | None -> Lwt_result.fail (`Msg "No userinfo in discovery")

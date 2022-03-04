@@ -90,6 +90,39 @@ rec {
       license = lib.licenses.bsd3;
     };
   };
+
+  executables = buildDunePackage {
+    pname = "executables";
+    version = "dev";
+
+    src = lib.filterGitSource {
+      src = ./..;
+      dirs = [ "executable" ];
+      files = [ "dune-project" "morph-oidc-client.opam" ];
+    };
+
+    useDune2 = true;
+
+    propagatedBuildInputs = [
+      archi
+      archi-lwt
+      fmt
+      lwt
+      routes
+      uuidm
+      oidc
+      oauth
+      jose
+      piaf
+      uri
+      yojson
+      logs
+      pkgs.gmp
+      dream
+      cohttp
+      cohttp-lwt-unix
+    ];
+  };
 /*
   morph-oidc-client = buildDunePackage {
     pname = "morph-oidc-client";

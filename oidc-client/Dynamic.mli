@@ -37,7 +37,7 @@ val get_auth_parameters :
   nonce:string ->
   state:string ->
   'store t ->
-  (Oidc.Parameters.t, [> `Msg of string ]) result Lwt.t
+  (Oidc.Parameters.t, [> `Msg of string]) result Lwt.t
 
 val get_auth_uri :
   ?scope:string list ->
@@ -64,4 +64,4 @@ val get_userinfo :
   jwt:Jose.Jwt.t ->
   token:string ->
   'a t ->
-  (string, [> `Missing_sub | `Msg of string | `Sub_missmatch ]) result Lwt.t
+  (string, [> `Missing_sub | `Msg of string | `Sub_missmatch]) result Lwt.t

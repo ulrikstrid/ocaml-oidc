@@ -1,11 +1,5 @@
 {
   "ocaml.sandbox": {
-    "kind": "custom",
-    "template": "$prog $args"
-  },
-  "nixEnvSelector.nixShellConfig": "${workspaceRoot}/shell.nix",
-  "files.associations": {
-    "*.yaml": "home-assistant"
-  },
-  "nixEnvSelector.nixFile": "${workspaceRoot}/shell.nix"
+    "kind": "global"
+  }
 }

@@ -1,10 +1,8 @@
 module type KV = sig
   type value
-
   type store
 
-  val get : store:store -> string -> (value, [> `Msg of string ]) Lwt_result.t
-
+  val get : store:store -> string -> (value, [> `Msg of string]) Lwt_result.t
   val set : ?expiry:int -> store:store -> string -> value -> unit Lwt.t
 end
 
@@ -12,7 +10,6 @@ module MemoryKV :
   KV with type value = string and type store = (string, string) Hashtbl.t =
 struct
   type value = string
-
   type store = (string, string) Hashtbl.t
 
   let of_option = function

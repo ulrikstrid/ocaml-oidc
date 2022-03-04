@@ -38,12 +38,14 @@
             inputsFrom = lib.attrValues oidcDrvs;
             buildInputs = with pkgs; with ocamlPackages; [
                 ocaml-lsp
-                ocamlformat
+                ocamlformat_0_20_1
+                odoc
                 reenv
                 # dune-release
                 cacert
                 curl
                 which
+                inotify-tools
             ];
             }).overrideAttrs (o: {
             propagatedBuildInputs = filterDrvs o.propagatedBuildInputs;

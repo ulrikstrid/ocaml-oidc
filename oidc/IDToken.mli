@@ -23,14 +23,16 @@ type validation_error =
 (** Possible validation errors *)
 
 val validate :
+  ?clock_tolerance:int ->
   ?nonce:string ->
   ?jwk:'a Jose.Jwk.t ->
   client:Client.t ->
   issuer:Uri.t ->
   Jose.Jwt.t ->
-  (Jose.Jwt.t, validation_error) result
+  (Jose.Jwt.t, [> validation_error]) result
 (** Validation of the ID Token according to the spec.
 
+  [clock_tolerance] is used to allow for a difference in clocks between the provider and client
   [jwk] is not needed when ["alg": "none"]
 
 {{:https://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation} Spec link}

@@ -1,11 +1,8 @@
 open Helpers
 
 let () = Mirage_crypto_rng_unix.initialize ()
-
 let jwk = Jose.Jwk.make_priv_rsa (Mirage_crypto_pk.Rsa.generate ~bits:1024 ())
-
 let aud = "1234"
-
 let issuer = Uri.of_string "https://idp.example.com"
 
 let valid_jwt =
@@ -36,7 +33,7 @@ let validate_valid () =
   in
   check_result_string "aud" (Ok aud) (Result.map get_aud validated)
 
-let tests = List.map make_test_case [ ("Valid JWT", validate_valid) ]
+let tests = List.map make_test_case [("Valid JWT", validate_valid)]
 
 let suite, _ =
-  Junit_alcotest.run_and_report ~package:"oidc" "Jwt" [ ("OIDC - JWT", tests) ]
+  Junit_alcotest.run_and_report ~package:"oidc" "Jwt" [("OIDC - JWT", tests)]

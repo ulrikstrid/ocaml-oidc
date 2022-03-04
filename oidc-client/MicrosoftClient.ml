@@ -7,12 +7,12 @@ let make (type store)
   let client : Oidc.Client.t =
     {
       id = app_id;
-      response_types = [ "code" ];
-      grant_types = [ "authorization_code" ];
+      response_types = ["code"];
+      grant_types = ["authorization_code"];
       redirect_uris =
-        [ Uri.of_string "https://login.microsoftonline.com/common/v2.0" ];
+        [Uri.of_string "https://login.microsoftonline.com/common/v2.0"];
       secret;
       token_endpoint_auth_method = "client_secret_post";
     }
   in
-  Static.make ~kv ~store ~redirect_uri ~provider_uri ~client
+  Static.make ~kv ~store ~redirect_uri ~provider_uri client
