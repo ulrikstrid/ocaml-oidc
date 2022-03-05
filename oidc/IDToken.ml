@@ -24,6 +24,28 @@ type validation_error =
   | `Wrong_aud_value of string
   | `Wrong_iss_value of string ]
 
+let validation_error_to_string = function
+  | `Msg e -> e
+  | `Expired -> "expired"
+  | `Missing_exp -> "Missing exp"
+  | `Invalid_signature -> "Invalid signature"
+  | `Invalid_nonce -> "Invalid nonce"
+  | `Missing_nonce -> "Missing nonce"
+  | `Unexpected_nonce -> "Got nonce when not expected"
+  | `Invalid_sub_length -> "Invalid sub length"
+  | `Missing_sub -> "Missing sub"
+  | `Wrong_aud_value aud -> ("Wrong aud " ^ aud)
+  | `Missing_aud -> "aud is missing"
+  | `Wrong_iss_value iss -> ("Wrong iss value " ^ iss)
+  | `Missing_iss -> "iss is missing"
+  | `Iat_in_future -> "iat is in future"
+  | `Missing_iat -> "Missing iat"
+  | `No_jwk_provided -> "No jwk provided but is needed"
+  | `Unsafe -> "Unsafe action"
+
+let pp_validation_error ppf err =
+  Fmt.string ppf (validation_error_to_string err)
+
 let ( >>= ) = RResult.( >>= )
 
 let get_string_member member payload =

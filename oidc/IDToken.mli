@@ -22,6 +22,10 @@ type validation_error =
   | `Wrong_iss_value of string ]
 (** Possible validation errors *)
 
+val validation_error_to_string : validation_error -> string
+
+val pp_validation_error : validation_error Fmt.t
+
 val validate :
   ?clock_tolerance:int ->
   ?nonce:string ->
