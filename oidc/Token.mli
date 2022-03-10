@@ -7,7 +7,7 @@ module Response : sig
 
   type t = {
     token_type : token_type;
-    scope : string option;
+    scope : string list;
     expires_in : int option;
     ext_exipires_in : int option;
     access_token : string option;
