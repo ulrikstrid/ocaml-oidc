@@ -4,10 +4,13 @@ type t = {
   token_type : token_type;
   scope : string list;
   expires_in : int option;
-  ext_exipires_in : int option;
   access_token : string;
   refresh_token : string option;
 }
+
+let make ?(token_type = Bearer) ?scope ?expires_in ?refresh_token ~access_token
+    () =
+  { token_type; scope; expires_in; access_token; refresh_token }
 
 let of_json json =
   let module Json = Yojson.Safe.Util in
@@ -29,8 +32,6 @@ let of_json json =
     (* Only Bearer is supported by OIDC, TODO = return a error if it is not Bearer *)
     scope;
     expires_in = json |> Json.member "expires_in" |> Json.to_int_option;
-    ext_exipires_in =
-      json |> Json.member "ext_exipires_in" |> Json.to_int_option;
     access_token = json |> Json.member "access_token" |> Json.to_string;
     refresh_token = json |> Json.member "refresh_token" |> Json.to_string_option;
   }
@@ -47,10 +48,20 @@ let of_query query =
     scope;
     expires_in =
       Uri.get_query_param query "expires_in" |> Option.map int_of_string;
-    ext_exipires_in =
-      Uri.get_query_param query "ext_exipires_in" |> Option.map int_of_string;
     access_token = Uri.get_query_param query "access_token" |> Option.get;
     refresh_token = Uri.get_query_param query "refresh_token";
   }
 
 let of_string str = Yojson.Safe.from_string str |> of_json
+
+let to_json { scope; expires_in; access_token; refresh_token; _ } =
+  let or_null = Option.value ~default:`Null in
+  let json_str = Option.map (fun x -> `String x) in
+  `Assoc
+    [
+      ("scope", or_null (json_str scope));
+      ("token_type", `String "Bearer");
+      ("expires_in", or_null (Option.map (fun x -> `Int x) expires_in));
+      ("access_token", `String access_token);
+      ("refresh_token", or_null (json_str refresh_token));
+    ]
