@@ -2,7 +2,7 @@ type token_type = Bearer
 
 type t = {
   token_type : token_type;
-  scope : string option;
+  scope : string list;
   expires_in : int option;
   ext_exipires_in : int option;
   access_token : string option;
@@ -14,14 +14,16 @@ let of_json json =
   let module Json = Yojson.Safe.Util in
   let scope =
     match Json.member "scope" json with
-    | `Null -> None
-    | `String scope -> Some scope
+    | `Null -> []
+    | `String scope -> [scope]
     | `List json ->
       (* Some OIDC providers (Twitch for example) return an array of strings
          for scope. *)
-      Some (String.concat " " (List.map Json.to_string json))
+      List.map Json.to_string json
     | json ->
-      raise (Json.Type_error ("scope: expected a string or an array of strings", json))
+      raise
+        (Json.Type_error
+           ("scope: expected a string or an array of strings", json))
   in
   {
     token_type = Bearer;
@@ -36,13 +38,16 @@ let of_json json =
   }
 
 let of_query query =
-  print_endline
-    (Uri.get_query_param query "access_token"
-    |> Option.value ~default:"no access_token");
+  let scope =
+    let qp = Uri.get_query_param query "scope" in
+    Option.value ~default:[]
+      (Option.map (fun qp -> String.split_on_char ' ' qp) qp)
+  in
+
   {
     token_type = Bearer;
     (* Only Bearer is supported by OIDC, TODO = return a error if it is not Bearer *)
-    scope = Uri.get_query_param query "scope";
+    scope;
     expires_in =
       Uri.get_query_param query "expires_in" |> Option.map int_of_string;
     ext_exipires_in =

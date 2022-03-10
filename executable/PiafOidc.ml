@@ -12,4 +12,4 @@ let request_descr_to_request Oidc.SimpleClient.{ headers; uri; body; meth } =
   let body = Option.map Piaf.Body.of_string body in
   Piaf.Client.Oneshot.request ~headers ?body ~meth uri
   >>= to_string_body
-  |> Lwt_result.map_err map_piaf_error
+  |> Lwt_result.map_error map_piaf_error
