@@ -17,7 +17,7 @@ module Response : sig
 
   val make :
     ?token_type:token_type ->
-    ?scope:string ->
+    ?scope:string list ->
     ?expires_in:int ->
     ?access_token:string ->
     ?refresh_token:string ->

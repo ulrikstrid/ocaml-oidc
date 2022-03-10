@@ -8,8 +8,8 @@ type t = {
   refresh_token : string option;
 }
 
-let make ?(token_type = Bearer) ?scope ?expires_in ?refresh_token ~access_token
-    () =
+let make ?(token_type = Bearer) ?(scope = []) ?expires_in ?refresh_token
+    ~access_token () =
   { token_type; scope; expires_in; access_token; refresh_token }
 
 let of_json json =
@@ -59,7 +59,8 @@ let to_json { scope; expires_in; access_token; refresh_token; _ } =
   let json_str = Option.map (fun x -> `String x) in
   `Assoc
     [
-      ("scope", or_null (json_str scope));
+      ( "scope",
+        match scope with [] -> `Null | _ -> `String (String.concat " " scope) );
       ("token_type", `String "Bearer");
       ("expires_in", or_null (Option.map (fun x -> `Int x) expires_in));
       ("access_token", `String access_token);
