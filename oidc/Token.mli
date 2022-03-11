@@ -11,7 +11,7 @@ module Response : sig
     expires_in : int option;
     access_token : string option;
     refresh_token : string option;
-    id_token : string;
+    id_token : string option;
   }
   (** A token response *)
 
@@ -21,7 +21,7 @@ module Response : sig
     ?expires_in:int ->
     ?access_token:string ->
     ?refresh_token:string ->
-    id_token:string ->
+    ?id_token:string ->
     unit ->
     t
 
