@@ -4,11 +4,14 @@ type t = {
   token_type : token_type;
   scope : string list;
   expires_in : int option;
-  ext_exipires_in : int option;
   access_token : string option;
   refresh_token : string option;
-  id_token : string;
+  id_token : string option;
 }
+
+let make ?(token_type = Bearer) ?(scope = []) ?expires_in ?access_token
+    ?refresh_token ?id_token () =
+  { token_type; scope; expires_in; access_token; refresh_token; id_token }
 
 let of_json json =
   let module Json = Yojson.Safe.Util in
@@ -30,11 +33,9 @@ let of_json json =
     (* Only Bearer is supported by OIDC, TODO = return a error if it is not Bearer *)
     scope;
     expires_in = json |> Json.member "expires_in" |> Json.to_int_option;
-    ext_exipires_in =
-      json |> Json.member "ext_exipires_in" |> Json.to_int_option;
     access_token = json |> Json.member "access_token" |> Json.to_string_option;
     refresh_token = json |> Json.member "refresh_token" |> Json.to_string_option;
-    id_token = json |> Json.member "id_token" |> Json.to_string;
+    id_token = json |> Json.member "id_token" |> Json.to_string_option;
   }
 
 let of_query query =
@@ -50,18 +51,16 @@ let of_query query =
     scope;
     expires_in =
       Uri.get_query_param query "expires_in" |> Option.map int_of_string;
-    ext_exipires_in =
-      Uri.get_query_param query "ext_exipires_in" |> Option.map int_of_string;
     access_token = Uri.get_query_param query "access_token";
     refresh_token = Uri.get_query_param query "refresh_token";
-    id_token = Uri.get_query_param query "id_token" |> Option.get;
+    id_token = Uri.get_query_param query "id_token";
   }
 
 let of_string str = Yojson.Safe.from_string str |> of_json
 
 let validate ?clock_tolerance ?nonce ~jwks ~(client : Client.t)
     ~(discovery : Discover.t) t =
-  match Jose.Jwt.of_string t.id_token with
+  match Jose.Jwt.of_string (Option.get t.id_token) with
   | Ok jwt -> (
     if jwt.header.alg = `None then
       IDToken.validate ?clock_tolerance ?nonce ~client ~issuer:discovery.issuer
@@ -81,3 +80,17 @@ let validate ?clock_tolerance ?nonce ~jwks ~(client : Client.t)
         |> Result.map (fun _ -> t)
       | None -> Error (`Msg "Could not find JWK"))
   | Error e -> Error e
+
+let to_json { scope; expires_in; access_token; refresh_token; id_token; _ } =
+  let or_null = Option.value ~default:`Null in
+  let json_str = Option.map (fun x -> `String x) in
+  `Assoc
+    [
+      ( "scope",
+        match scope with [] -> `Null | _ -> `String (String.concat " " scope) );
+      ("token_type", `String "Bearer");
+      ("expires_in", or_null (Option.map (fun x -> `Int x) expires_in));
+      ("access_token", or_null (json_str access_token));
+      ("refresh_token", or_null (json_str refresh_token));
+      ("id_token", or_null (json_str id_token));
+    ]

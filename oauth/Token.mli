@@ -9,14 +9,23 @@ module Response : sig
     token_type : token_type;
     scope : string list;
     expires_in : int option;
-    ext_exipires_in : int option;
     access_token : string;
     refresh_token : string option;
   }
   (** A token response *)
 
+  val make :
+    ?token_type:token_type ->
+    ?scope:string list ->
+    ?expires_in:int ->
+    ?refresh_token:string ->
+    access_token:string ->
+    unit ->
+    t
+
   val of_json : Yojson.Safe.t -> t
   val of_string : string -> t
+  val to_json : t -> Yojson.Safe.t
 end
 
 module Request : sig

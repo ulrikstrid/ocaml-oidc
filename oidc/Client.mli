@@ -28,7 +28,7 @@ val make :
 
 type meta = {
   redirect_uris : Uri.t list;
-  response_types : string list option;  (** TODO: use special respone_type *)
+  response_types : string list option;  (** TODO: use special response_type *)
   grant_types : string list option;  (** TODO: use special grant_type *)
   application_type : string option;  (** TODO: use special application_type *)
   contacts : string list option;  (** email addresses *)
@@ -45,7 +45,7 @@ type meta = {
   id_token_signed_response_alg : Jose.Jwa.alg option;
 }
 (**
-Metadata used in registration of dunamic clients
+Metadata used in registration of dynamic clients
  *)
 
 val make_meta :
