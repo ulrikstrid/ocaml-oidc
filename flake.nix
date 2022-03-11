@@ -46,7 +46,6 @@
                 cacert
                 curl
                 which
-                inotify-tools
             ];
             }).overrideAttrs (o: {
             propagatedBuildInputs = filterDrvs o.propagatedBuildInputs;
