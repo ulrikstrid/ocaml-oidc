@@ -1,0 +1,33 @@
+name: "Test in nix"
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: cachix/install-nix-action@v15
+
+      - uses: cachix/cachix-action@v10
+        with:
+          name: anmonteiro
+
+      - name: "Run nix flake check"
+        run: nix flake check
+
+      - name: "Unit tests"
+        run: nix develop -c dune build @runtest --force --no-buffer
+
+      - name: "Unit tests"
+        run: nix develop -c dune build @doc --force --no-buffer
+
+      - name: Deploy
+        uses: JamesIves/github-pages-deploy-action@releases/v3
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: gh-pages
+          CLEAN: true
+          FOLDER: _build/default/_doc/_html
