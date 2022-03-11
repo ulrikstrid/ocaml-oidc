@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>DreamOidcMiddleware (morph-oidc.DreamOidcMiddleware)</title><link rel="stylesheet" href="../../odoc.css"/><meta charset="utf-8"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><script src="../../highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script></head><body class="odoc"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../index.html">morph-oidc</a> &#x00BB; DreamOidcMiddleware</nav><header class="odoc-preamble"><h1>Module <code><span>DreamOidcMiddleware</span></code></h1></header><div class="odoc-content"><div class="odoc-spec"><div class="spec value" id="val-log" class="anchored"><a href="#val-log" class="anchor"></a><code><span><span class="keyword">val</span> log : <span class="xref-unresolved">Dream</span>.sub_log</span></code></div></div><div class="odoc-spec"><div class="spec value" id="val-redirect_200" class="anchored"><a href="#val-redirect_200" class="anchor"></a><code><span><span class="keyword">val</span> redirect_200 : <span>string <span class="arrow">&#45;&gt;</span></span> <span><span class="xref-unresolved">Dream</span>.response <span class="xref-unresolved">Dream</span>.promise</span></span></code></div></div><div class="odoc-spec"><div class="spec value" id="val-auth_handler" class="anchored"><a href="#val-auth_handler" class="anchor"></a><code><span><span class="keyword">val</span> auth_handler : 
+  <span>discovery:<a href="../../oidc/Oidc/Discover/index.html#type-t">Oidc.Discover.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span>client:<a href="../../oidc/Oidc/SimpleClient/index.html#type-t">Oidc.SimpleClient.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span>scope:<span>string list</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="xref-unresolved">Dream</span>.request <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="xref-unresolved">Dream</span>.response <span class="xref-unresolved">Dream</span>.promise</span></span></code></div></div><div class="odoc-spec"><div class="spec value" id="val-callback_handler" class="anchored"><a href="#val-callback_handler" class="anchor"></a><code><span><span class="keyword">val</span> callback_handler : 
+  <span>redirect_to:string <span class="arrow">&#45;&gt;</span></span>
+  <span>discovery:<a href="../../oidc/Oidc/Discover/index.html#type-t">Oidc.Discover.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span>jwks:<span class="xref-unresolved">Jose</span>.Jwks.t <span class="arrow">&#45;&gt;</span></span>
+  <span>client:<a href="../../oidc/Oidc/SimpleClient/index.html#type-t">Oidc.SimpleClient.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="xref-unresolved">Dream</span>.request <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="xref-unresolved">Dream</span>.response <span class="xref-unresolved">Dream</span>.promise</span></span></code></div></div><div class="odoc-spec"><div class="spec value" id="val-middleware" class="anchored"><a href="#val-middleware" class="anchor"></a><code><span><span class="keyword">val</span> middleware : 
+  <span>?auth_endpoint:string <span class="arrow">&#45;&gt;</span></span>
+  <span>?callback_endpoint:string <span class="arrow">&#45;&gt;</span></span>
+  <span>?redirect_to:string <span class="arrow">&#45;&gt;</span></span>
+  <span>?remember:<span class="type-var">'a</span> <span class="arrow">&#45;&gt;</span></span>
+  <span>?scope:<span>string list</span> <span class="arrow">&#45;&gt;</span></span>
+  <span>discovery:<a href="../../oidc/Oidc/Discover/index.html#type-t">Oidc.Discover.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span>jwks:<span class="xref-unresolved">Jose</span>.Jwks.t <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../../oidc/Oidc/SimpleClient/index.html#type-t">Oidc.SimpleClient.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span class="xref-unresolved">Dream</span>.middleware</span></code></div></div></div></body></html>
