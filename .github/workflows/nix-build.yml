@@ -6,6 +6,7 @@ on:
       - main
 jobs:
   nix:
+    name: "nix on ${{ matrix.os }}"
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
