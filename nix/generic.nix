@@ -72,7 +72,7 @@ rec {
     propagatedBuildInputs = [
       oidc
       jose
-      piaf
+      piaf-dream-compat
       uri
       yojson
       logs
@@ -113,7 +113,7 @@ rec {
       oidc
       oauth
       jose
-      piaf
+      piaf-dream-compat
       uri
       yojson
       logs

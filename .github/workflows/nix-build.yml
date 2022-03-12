@@ -1,0 +1,46 @@
+name: "Test in nix"
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+jobs:
+  nix:
+    name: "nix on ${{ matrix.os }}"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: cachix/install-nix-action@v15
+
+      - uses: cachix/cachix-action@v10
+        with:
+          name: anmonteiro
+
+      - name: "Run nix flake check"
+        run: nix flake check
+
+      - name: "Unit tests"
+        run: nix develop -c dune runtest --instrument-with bisect_ppx --force --no-buffer
+
+      - name: Send coverage report
+        run: nix develop -c bisect-ppx-report send-to Coveralls
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PULL_REQUEST_NUMBER: ${{ github.event.number }}
+
+      - name: "Generate documentation"
+        run: nix develop -c dune build @doc --force --no-buffer
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+
+      - name: Deploy
+        uses: JamesIves/github-pages-deploy-action@releases/v3
+        if: ${{ github.ref == 'refs/heads/master' && github.event_name == 'push' }}
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: gh-pages
+          CLEAN: true
+          FOLDER: _build/default/_doc/_html

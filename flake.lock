@@ -2,11 +2,11 @@
   "nodes": {
     "flake-utils": {
       "locked": {
-        "lastModified": 1638122382,
-        "narHash": "sha256-sQzZzAbvKEqN9s0bzWuYmRaA03v40gaJ4+iL1LXjaeI=",
+        "lastModified": 1644229661,
+        "narHash": "sha256-1YdnJAsNy69bpcjuoKdOYQX0YxZBiCYZo4Twxerqv7k=",
         "owner": "numtide",
         "repo": "flake-utils",
-        "rev": "74f7e4319258e287b0f9cb95426c9853b282730b",
+        "rev": "3cecb5b042f7f209c56ffd8371b2711a290ec797",
         "type": "github"
       },
       "original": {
@@ -32,11 +32,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1641370474,
-        "narHash": "sha256-j7+Ds8pZkm60sV/9uVmMzNVetOVjV/XuQsYQcXyq3WI=",
+        "lastModified": 1646984821,
+        "narHash": "sha256-I4k7KVrclwPfDB5XvdE5gMd7qi74eu49gWl0c1UHwjw=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "e114f0a58d767ee9c997de86c4a6973dfcf3c8cb",
+        "rev": "667041a35cdf109eaa6031805517d4089eed80c2",
         "type": "github"
       },
       "original": {
@@ -50,16 +50,15 @@
         "flake-utils": "flake-utils_2"
       },
       "locked": {
-        "lastModified": 1639498034,
-        "narHash": "sha256-raXayLiH+Lv8gXVi+B3guFLltEIEpvRBEVxIUcLEpTU=",
+        "lastModified": 1646974360,
+        "narHash": "sha256-m9WAtsLLMT2dpFmjB8j7/HYtAygTonF6ciqflTub5Xc=",
         "owner": "anmonteiro",
         "repo": "nix-overlays",
-        "rev": "64511c29eeb33a9410355d2294450081e21ac1e9",
+        "rev": "f7de94347b210e406bbe42b39bf56041483fe20d",
         "type": "github"
       },
       "original": {
         "owner": "anmonteiro",
-        "ref": "ulrikstrid/unvendor-piaf-dream",
         "repo": "nix-overlays",
         "type": "github"
       }

@@ -44,7 +44,7 @@ let callback_handler ~redirect_to ~discovery ~jwks ~client request =
 
     match (validated_token, userinfo) with
     | Ok tokens, Ok userinfo ->
-      let id_token = tokens.id_token in
+      let id_token = Option.value ~default:"no id_token" tokens.id_token in
       let access_token =
         Option.value ~default:"no access_token" tokens.access_token
       in

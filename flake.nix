@@ -6,7 +6,7 @@
   
     flake-utils.url = "github:numtide/flake-utils";
 
-    ocaml-overlay.url = "github:anmonteiro/nix-overlays/ulrikstrid/unvendor-piaf-dream";
+    ocaml-overlay.url = "github:anmonteiro/nix-overlays";
     ocaml-overlay.inputs.nixpkgs.follows = "nixpkgs";
   };
 
@@ -39,13 +39,13 @@
             buildInputs = with pkgs; with ocamlPackages; [
                 ocaml-lsp
                 ocamlformat_0_20_1
+                ocamlformat-rpc_0_20_1
                 odoc
                 reenv
                 # dune-release
                 cacert
                 curl
                 which
-                inotify-tools
             ];
             }).overrideAttrs (o: {
             propagatedBuildInputs = filterDrvs o.propagatedBuildInputs;

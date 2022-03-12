@@ -1,19 +1,10 @@
-(* -*- tuareg -*- *)
-
-let preprocess =
-  match Sys.getenv "BISECT_ENABLE" with
-  | "yes" -> "(preprocess (pps bisect_ppx))"
-  | _ -> ""
-  | exception Not_found -> ""
-  
-let () = Jbuild_plugin.V1.send @@ {|
 (library
  (name OidcClient)
  (public_name oidc-client)
  (libraries oidc piaf yojson uri)
- |} ^ preprocess ^ {|)
+ (instrumentation
+  (backend bisect_ppx)))
 
 (documentation
  (package oidc-client)
  (mld_files (:standard)))
-|}
