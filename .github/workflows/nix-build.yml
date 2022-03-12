@@ -21,6 +21,12 @@ jobs:
       - name: "Unit tests"
         run: nix develop -c dune build @runtest --force --no-buffer
 
+      - name: Send coverage report
+        run: nix develop -c bisect-ppx-report send-to Coveralls
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PULL_REQUEST_NUMBER: ${{ github.event.number }}
+
       - name: "Unit tests"
         run: nix develop -c dune build @doc --force --no-buffer
 
