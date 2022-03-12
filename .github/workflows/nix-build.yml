@@ -19,7 +19,7 @@ jobs:
         run: nix flake check
 
       - name: "Unit tests"
-        run: nix develop -c dune build @runtest --force --no-buffer
+        run: nix develop -c dune runtest --instrument-with bisect_ppx --force --no-buffer
 
       - name: Send coverage report
         run: nix develop -c bisect-ppx-report send-to Coveralls
