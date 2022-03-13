@@ -36,7 +36,7 @@ let to_query () =
         response_type = ["code"];
         client;
         redirect_uri = Uri.of_string "https://client.example.org/cb";
-        scope = ["openid"; "profile"];
+        scope = [`OpenID; `Profile];
         state = Some "af0ifjsldkj";
         nonce = Some "n-0S6_WzA2Mj";
         claims = None;

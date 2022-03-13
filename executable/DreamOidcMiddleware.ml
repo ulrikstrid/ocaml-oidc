@@ -74,7 +74,7 @@ let callback_handler ~redirect_to ~discovery ~jwks ~client request =
 
 let middleware ?(auth_endpoint = "/auth")
     ?(callback_endpoint = "/auth/callback") ?(redirect_to = "/") ?remember:_
-    ?(scope = ["openid"; "email"; "profile"]) ~discovery ~jwks client =
+    ?(scope = [`OpenID; `Email; `Profile]) ~discovery ~jwks client =
   let auth_handler = auth_handler ~discovery ~client ~scope in
   let callback_handler =
     callback_handler ~redirect_to ~discovery ~jwks ~client

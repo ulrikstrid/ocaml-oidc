@@ -7,7 +7,7 @@ module Response : sig
 
   type t = {
     token_type : token_type;
-    scope : string list;
+    scope : Scopes.t list;
     expires_in : int option;
     access_token : string option;
     refresh_token : string option;
@@ -17,7 +17,7 @@ module Response : sig
 
   val make :
     ?token_type:token_type ->
-    ?scope:string list ->
+    ?scope:Scopes.t list ->
     ?expires_in:int ->
     ?access_token:string ->
     ?refresh_token:string ->
@@ -44,7 +44,7 @@ module Request : sig
 
   type t = {
     grant_type : string;
-    scope : string list;
+    scope : Scopes.t list;
     code : string;
     client_id : string;
     client_secret : string option;
@@ -55,7 +55,7 @@ module Request : sig
   val make :
     client:Client.t ->
     grant_type:string ->
-    scope:string list ->
+    scope:Scopes.t list ->
     redirect_uri:Uri.t ->
     code:string ->
     t

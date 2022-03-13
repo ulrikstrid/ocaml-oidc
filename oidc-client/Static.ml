@@ -37,7 +37,8 @@ let get_token ~code t =
   (* TODO: Move this into Oidc.Token *)
   let body =
     Oidc.Token.Request.make ~client:t.client ~grant_type:"authorization_code"
-      ~scope:["openid"] ~redirect_uri:t.redirect_uri ~code
+      ~scope:[`OpenID]
+      ~redirect_uri:t.redirect_uri ~code
     |> Oidc.Token.Request.to_body_string
     |> Piaf.Body.of_string
   in

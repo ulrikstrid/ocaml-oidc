@@ -38,7 +38,7 @@ val discovery_uri : t -> Uri.t
 (** Get the discovery_uri as specified in the {{:https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfig} OIDC spec} *)
 
 val make_auth_uri :
-  ?scope:string list ->
+  ?scope:Scopes.t list ->
   ?claims:Yojson.Safe.t ->
   ?nonce:string ->
   state:string ->
@@ -134,7 +134,7 @@ let jwks =
 When the user is supposed to login you create the URI and redirect the user to the provider.
 
 {[
-  let uri = Oidc.SimpleClient.make_auth_uri ~scope:["openid"; "email"; "profile"] ~state:"state" ~discovery client in
+  let uri = Oidc.SimpleClient.make_auth_uri ~scope:[`OpenID; `Email; `Profile] ~state:"state" ~discovery client in
   HttpServer.redirect uri
 ]}
 

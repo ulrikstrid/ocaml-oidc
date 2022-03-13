@@ -38,7 +38,7 @@ val get_jwks : 'store t -> (Jose.Jwks.t, Piaf.Error.t) result Lwt.t
     you validate the token. This is typically done via session storage. *)
 
 val get_auth_parameters :
-  ?scope:string list ->
+  ?scope:Oidc.Scopes.t list ->
   ?claims:Yojson.Safe.t ->
   ?nonce:string ->
   state:string ->
@@ -46,7 +46,7 @@ val get_auth_parameters :
   Oidc.Parameters.t
 
 val get_auth_uri :
-  ?scope:string list ->
+  ?scope:Oidc.Scopes.t list ->
   ?claims:Yojson.Safe.t ->
   ?nonce:string ->
   state:string ->

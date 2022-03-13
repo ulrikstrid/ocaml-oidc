@@ -45,7 +45,8 @@ type request_descr = {
 let make_token_request ~code ~discovery t =
   let body =
     Token.Request.make ~client:t.client ~grant_type:"authorization_code"
-      ~scope:["openid"] ~redirect_uri:t.redirect_uri ~code
+      ~scope:[`OpenID]
+      ~redirect_uri:t.redirect_uri ~code
     |> Token.Request.to_body_string
   in
   let headers =
