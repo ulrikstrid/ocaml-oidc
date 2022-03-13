@@ -43,9 +43,6 @@ let validation_error_to_string = function
   | `No_jwk_provided -> "No jwk provided but is needed"
   | `Unsafe -> "Unsafe action"
 
-let pp_validation_error ppf err =
-  Fmt.string ppf (validation_error_to_string err)
-
 let ( >>= ) = RResult.( >>= )
 
 let get_string_member member payload =

@@ -1,5 +1,5 @@
-let result_t : [> Oidc.IDToken.validation_error] Alcotest.testable =
-  let pp = Oidc.IDToken.pp_validation_error in
+let result_t : [> Oidc.Error.t] Alcotest.testable =
+  let pp = Oidc.Error.pp in
   Alcotest.testable pp ( = )
 
 let check_string = Alcotest.(check string)
