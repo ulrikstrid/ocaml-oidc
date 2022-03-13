@@ -55,6 +55,6 @@ val to_query : t -> (string * string list) list
 val to_json : t -> Yojson.Safe.t
 val of_json : clients:Client.t list -> Yojson.Safe.t -> (t, error) result
 
-(** {2 Parsing in the provider } *)
+(** {2 Parsing in the provider} *)
 
 val parse_query : clients:Client.t list -> Uri.t -> (t, [> error]) result

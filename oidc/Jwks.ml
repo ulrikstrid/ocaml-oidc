@@ -19,6 +19,8 @@ let find_jwk ~(jwt : Jose.Jwt.t) jwks =
     Jose.Jwks.find_key jwks kid
     (* If there is no kid supplied we'll try with the first RSA signing key *)
   | None ->
-    Log.debug (fun m -> m "No kid supplied, trying the first RSA key");
+    Log.debug (fun m ->
+        m "No kid supplied, trying the first key with matching alg")
+    [@coverage off];
     let matching_keys = List.filter (matching_jwt jwt) jwks.keys in
     if List.length matching_keys = 1 then Some (List.hd matching_keys) else None

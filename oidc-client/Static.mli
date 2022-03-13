@@ -12,8 +12,7 @@ type 'store t = {
 
 (** {3 Startup}
 
-    The following are things you might want to do when you start the server
-*)
+    The following are things you might want to do when you start the server *)
 
 val make :
   ?http_client:Piaf.Client.t ->
@@ -35,9 +34,8 @@ val get_jwks : 'store t -> (Jose.Jwks.t, Piaf.Error.t) result Lwt.t
 
     These functions are typically used when initiating the login.
 
-    You want to save nonce and state somewhere to use when the user returns and you validate the token.
-    This is typically done via session storage.
-*)
+    You want to save nonce and state somewhere to use when the user returns and
+    you validate the token. This is typically done via session storage. *)
 
 val get_auth_parameters :
   ?scope:string list ->
@@ -54,12 +52,13 @@ val get_auth_uri :
   state:string ->
   'store t ->
   (Uri.t, Piaf.Error.t) result Lwt.t
-(** Create a valid auth uri that can be used to redirect the user to the OIDC Provider *)
+(** Create a valid auth uri that can be used to redirect the user to the OIDC
+    Provider *)
 
 (** {3 Authentication callback}
 
-    These functions are used when the user returns to the RP with a code from the Provider.
-*)
+    These functions are used when the user returns to the RP with a code from
+    the Provider. *)
 
 val get_auth_result :
   ?nonce:string ->
@@ -77,7 +76,8 @@ val get_and_validate_id_token :
 
 val get_token :
   code:string -> 'store t -> (Oidc.Token.Response.t, Piaf.Error.t) result Lwt.t
-(** Get a token response from the token endpoint, consider using [get_and_validate_id_token] instead. *)
+(** Get a token response from the token endpoint, consider using
+    [get_and_validate_id_token] instead. *)
 
 val get_userinfo :
   jwt:Jose.Jwt.t ->

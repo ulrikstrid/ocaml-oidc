@@ -34,9 +34,9 @@ let validation_error_to_string = function
   | `Unexpected_nonce -> "Got nonce when not expected"
   | `Invalid_sub_length -> "Invalid sub length"
   | `Missing_sub -> "Missing sub"
-  | `Wrong_aud_value aud -> ("Wrong aud " ^ aud)
+  | `Wrong_aud_value aud -> "Wrong aud " ^ aud
   | `Missing_aud -> "aud is missing"
-  | `Wrong_iss_value iss -> ("Wrong iss value " ^ iss)
+  | `Wrong_iss_value iss -> "Wrong iss value " ^ iss
   | `Missing_iss -> "iss is missing"
   | `Iat_in_future -> "iat is in future"
   | `Missing_iat -> "Missing iat"

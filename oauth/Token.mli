@@ -1,6 +1,7 @@
 (** Types and functions to work with the token endpoint *)
 
-(** {{: https://openid.net/specs/openid-connect-core-1_0.html#TokenEndpoint} OpenID Connect Core 1.0 TokenEndpoint} *)
+(** {{:https://openid.net/specs/openid-connect-core-1_0.html#TokenEndpoint}
+    OpenID Connect Core 1.0 TokenEndpoint} *)
 
 module Response : sig
   type token_type = Bearer
@@ -57,14 +58,24 @@ module Request : sig
 
   (** {2 Notes}
 
-  The Authorization Server MUST validate the Token Request as follows:
-  - Authenticate the Client if it was issued Client Credentials or if it uses another Client Authentication method, per Section 9.
-  - Ensure the Authorization Code was issued to the authenticated Client.
-  - Verify that the Authorization Code is valid.
-  - If possible, verify that the Authorization Code has not been previously used.
-  - Ensure that the redirect_uri parameter value is identical to the redirect_uri parameter value that was included in the initial Authorization Request. If the redirect_uri parameter value is not present when there is only one registered redirect_uri value, the Authorization Server MAY return an error (since the Client should have included the parameter) or MAY proceed without an error (since OAuth 2.0 permits the parameter to be omitted in this case).
-  - Verify that the Authorization Code used was issued in response to an OpenID Connect Authentication Request (so that an ID Token will be returned from the Token Endpoint).
-  *)
+      The Authorization Server MUST validate the Token Request as follows:
+
+      - Authenticate the Client if it was issued Client Credentials or if it
+        uses another Client Authentication method, per Section 9.
+      - Ensure the Authorization Code was issued to the authenticated Client.
+      - Verify that the Authorization Code is valid.
+      - If possible, verify that the Authorization Code has not been previously
+        used.
+      - Ensure that the redirect_uri parameter value is identical to the
+        redirect_uri parameter value that was included in the initial
+        Authorization Request. If the redirect_uri parameter value is not
+        present when there is only one registered redirect_uri value, the
+        Authorization Server MAY return an error (since the Client should have
+        included the parameter) or MAY proceed without an error (since OAuth 2.0
+        permits the parameter to be omitted in this case).
+      - Verify that the Authorization Code used was issued in response to an
+        OpenID Connect Authentication Request (so that an ID Token will be
+        returned from the Token Endpoint). *)
 end
 
 (** {2 Utils} *)

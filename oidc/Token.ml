@@ -12,10 +12,12 @@ let basic_auth ~client_id ~secret =
   let username = clean_string client_id in
   let password = clean_string secret in
 
-  Log.debug (fun m -> m "username: %s, secret: %s" username password);
+  Log.debug (fun m -> m "username: %s, secret: %s" username password)
+  [@coverage off];
 
   let b64 = RBase64.encode_string (Printf.sprintf "%s:%s" username password) in
-  Log.debug (fun m -> m "Basic auth: %s" b64);
+
+  Log.debug (fun m -> m "Basic auth: %s" b64) [@coverage off];
   ("Authorization", "Basic " ^ b64)
 
 module Request = TokenRequest

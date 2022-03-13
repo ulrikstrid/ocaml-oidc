@@ -1,6 +1,4 @@
-(**
-  Types and functions to work with clients
-*)
+(** Types and functions to work with clients *)
 
 (** {2 Standard client} *)
 
@@ -22,4 +20,4 @@ val make :
   token_endpoint_auth_method:string ->
   string ->
   t
-(** Create a {{! t}OAuth2 Client} *)
+(** Create a {{!t} OAuth2 Client} *)

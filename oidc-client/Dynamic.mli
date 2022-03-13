@@ -1,8 +1,8 @@
 (** Dynamic registration functions *)
 
-(**
-    All functions in this module maps to the base functions but will create a Client "just in time" and make sure you always have a fresh Client to work with.
-    *)
+(** All functions in this module maps to the base functions but will create a
+    Client "just in time" and make sure you always have a fresh Client to work
+    with. *)
 
 type 'store t = {
   kv : (module KeyValue.KV with type value = string and type store = 'store);
@@ -24,7 +24,8 @@ val register :
   'store t ->
   Oidc.Client.meta ->
   (Oidc.Client.dynamic_response, Piaf.Error.t) result Lwt.t
-(** Register a dynamic client, this will mostly be handled for you automatically but can be useful *)
+(** Register a dynamic client, this will mostly be handled for you automatically
+    but can be useful *)
 
 val get_jwks : 'store t -> (Jose.Jwks.t, Piaf.Error.t) result Lwt.t
 

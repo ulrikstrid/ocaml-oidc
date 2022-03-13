@@ -1,7 +1,6 @@
-(** Helpers to work with Microsft Azure AD 
+(** Helpers to work with Microsft Azure AD
 
-    Convenience module to work with Microsft Azure AD
-    *)
+    Convenience module to work with Microsft Azure AD *)
 
 val make :
   kv:(module KeyValue.KV with type store = 'store and type value = string) ->

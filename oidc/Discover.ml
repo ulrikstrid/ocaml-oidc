@@ -1,4 +1,5 @@
-(* All fields listed here: https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata *)
+(* All fields listed here:
+   https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata *)
 type t = {
   issuer : Uri.t;
   authorization_endpoint : Uri.t;
