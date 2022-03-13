@@ -20,8 +20,8 @@ let of_json json =
     | `Null -> []
     | `String scope -> [scope]
     | `List json ->
-      (* Some OIDC providers (Twitch for example) return an array of strings
-         for scope. *)
+      (* Some OIDC providers (Twitch for example) return an array of strings for
+         scope. *)
       List.map Json.to_string json
     | json ->
       raise
@@ -30,7 +30,8 @@ let of_json json =
   in
   {
     token_type = Bearer;
-    (* Only Bearer is supported by OIDC, TODO = return a error if it is not Bearer *)
+    (* Only Bearer is supported by OIDC, TODO = return a error if it is not
+       Bearer *)
     scope;
     expires_in = json |> Json.member "expires_in" |> Json.to_int_option;
     access_token = json |> Json.member "access_token" |> Json.to_string_option;
@@ -47,7 +48,8 @@ let of_query query =
 
   {
     token_type = Bearer;
-    (* Only Bearer is supported by OIDC, TODO = return a error if it is not Bearer *)
+    (* Only Bearer is supported by OIDC, TODO = return a error if it is not
+       Bearer *)
     scope;
     expires_in =
       Uri.get_query_param query "expires_in" |> Option.map int_of_string;
@@ -72,7 +74,8 @@ let validate ?clock_tolerance ?nonce ~jwks ~(client : Client.t)
         IDToken.validate ?clock_tolerance ?nonce ~client
           ~issuer:discovery.issuer ~jwk jwt
         |> Result.map (fun _ -> t)
-      (* When there is only 1 key in the jwks we can try with that according to the OIDC spec *)
+      (* When there is only 1 key in the jwks we can try with that key according to
+         the OIDC spec *)
       | None when List.length jwks.keys = 1 ->
         let jwk = List.hd jwks.keys in
         IDToken.validate ?clock_tolerance ?nonce ~client

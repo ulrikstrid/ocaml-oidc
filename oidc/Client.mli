@@ -1,6 +1,4 @@
-(**
-  Types and functions to work with clients
-*)
+(** Types and functions to work with clients *)
 
 (** {2 Standard client} *)
 
@@ -22,9 +20,9 @@ val make :
   token_endpoint_auth_method:string ->
   string ->
   t
-(** Create a {{! t}OIDC Client} *)
+(** Create a {{!t} OIDC Client} *)
 
-(** {2 Dynamic registration } *)
+(** {2 Dynamic registration} *)
 
 type meta = {
   redirect_uris : Uri.t list;
@@ -44,9 +42,7 @@ type meta = {
       (** TODO: Use subject_type type; "pairwise" or "public" *)
   id_token_signed_response_alg : Jose.Jwa.alg option;
 }
-(**
-Metadata used in registration of dynamic clients
- *)
+(** Metadata used in registration of dynamic clients *)
 
 val make_meta :
   ?response_types:string list ->
@@ -80,9 +76,7 @@ type dynamic_response = {
   client_id_expires_at : int option;  (** seconds from 1970-01-01T0:0:0Z UTC *)
   application_type : string option;
 }
-(**
-The actual response response should also include the {{! meta }metadata}
- *)
+(** The actual response response should also include the {{!meta} metadata} *)
 
 val dynamic_is_expired : dynamic_response -> bool
 (** This is useful to know if you have to re-register your client *)
@@ -93,4 +87,4 @@ val dynamic_of_json :
 val dynamic_of_string : string -> (dynamic_response, [> `Msg of string]) result
 
 val of_dynamic_and_meta : dynamic:dynamic_response -> meta:meta -> t
-(** Createa a {{! t}OIDC Client} from {!dynamic} and {!meta} *)
+(** Createa a {{!t} OIDC Client} from {!dynamic} and {!meta} *)

@@ -24,8 +24,6 @@ type validation_error =
 
 val validation_error_to_string : validation_error -> string
 
-val pp_validation_error : validation_error Fmt.t
-
 val validate :
   ?clock_tolerance:int ->
   ?nonce:string ->

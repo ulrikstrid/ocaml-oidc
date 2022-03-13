@@ -17,4 +17,5 @@ app.yml
 junit.xml
 _coverage
 .google.env
+.github.env
 .direnv

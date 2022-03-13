@@ -1,6 +1,0 @@
-(library
- (name oauth)
- (public_name oauth)
- (libraries uri yojson base64)
- (instrumentation
-  (backend bisect_ppx)))

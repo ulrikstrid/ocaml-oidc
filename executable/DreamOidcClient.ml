@@ -18,7 +18,7 @@ Google has a bunch of different URLs so we will have to get back to this...
 module HttpClient = struct
   let start () =
     let client = Piaf.Client.create provider_uri in
-    Lwt_result.map_err map_piaf_error client
+    Lwt_result.map_error map_piaf_error client
 
   let stop http_client =
     Piaf.Client.shutdown http_client
@@ -35,7 +35,7 @@ module Discovery = struct
     Piaf.Client.Oneshot.get uri
     >>= (fun response -> Piaf.Body.to_string response.body)
     >|= (fun s -> Oidc.Discover.of_string s)
-    |> Lwt_result.map_err PiafOidc.map_piaf_error
+    |> Lwt_result.map_error PiafOidc.map_piaf_error
 
   let stop _ = Lwt.return ()
   let component = Archi_lwt.Component.make ~start ~stop
@@ -51,7 +51,7 @@ module JWKs = struct
     Piaf.Client.Oneshot.get discovery.jwks_uri
     >>= PiafOidc.to_string_body
     >|= Jose.Jwks.of_string
-    |> Lwt_result.map_err PiafOidc.map_piaf_error
+    |> Lwt_result.map_error PiafOidc.map_piaf_error
 
   let stop _ = Lwt.return ()
   let component = Archi_lwt.Component.using ~start ~stop ~dependencies

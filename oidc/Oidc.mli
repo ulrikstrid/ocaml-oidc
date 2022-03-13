@@ -1,8 +1,8 @@
-(** {2 High level API } *)
+(** {2 High level API} *)
 
 module SimpleClient = SimpleClient
 
-(** {2 Lower  level constructs }*)
+(** {2 Lower level constructs}*)
 
 module Client = Client
 module Discover = Discover

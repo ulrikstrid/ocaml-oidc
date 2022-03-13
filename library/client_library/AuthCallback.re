@@ -15,11 +15,11 @@ let make = (req: Morph.Request.t) => {
           | _ => Lwt_result.fail(`Msg("Method not supported"))
           }
         )
-        |> Lwt_result.map_err(_ => `Msg("No params provided"));
+        |> Lwt_result.map_error(_ => `Msg("No params provided"));
 
       let* provider =
         Morph.Middlewares.Session.get(req, ~key="provider")
-        |> Lwt_result.map_err(_ => `Msg("No provider set in session"));
+        |> Lwt_result.map_error(_ => `Msg("No provider set in session"));
 
       Logs.info(m => m("Handling callback with client %s", provider));
       let oidc_client = Context.get_client(req, provider);
@@ -32,13 +32,13 @@ let make = (req: Morph.Request.t) => {
 
       let* nonce =
         Morph.Middlewares.Session.get(req, ~key="nonce")
-        |> Lwt_result.map_err(_ => `Msg("No nonce set in session"));
+        |> Lwt_result.map_error(_ => `Msg("No nonce set in session"));
 
       Logs.info(m => m("nonce on auth callback: %s", nonce));
 
       let* state =
         Morph.Middlewares.Session.get(req, ~key="state")
-        |> Lwt_result.map_err(_ => `Msg("State not found in session"));
+        |> Lwt_result.map_error(_ => `Msg("State not found in session"));
 
       let* auth_result =
         OidcClient.Dynamic.get_auth_result(
