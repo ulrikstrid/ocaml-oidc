@@ -13,7 +13,7 @@ let make ?(token_type = Bearer) ?(scope = []) ?expires_in ?access_token
     ?refresh_token ?id_token () =
   { token_type; scope; expires_in; access_token; refresh_token; id_token }
 
-let of_json json =
+let of_yojson json =
   let module Json = Yojson.Safe.Util in
   let scope =
     match Json.member "scope" json with
@@ -58,7 +58,7 @@ let of_query query =
     id_token = Uri.get_query_param query "id_token";
   }
 
-let of_string str = Yojson.Safe.from_string str |> of_json
+let of_string str = Yojson.Safe.from_string str |> of_yojson
 
 let validate ?clock_tolerance ?nonce ~jwks ~(client : Client.t)
     ~(discovery : Discover.t) t =
@@ -84,7 +84,7 @@ let validate ?clock_tolerance ?nonce ~jwks ~(client : Client.t)
       | None -> Error (`Msg "Could not find JWK"))
   | Error e -> Error e
 
-let to_json { scope; expires_in; access_token; refresh_token; id_token; _ } =
+let to_yojson { scope; expires_in; access_token; refresh_token; id_token; _ } =
   let or_null = Option.value ~default:`Null in
   let json_str = Option.map (fun x -> `String x) in
   `Assoc

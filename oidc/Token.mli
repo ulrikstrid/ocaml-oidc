@@ -25,9 +25,9 @@ module Response : sig
     unit ->
     t
 
-  val of_json : Yojson.Safe.t -> t
+  val of_yojson : Yojson.Safe.t -> t
   val of_string : string -> t
-  val to_json : t -> Yojson.Safe.t
+  val to_yojson : t -> Yojson.Safe.t
 
   val validate :
     ?clock_tolerance:int ->

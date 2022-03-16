@@ -59,7 +59,7 @@ let handle: Morph.Server.handler =
           let () = Logs.info(m => m("userinfo: %s", userinfo));
           let jwt = Jose.Jwt.of_string(id_token) |> Result.get_ok;
           let header =
-            Yojson.Safe.pretty_to_string(jwt.header |> Jose.Header.to_json);
+            Yojson.Safe.pretty_to_string(jwt.header |> Jose.Header.to_yojson);
           let payload = Yojson.Safe.pretty_to_string(jwt.payload);
 
           TyxmlRender.respond_html(

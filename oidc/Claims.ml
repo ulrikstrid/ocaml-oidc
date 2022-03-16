@@ -14,7 +14,7 @@ type ('a, 'b) t = {
 let get_essential value =
   Yojson.Safe.Util.(to_option (fun v -> member "essential" v |> to_bool) value)
 
-let from_json json =
+let of_yojson json =
   Yojson.Safe.
     {
       id_token =
@@ -37,4 +37,4 @@ let from_json json =
                   | _ -> NonEssential key));
     }
 
-let from_string str = Yojson.Safe.from_string str |> from_json
+let from_string str = Yojson.Safe.from_string str |> of_yojson

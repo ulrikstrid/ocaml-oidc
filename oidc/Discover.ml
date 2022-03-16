@@ -16,7 +16,7 @@ type t = {
 }
 
 (* TODO: Should maybe be a result? *)
-let of_json json =
+let of_yojson json =
   Yojson.Safe.Util.
     {
       authorization_endpoint =
@@ -53,9 +53,9 @@ let of_json json =
     }
 
 (* TODO: Should maybe be a result? *)
-let of_string body = Yojson.Safe.from_string body |> of_json
+let of_string body = Yojson.Safe.from_string body |> of_yojson
 
-let to_json t =
+let to_yojson t =
   let userinfo_endpoint =
     match Option.map Uri.to_string t.userinfo_endpoint with
     | Some s -> `String s

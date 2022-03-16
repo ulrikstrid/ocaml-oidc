@@ -19,10 +19,10 @@ type t = {
 (** {i The discovery type can include much more than the type currently
        includes. Feel free to open a PR adding anything you need} *)
 
-val of_json : Yojson.Safe.t -> t
+val of_yojson : Yojson.Safe.t -> t
 (** {i This might change to return a result in the future} *)
 
 val of_string : string -> t
 (** {i This might change to return a result in the future} *)
 
-val to_json : t -> Yojson.Safe.t
+val to_yojson : t -> Yojson.Safe.t

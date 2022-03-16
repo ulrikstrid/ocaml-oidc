@@ -63,7 +63,7 @@ let make_meta ?(response_types : string list option)
     id_token_signed_response_alg;
   }
 
-let meta_to_json meta =
+let meta_to_yojson meta =
   let open Utils in
   let values =
     [
@@ -81,34 +81,35 @@ let meta_to_json meta =
         (fun grant_types ->
           ("grant_types", `List (List.map (fun s -> `String s) grant_types)))
         meta.grant_types;
-      RJson.to_json_string_opt "application_type" meta.application_type;
+      RJson.to_yojson_string_opt "application_type" meta.application_type;
       Option.map
         (fun contacts ->
           ("contacts", `List (List.map (fun s -> `String s) contacts)))
         meta.contacts;
-      RJson.to_json_string_opt "client_name" meta.client_name;
-      RJson.to_json_string_opt "token_endpoint_auth_method"
+      RJson.to_yojson_string_opt "client_name" meta.client_name;
+      RJson.to_yojson_string_opt "token_endpoint_auth_method"
         meta.token_endpoint_auth_method;
-      RJson.to_json_string_opt "logo_uri"
+      RJson.to_yojson_string_opt "logo_uri"
         (Option.map Uri.to_string meta.logo_uri);
-      RJson.to_json_string_opt "client_uri"
+      RJson.to_yojson_string_opt "client_uri"
         (Option.map Uri.to_string meta.client_uri);
-      RJson.to_json_string_opt "policy_uri"
+      RJson.to_yojson_string_opt "policy_uri"
         (Option.map Uri.to_string meta.policy_uri);
-      RJson.to_json_string_opt "tos_uri" (Option.map Uri.to_string meta.tos_uri);
-      RJson.to_json_string_opt "jwks_uri"
+      RJson.to_yojson_string_opt "tos_uri"
+        (Option.map Uri.to_string meta.tos_uri);
+      RJson.to_yojson_string_opt "jwks_uri"
         (Option.map Uri.to_string meta.jwks_uri);
-      RJson.to_json_string_opt "sector_identifier_uri"
+      RJson.to_yojson_string_opt "sector_identifier_uri"
         (Option.map Uri.to_string meta.sector_identifier_uri);
-      RJson.to_json_string_opt "subject_type" meta.subject_type;
-      RJson.to_json_string_opt "id_token_signed_response_alg"
+      RJson.to_yojson_string_opt "subject_type" meta.subject_type;
+      RJson.to_yojson_string_opt "id_token_signed_response_alg"
         (Option.map Jose.Jwa.alg_to_string meta.id_token_signed_response_alg);
     ]
   in
   `Assoc (List.filter_map (fun x -> x) values)
 
 let meta_to_string c =
-  meta_to_json c
+  meta_to_yojson c
   |> Yojson.Safe.Util.to_assoc
   |> List.filter (function _, `Null -> false | _ -> true)
   |> fun l -> `Assoc l |> Yojson.Safe.to_string
@@ -130,7 +131,7 @@ let dynamic_is_expired dynamic =
 
 (* If it's not provided we assume it's valid forever *)
 
-let dynamic_of_json (json : Yojson.Safe.t) :
+let dynamic_of_yojson (json : Yojson.Safe.t) :
     (dynamic_response, [> `Msg of string]) result =
   try
     let module Json = Yojson.Safe.Util in
@@ -157,7 +158,7 @@ let dynamic_of_json (json : Yojson.Safe.t) :
   with Yojson.Safe.Util.Type_error (str, _) -> Error (`Msg str)
 
 let dynamic_of_string response =
-  Yojson.Safe.from_string response |> dynamic_of_json
+  Yojson.Safe.from_string response |> dynamic_of_yojson
 
 let of_dynamic_and_meta ~dynamic ~meta =
   let open Utils in

@@ -104,7 +104,7 @@ let get_client ~clients client_id =
   | Some client -> Ok client
   | None -> Error `Missing_client
 
-let to_json t : Yojson.Safe.t =
+let to_yojson t : Yojson.Safe.t =
   `Assoc
     ([
        Some
@@ -125,7 +125,7 @@ let to_json t : Yojson.Safe.t =
      ]
     |> List.filter_map identity)
 
-let of_json ~clients json : (t, error) result =
+let of_yojson ~clients json : (t, error) result =
   let module Json = Yojson.Safe.Util in
   try
     Ok
