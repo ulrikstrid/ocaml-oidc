@@ -4,13 +4,15 @@ let to_string_body (res : Piaf.Response.t) = Piaf.Body.to_string res.body
 
 let read_registration ~http_client ~client_id ~(discovery : Oidc.Discover.t) =
   match discovery.registration_endpoint with
-  | Some endpoint ->
+  | Some endpoint -> (
     let open Lwt_result.Infix in
     let registration_path = endpoint |> Uri.path in
     let query = Uri.encoded_of_query [("client_id", [client_id])] in
     let uri = registration_path ^ query in
     Piaf.Client.get http_client uri >>= to_string_body >>= fun s ->
-    Oidc.Client.dynamic_of_string s |> Lwt.return
+    match Oidc.Client.dynamic_of_string s with
+    | Ok s -> Lwt_result.return s
+    | Error e -> Lwt_result.fail (`Msg e))
   | None -> Lwt_result.fail (`Msg "No_registration_endpoint")
 
 let register (type store)
@@ -21,7 +23,7 @@ let register (type store)
   ( KV.get ~store "dynamic_string" >>= fun dynamic_string ->
     Lwt.return
       (match Oidc.Client.dynamic_of_string dynamic_string with
-      | Error e -> Error e
+      | Error e -> Error (`Msg e)
       | Ok dynamic ->
         if Oidc.Client.dynamic_is_expired dynamic then Error `Expired_client
         else Ok dynamic) )
@@ -39,30 +41,39 @@ let register (type store)
           let open Lwt.Syntax in
           let+ () = KV.set ~store "dynamic_string" dynamic_string in
           Ok dynamic_string )
-        >>= fun s -> Oidc.Client.dynamic_of_string s |> Lwt.return
+        >>= fun s ->
+        (match Oidc.Client.dynamic_of_string s with
+        | Ok s -> Ok s
+        | Error e -> Error (`Msg e))
+        |> Lwt.return
       | Error _, None -> Lwt_result.fail (`Msg "No_registration_endpoint"))
 
 let discover (type store)
     ~(kv : (module KeyValue.KV with type value = string and type store = store))
-    ~(store : store) ~http_client ~provider_uri =
-  let open Lwt_result.Infix in
+    ~(store : store) ~http_client ~provider_uri :
+    (Oidc.Discover.t, Piaf.Error.t) Lwt_result.t =
   let (module KV) = kv in
+  let open Lwt.Syntax in
   let save discovery =
     Log.debug (fun m -> m "discovery: %s" discovery);
-    KV.set ~store "discovery" discovery |> Lwt_result.ok >|= fun _ -> discovery
+    let+ () = KV.set ~store "discovery" discovery in
+    discovery
   in
-  Lwt.bind (KV.get ~store "discovery") (fun result ->
-      match result with
-      | Ok discovery -> Lwt_result.return discovery
-      | Error _ ->
-        let discover_path =
-          Uri.path provider_uri ^ "/.well-known/openid-configuration"
-        in
-
-        let () = print_endline (Uri.to_string provider_uri) in
-
-        Piaf.Client.get http_client discover_path >>= to_string_body >>= save)
-  |> Lwt_result.map Oidc.Discover.of_string
+  let* result = KV.get ~store "discovery" in
+  let open Lwt_result.Syntax in
+  let* discovery =
+    match result with
+    | Ok discovery -> Lwt_result.return discovery
+    | Error _ ->
+      let discover_path =
+        Uri.path provider_uri ^ "/.well-known/openid-configuration"
+      in
+      let* response = Piaf.Client.get http_client discover_path in
+      let* body = to_string_body response in
+      Lwt.bind (save body) (fun body -> Lwt_result.return body)
+  in
+  Lwt.return
+    (Result.map_error (fun x -> `Msg x) (Oidc.Discover.of_string discovery))
 
 let jwks (type store)
     ~(kv : (module KeyValue.KV with type value = string and type store = store))

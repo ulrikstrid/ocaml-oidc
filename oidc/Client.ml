@@ -131,8 +131,8 @@ let dynamic_is_expired dynamic =
 
 (* If it's not provided we assume it's valid forever *)
 
-let dynamic_of_yojson (json : Yojson.Safe.t) :
-    (dynamic_response, [> `Msg of string]) result =
+let dynamic_of_yojson (json : Yojson.Safe.t) : (dynamic_response, string) result
+    =
   try
     let module Json = Yojson.Safe.Util in
     Ok
@@ -155,7 +155,7 @@ let dynamic_of_yojson (json : Yojson.Safe.t) :
         application_type =
           json |> Json.member "application_type" |> Json.to_string_option;
       }
-  with Yojson.Safe.Util.Type_error (str, _) -> Error (`Msg str)
+  with Yojson.Safe.Util.Type_error (str, _) -> Error str
 
 let dynamic_of_string response =
   Yojson.Safe.from_string response |> dynamic_of_yojson

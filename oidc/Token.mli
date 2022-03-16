@@ -25,8 +25,8 @@ module Response : sig
     unit ->
     t
 
-  val of_yojson : Yojson.Safe.t -> t
-  val of_string : string -> t
+  val of_yojson : Yojson.Safe.t -> (t, string) result
+  val of_string : string -> (t, string) result
   val to_yojson : t -> Yojson.Safe.t
 
   val validate :

@@ -15,42 +15,47 @@ type t = {
       (* "RS256" must be supported, get list from Jose? *)
 }
 
-(* TODO: Should maybe be a result? *)
 let of_yojson json =
-  Yojson.Safe.Util.
-    {
-      authorization_endpoint =
-        json |> member "authorization_endpoint" |> to_string |> Uri.of_string;
-      token_endpoint =
-        json |> member "token_endpoint" |> to_string |> Uri.of_string;
-      jwks_uri = json |> member "jwks_uri" |> to_string |> Uri.of_string;
-      userinfo_endpoint =
-        json
-        |> member "userinfo_endpoint"
-        |> to_string_option
-        |> Option.map Uri.of_string;
-      issuer = json |> member "issuer" |> to_string |> Uri.of_string;
-      registration_endpoint =
-        json
-        |> member "registration_endpoint"
-        |> to_string_option
-        |> Option.map Uri.of_string;
-      response_types_supported =
-        json
-        |> member "response_types_supported"
-        |> to_list
-        |> List.map to_string;
-      subject_types_supported =
-        json
-        |> member "subject_types_supported"
-        |> to_list
-        |> List.map to_string;
-      id_token_signing_alg_values_supported =
-        json
-        |> member "id_token_signing_alg_values_supported"
-        |> to_list
-        |> List.map to_string;
-    }
+  try
+    Ok
+      Yojson.Safe.Util.
+        {
+          authorization_endpoint =
+            json
+            |> member "authorization_endpoint"
+            |> to_string
+            |> Uri.of_string;
+          token_endpoint =
+            json |> member "token_endpoint" |> to_string |> Uri.of_string;
+          jwks_uri = json |> member "jwks_uri" |> to_string |> Uri.of_string;
+          userinfo_endpoint =
+            json
+            |> member "userinfo_endpoint"
+            |> to_string_option
+            |> Option.map Uri.of_string;
+          issuer = json |> member "issuer" |> to_string |> Uri.of_string;
+          registration_endpoint =
+            json
+            |> member "registration_endpoint"
+            |> to_string_option
+            |> Option.map Uri.of_string;
+          response_types_supported =
+            json
+            |> member "response_types_supported"
+            |> to_list
+            |> List.map to_string;
+          subject_types_supported =
+            json
+            |> member "subject_types_supported"
+            |> to_list
+            |> List.map to_string;
+          id_token_signing_alg_values_supported =
+            json
+            |> member "id_token_signing_alg_values_supported"
+            |> to_list
+            |> List.map to_string;
+        }
+  with Yojson.Safe.Util.Type_error (str, _) -> Error str
 
 (* TODO: Should maybe be a result? *)
 let of_string body = Yojson.Safe.from_string body |> of_yojson

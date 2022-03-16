@@ -14,30 +14,35 @@ let make ?(token_type = Bearer) ?(scope = []) ?expires_in ?access_token
   { token_type; scope; expires_in; access_token; refresh_token; id_token }
 
 let of_yojson json =
-  let module Json = Yojson.Safe.Util in
-  let scope =
-    match Json.member "scope" json with
-    | `Null -> []
-    | `String scope -> [scope]
-    | `List json ->
-      (* Some OIDC providers (Twitch for example) return an array of strings for
-         scope. *)
-      List.map Json.to_string json
-    | json ->
-      raise
-        (Json.Type_error
-           ("scope: expected a string or an array of strings", json))
-  in
-  {
-    token_type = Bearer;
-    (* Only Bearer is supported by OIDC, TODO = return a error if it is not
-       Bearer *)
-    scope;
-    expires_in = json |> Json.member "expires_in" |> Json.to_int_option;
-    access_token = json |> Json.member "access_token" |> Json.to_string_option;
-    refresh_token = json |> Json.member "refresh_token" |> Json.to_string_option;
-    id_token = json |> Json.member "id_token" |> Json.to_string_option;
-  }
+  try
+    let module Json = Yojson.Safe.Util in
+    let scope =
+      match Json.member "scope" json with
+      | `Null -> []
+      | `String scope -> [scope]
+      | `List json ->
+        (* Some OIDC providers (Twitch for example) return an array of strings for
+           scope. *)
+        List.map Json.to_string json
+      | json ->
+        raise
+          (Json.Type_error
+             ("scope: expected a string or an array of strings", json))
+    in
+    Ok
+      {
+        token_type = Bearer;
+        (* Only Bearer is supported by OIDC, TODO = return a error if it is not
+           Bearer *)
+        scope;
+        expires_in = json |> Json.member "expires_in" |> Json.to_int_option;
+        access_token =
+          json |> Json.member "access_token" |> Json.to_string_option;
+        refresh_token =
+          json |> Json.member "refresh_token" |> Json.to_string_option;
+        id_token = json |> Json.member "id_token" |> Json.to_string_option;
+      }
+  with Yojson.Safe.Util.Type_error (str, _) -> Error str
 
 let of_query query =
   let scope =
