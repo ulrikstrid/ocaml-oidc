@@ -58,7 +58,9 @@ let get_token ~code t =
   Log.debug (fun m -> m "Getting token with client_id: %s" t.client.id);
   Piaf.Client.post t.http_client ~headers ~body token_path
   >>= Internal.to_string_body
-  >|= Oidc.Token.Response.of_string
+  >>= fun x ->
+  Lwt.return
+    (Result.map_error (fun x -> `Msg x) (Oidc.Token.Response.of_string x))
 
 let get_and_validate_id_token ?nonce ~code t =
   let open Lwt_result.Syntax in

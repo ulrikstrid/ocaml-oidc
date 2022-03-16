@@ -39,7 +39,7 @@ let post_handler clients interaction_id (req : Morph.Request.t) =
     let password = List.assoc "password" parsed |> List.hd in
     let user = User.find_valid email password |> Option.get in
     let auth_params =
-      Oidc.Parameters.of_json ~clients (Yojson.Safe.from_string params)
+      Oidc.Parameters.of_yojson ~clients (Yojson.Safe.from_string params)
       |> Result.get_ok
     in
     let code = CodeStore.create_code () in

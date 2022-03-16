@@ -15,8 +15,8 @@ let auth_handler ~discovery ~client ~scope request =
   Dream.redirect request @@ Uri.to_string uri
 
 let callback_handler ~redirect_to ~discovery ~jwks ~client request =
-  let code = Dream.query "code" request in
-  let _state = Dream.query "state" request in
+  let code = Dream.query request "code" in
+  let _state = Dream.query request "state" in
   match code with
   | None -> Dream.respond "No code received"
   | Some code -> (
@@ -87,7 +87,9 @@ let middleware ?(auth_endpoint = "/auth")
   in
 
   let check_auth inner_handler request =
-    let current_path = Dream.to_path @@ Dream.path request in
+    let[@ocaml.warning "-3"] current_path =
+      Dream.to_path @@ Dream.path request
+    in
     if current_path <> auth_endpoint && current_path <> callback_endpoint then
       let id_token = Dream.session "id_token" request in
       let access_token = Dream.session "access_token" request in
@@ -99,4 +101,4 @@ let middleware ?(auth_endpoint = "/auth")
     else inner_handler request
   in
 
-  Dream.pipeline [check_auth; Dream.router routes]
+  Dream.pipeline [check_auth; (fun _handler -> Dream.router routes)]

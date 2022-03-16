@@ -93,8 +93,12 @@ let make_auth_uri ?scope ?claims ?nonce ~state ~discovery t =
   Uri.add_query_params discovery.Discover.authorization_endpoint query
 
 let valid_token_of_string ?clock_tolerance ~jwks ~discovery t body =
-  Token.Response.of_string body
-  |> Token.Response.validate ?clock_tolerance ~jwks ~discovery ~client:t.client
+  let ret = Token.Response.of_string body in
+  match ret with
+  | Ok ret ->
+    Token.Response.validate ?clock_tolerance ~jwks ~discovery ~client:t.client
+      ret
+  | Error e -> Error (`Msg e)
 
 let valid_userinfo_of_string ~(token_response : Token.Response.t) userinfo =
   match Jose.Jwt.of_string (Option.get token_response.id_token) with

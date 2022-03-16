@@ -5,7 +5,7 @@ let handler clients (req : Morph.Request.t) =
     let open Lwt.Infix in
     let uuid = Uuidm.create `V4 in
     let uuid_str = Uuidm.to_string uuid in
-    let params_json = params |> Oidc.Parameters.to_json in
+    let params_json = params |> Oidc.Parameters.to_yojson in
     Morph.Middlewares.Session.set req
       ~value:(Yojson.Safe.to_string params_json)
       ~key:uuid_str

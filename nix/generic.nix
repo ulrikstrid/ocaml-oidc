@@ -72,7 +72,7 @@ rec {
     propagatedBuildInputs = [
       oidc
       jose
-      piaf-dream-compat
+      piaf
       uri
       yojson
       logs
@@ -113,7 +113,7 @@ rec {
       oidc
       oauth
       jose
-      piaf-dream-compat
+      piaf
       uri
       yojson
       logs
@@ -123,49 +123,49 @@ rec {
       cohttp-lwt-unix
     ];
   };
-/*
-  morph-oidc-client = buildDunePackage {
+  /*
+    morph-oidc-client = buildDunePackage {
     pname = "morph-oidc-client";
     version = "1.0.0-dev";
 
     src = lib.filterGitSource {
-      src = ./..;
-      dirs = [ "executable" "library" ];
-      files = [ "dune-project" "morph-oidc-client.opam" ];
+    src = ./..;
+    dirs = [ "executable" "library" ];
+    files = [ "dune-project" "morph-oidc-client.opam" ];
     };
 
     useDune2 = true;
 
     propagatedBuildInputs = [
-      reason
-      tyxml
-      tyxml-jsx
-      tyxml-ppx
-      archi
-      archi-lwt
-      fmt
-      lwt
-      routes
-      uuidm
-      oidc
-      jose
-      piaf
-      uri
-      yojson
-      logs
-      morph
-      pkgs.gmp
-      dream
-      cohttp
-      cohttp-lwt-unix
+    reason
+    tyxml
+    tyxml-jsx
+    tyxml-ppx
+    archi
+    archi-lwt
+    fmt
+    lwt
+    routes
+    uuidm
+    oidc
+    jose
+    piaf
+    uri
+    yojson
+    logs
+    morph
+    pkgs.gmp
+    dream
+    cohttp
+    cohttp-lwt-unix
     ];
 
     inherit doCheck;
 
     meta = {
-      description = "OpenID Connect Relaying Party implementation built ontop of Piaf.";
-      license = lib.licenses.bsd3;
+    description = "OpenID Connect Relaying Party implementation built ontop of Piaf.";
+    license = lib.licenses.bsd3;
     };
-  };
+    };
   */
 }

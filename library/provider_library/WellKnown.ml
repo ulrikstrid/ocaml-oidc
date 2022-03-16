@@ -14,5 +14,5 @@ let metadata =
     }
 
 let handler _ =
-  Morph.Response.json (Oidc.Discover.to_json metadata |> Yojson.Safe.to_string)
+  Morph.Response.json (Oidc.Discover.to_yojson metadata |> Yojson.Safe.to_string)
   |> Lwt.return

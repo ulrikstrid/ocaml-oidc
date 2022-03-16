@@ -25,7 +25,7 @@ val make :
   string ->
   t
 (** Create a simple client, it creates a {{!type:Client.t} oidc client} with some optional defaults.
-    
+
     Defaults:
     - [response_types] - [["code"]]
     - [grant_types] - [[]]
@@ -89,7 +89,7 @@ val valid_token_of_string :
   discovery:Discover.t ->
   t ->
   string ->
-  (Token.Response.t, [> IDToken.validation_error]) result
+  (Token.Response.t, [> `Msg of string | IDToken.validation_error]) result
 (** Will parse the string and validate the token
 
 [clock_tolerance] is used to allow a difference between the providers and clients clock *)
@@ -103,7 +103,7 @@ val valid_userinfo_of_string :
 
 This example is written as if your http client is synchronos since we don't have a [Lwt] or [Async] dependency in the core.
 For a more complete example  look in the [executable] folder.
-  
+
 {3 Server start }
 
 We have to do some things when the server starts to prepare
@@ -172,13 +172,13 @@ match (validated_token, userinfo) with
   let refresh_token =
     Option.value ~default:"no refresh_token" tokens.refresh_token
   in
-  
+
   (* Save the values in session for later retrieval *)
   let () = HttpServer.put_session "id_token" id_token request in
   let () = HttpServer.put_session "access_token" access_token request in
   let () = HttpServer.put_session "refresh_token" refresh_token request in
   let () = HttpServer.put_session "userinfo" userinfo request in
-  
+
   HttServer.respond id_token
 | Error e -> HttpServer.respond @@ Oidc.Error.to_string e
 ]}

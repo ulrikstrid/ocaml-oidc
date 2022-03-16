@@ -13,31 +13,36 @@ let make ?(token_type = Bearer) ?(scope = []) ?expires_in ?access_token
     ?refresh_token ?id_token () =
   { token_type; scope; expires_in; access_token; refresh_token; id_token }
 
-let of_json json =
-  let module Json = Yojson.Safe.Util in
-  let scope =
-    match Json.member "scope" json with
-    | `Null -> []
-    | `String scope -> [scope]
-    | `List json ->
-      (* Some OIDC providers (Twitch for example) return an array of strings for
-         scope. *)
-      List.map Json.to_string json
-    | json ->
-      raise
-        (Json.Type_error
-           ("scope: expected a string or an array of strings", json))
-  in
-  {
-    token_type = Bearer;
-    (* Only Bearer is supported by OIDC, TODO = return a error if it is not
-       Bearer *)
-    scope;
-    expires_in = json |> Json.member "expires_in" |> Json.to_int_option;
-    access_token = json |> Json.member "access_token" |> Json.to_string_option;
-    refresh_token = json |> Json.member "refresh_token" |> Json.to_string_option;
-    id_token = json |> Json.member "id_token" |> Json.to_string_option;
-  }
+let of_yojson json =
+  try
+    let module Json = Yojson.Safe.Util in
+    let scope =
+      match Json.member "scope" json with
+      | `Null -> []
+      | `String scope -> [scope]
+      | `List json ->
+        (* Some OIDC providers (Twitch for example) return an array of strings for
+           scope. *)
+        List.map Json.to_string json
+      | json ->
+        raise
+          (Json.Type_error
+             ("scope: expected a string or an array of strings", json))
+    in
+    Ok
+      {
+        token_type = Bearer;
+        (* Only Bearer is supported by OIDC, TODO = return a error if it is not
+           Bearer *)
+        scope;
+        expires_in = json |> Json.member "expires_in" |> Json.to_int_option;
+        access_token =
+          json |> Json.member "access_token" |> Json.to_string_option;
+        refresh_token =
+          json |> Json.member "refresh_token" |> Json.to_string_option;
+        id_token = json |> Json.member "id_token" |> Json.to_string_option;
+      }
+  with Yojson.Safe.Util.Type_error (str, _) -> Error str
 
 let of_query query =
   let scope =
@@ -58,7 +63,7 @@ let of_query query =
     id_token = Uri.get_query_param query "id_token";
   }
 
-let of_string str = Yojson.Safe.from_string str |> of_json
+let of_string str = Yojson.Safe.from_string str |> of_yojson
 
 let validate ?clock_tolerance ?nonce ~jwks ~(client : Client.t)
     ~(discovery : Discover.t) t =
@@ -84,7 +89,7 @@ let validate ?clock_tolerance ?nonce ~jwks ~(client : Client.t)
       | None -> Error (`Msg "Could not find JWK"))
   | Error e -> Error e
 
-let to_json { scope; expires_in; access_token; refresh_token; id_token; _ } =
+let to_yojson { scope; expires_in; access_token; refresh_token; id_token; _ } =
   let or_null = Option.value ~default:`Null in
   let json_str = Option.map (fun x -> `String x) in
   `Assoc

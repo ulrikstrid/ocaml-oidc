@@ -52,8 +52,8 @@ val make :
 val to_query : t -> (string * string list) list
 (** Used when starting a authentication *)
 
-val to_json : t -> Yojson.Safe.t
-val of_json : clients:Client.t list -> Yojson.Safe.t -> (t, error) result
+val to_yojson : t -> Yojson.Safe.t
+val of_yojson : clients:Client.t list -> Yojson.Safe.t -> (t, error) result
 
 (** {2 Parsing in the provider} *)
 
