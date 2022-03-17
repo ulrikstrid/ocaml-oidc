@@ -1,0 +1,53 @@
+name: Main workflow
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+  schedule:
+    # Prime the caches every Monday
+    - cron: 0 1 * * MON
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
+          - windows-latest
+        ocaml-compiler:
+          - 4.13.x
+          - 4.08.x
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Use OCaml ${{ matrix.ocaml-compiler }}
+        uses: ocaml/setup-ocaml@v2
+        with:
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+
+      - run: opam install ./oidc.opam --deps-only --with-test
+
+      - run: opam exec -- dune build -p oidc
+
+      - run: opam exec -- dune runtest -p oidc
+
+      - name: Lint doc
+        if: ${{ matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '4.13.x' }}
+        uses: ocaml/setup-ocaml/lint-doc@v2
+
+      - name: Lint fmt
+        if: ${{ matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '4.13.x' }}
+        uses: ocaml/setup-ocaml/lint-fmt@v2
+
+      - name: Lint opam
+        if: ${{ matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '4.13.x' }}
+        uses: ocaml/setup-ocaml/lint-opam@v2
