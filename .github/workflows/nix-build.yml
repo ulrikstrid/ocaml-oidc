@@ -18,7 +18,8 @@ jobs:
 
       - uses: cachix/cachix-action@v10
         with:
-          name: anmonteiro
+          name: stridtech
+          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
 
       - name: "Run nix flake check"
         run: nix flake check
@@ -27,11 +28,8 @@ jobs:
         run: nix develop -c dune runtest --instrument-with bisect_ppx --force --no-buffer
 
       - name: Send coverage report
-        run: nix develop -c bisect-ppx-report send-to Coveralls
+        run: nix develop -c bisect-ppx-report send-to Codecov
         if: ${{ matrix.os == 'ubuntu-latest' }}
-        env:
-          COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PULL_REQUEST_NUMBER: ${{ github.event.number }}
 
       - name: "Generate documentation"
         run: nix develop -c dune build @doc --force --no-buffer
