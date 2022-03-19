@@ -2,7 +2,7 @@ open Utils
 
 type t = {
   grant_type : string;
-  scope : string list;
+  scope : Scopes.t list;
   code : string;
   client_id : string;
   client_secret : string option;
@@ -22,7 +22,7 @@ let make ~(client : Client.t) ~grant_type ~scope ~redirect_uri ~code =
 let to_body_string t =
   [
     ("grant_type", [t.grant_type]);
-    ("scope", t.scope);
+    ("scope", [Scopes.to_scope_parameter t.scope]);
     ("code", [t.code]);
     ("client_id", [t.client_id]);
     ("client_secret", [t.client_secret |> ROpt.get_or ~default:"secret"]);
@@ -43,7 +43,7 @@ let to_body_string t =
 let of_body_string body =
   let query = Uri.query_of_encoded body |> Uri.with_query Uri.empty in
   let gt = Uri.get_query_param query "grant_type" in
-  let s = Uri.get_query_param' query "scope" in
+  let s = Uri.get_query_param query "scope" in
   let c = Uri.get_query_param query "code" in
   let ci = Uri.get_query_param query "client_id" in
   let client_secret = Uri.get_query_param query "client_secret" in
@@ -53,7 +53,7 @@ let of_body_string body =
     Ok
       {
         grant_type;
-        scope;
+        scope = Scopes.of_scope_parameter scope;
         code;
         client_id;
         client_secret;

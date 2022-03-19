@@ -14,8 +14,9 @@ let () =
        [
          ( Dream.get "/auth" @@ fun request ->
            let params =
-             Oidc.Parameters.make ~scope:["repo"; "read:user"] client
-               ~redirect_uri
+             Oidc.Parameters.make
+               ~scope:[`S "repo"; `S "read:user"]
+               client ~redirect_uri
            in
            let uri = Uri.of_string "https://github.com/login/oauth/authorize" in
            let redirect_uri =
@@ -31,7 +32,8 @@ let () =
              in
              let request_body =
                Oidc.Token.Request.make ~client ~grant_type:"code"
-                 ~scope:["repo"] ~redirect_uri ~code
+                 ~scope:[`S "repo"]
+                 ~redirect_uri ~code
                |> Oidc.Token.Request.to_body_string
              in
              let open Lwt.Syntax in

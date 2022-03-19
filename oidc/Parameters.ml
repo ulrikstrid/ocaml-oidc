@@ -53,7 +53,7 @@ type t = {
   (* TODO: This should probably just be a string *)
   client : Client.t;
   redirect_uri : Uri.t;
-  scope : string list;
+  scope : Scopes.t list;
   (* Must include at least the openid scope *)
   state : string option;
   nonce : string option;
@@ -63,7 +63,7 @@ type t = {
   prompt : prompt option;
 }
 
-let make ?(response_type = ["code"]) ?(scope = ["openid"]) ?state ?claims
+let make ?(response_type = ["code"]) ?(scope = [`OpenID]) ?state ?claims
     ?max_age ?display ?prompt ?nonce client ~redirect_uri =
   {
     response_type;
@@ -85,7 +85,7 @@ let to_query t =
     Some ("response_type", t.response_type);
     Some ("client_id", [t.client.id]);
     Some ("redirect_uri", [Uri.to_string t.redirect_uri]);
-    Some ("scope", [String.concat " " t.scope]);
+    Some ("scope", [Scopes.to_scope_parameter t.scope]);
     Option.map (fun state -> ("state", [state])) t.state;
     Option.map (fun nonce -> ("nonce", [nonce])) t.nonce;
     Option.map
@@ -112,7 +112,10 @@ let to_yojson t : Yojson.Safe.t =
            `List (t.response_type |> List.map (fun r -> `String r)) );
        Some ("client_id", `String t.client.id);
        Some ("redirect_uri", `String (Uri.to_string t.redirect_uri));
-       Some ("scope", `List (t.scope |> List.map (fun r -> `String r)));
+       Some
+         ( "scope",
+           `List (t.scope |> List.map (fun r -> `String (Scopes.to_string r)))
+         );
        Option.map (fun state -> ("state", `String state)) t.state;
        Option.map (fun nonce -> ("nonce", `String nonce)) t.nonce;
        Option.map (fun claims -> ("claims", claims)) t.claims;
@@ -139,7 +142,10 @@ let of_yojson ~clients json : (t, error) result =
         redirect_uri =
           json |> Json.member "redirect_uri" |> Json.to_string |> Uri.of_string;
         scope =
-          json |> Json.member "scope" |> Json.to_list |> List.map Json.to_string;
+          json
+          |> Json.member "scope"
+          |> Json.to_list
+          |> List.map (fun s -> Scopes.of_string @@ Json.to_string s);
         state = json |> Json.member "state" |> Json.to_string_option;
         nonce = json |> Json.member "nonce" |> Json.to_string_option;
         claims = json |> Json.member "claims" |> Option.some;
@@ -180,7 +186,7 @@ let parse_query ~clients uri : (t, [> error]) result =
     let redirect_uri = getQueryParam "redirect_uri" in
 
     let scope =
-      getQueryParam "scope" |> Result.map (String.split_on_char ' ')
+      getQueryParam "scope" |> Result.map Scopes.of_scope_parameter
       (* TODO: Check for openid *)
     in
 

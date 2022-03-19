@@ -16,7 +16,7 @@ type t = {
   response_type : string list;
   client : Client.t;
   redirect_uri : Uri.t;
-  scope : string list;
+  scope : Scopes.t list;
   state : string option;
   nonce : string option;
   claims : Yojson.Safe.t option;
@@ -38,7 +38,7 @@ type error =
 
 val make :
   ?response_type:string list ->
-  ?scope:string list ->
+  ?scope:Scopes.t list ->
   ?state:string ->
   ?claims:Yojson.Safe.t ->
   ?max_age:int ->

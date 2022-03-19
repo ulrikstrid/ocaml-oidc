@@ -2,7 +2,7 @@ type token_type = Bearer
 
 type t = {
   token_type : token_type;
-  scope : string list;
+  scope : Scopes.t list;
   expires_in : int option;
   access_token : string option;
   refresh_token : string option;
@@ -19,11 +19,11 @@ let of_yojson json =
     let scope =
       match Json.member "scope" json with
       | `Null -> []
-      | `String scope -> [scope]
+      | `String scope -> Scopes.of_scope_parameter scope
       | `List json ->
         (* Some OIDC providers (Twitch for example) return an array of strings for
            scope. *)
-        List.map Json.to_string json
+        List.map Json.to_string json |> List.map Scopes.of_string
       | json ->
         raise
           (Json.Type_error
@@ -47,8 +47,7 @@ let of_yojson json =
 let of_query query =
   let scope =
     let qp = Uri.get_query_param query "scope" in
-    Option.value ~default:[]
-      (Option.map (fun qp -> String.split_on_char ' ' qp) qp)
+    Option.value ~default:[] (Option.map Scopes.of_scope_parameter qp)
   in
 
   {
@@ -95,7 +94,9 @@ let to_yojson { scope; expires_in; access_token; refresh_token; id_token; _ } =
   `Assoc
     [
       ( "scope",
-        match scope with [] -> `Null | _ -> `String (String.concat " " scope) );
+        match scope with
+        | [] -> `Null
+        | _ -> `String (Scopes.to_scope_parameter scope) );
       ("token_type", `String "Bearer");
       ("expires_in", or_null (Option.map (fun x -> `Int x) expires_in));
       ("access_token", or_null (json_str access_token));

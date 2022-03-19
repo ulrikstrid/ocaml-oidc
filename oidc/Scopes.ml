@@ -1,44 +1,31 @@
-type scope =
-  | OpenID
-  | Profile
-  | Email
-  | Address
-  | Phone
-  | NonStandard of string
+type t =
+  [ `OpenID
+  | `Profile
+  | `Email
+  | `Address
+  | `Phone
+  | `Offline_access
+  | `S of string ]
 
 let of_string = function
-  | "openid" -> OpenID
-  | "profile" -> Profile
-  | "email" -> Email
-  | "address" -> Address
-  | "phone" -> Phone
-  | non_standard -> NonStandard non_standard
+  | "openid" -> `OpenID
+  | "profile" -> `Profile
+  | "email" -> `Email
+  | "address" -> `Address
+  | "phone" -> `Phone
+  | "offline_access" -> `Offline_access
+  | non_standard -> `S non_standard
 
-let to_claims scope =
-  match scope with
-  | OpenID -> []
-  | Profile ->
-    [
-      Claims.NonEssential "name";
-      Claims.NonEssential "family_name";
-      Claims.NonEssential "given_name";
-      Claims.NonEssential "middle_name";
-      Claims.NonEssential "nickname";
-      Claims.NonEssential "preferred_username";
-      Claims.NonEssential "profile";
-      Claims.NonEssential "picture";
-      Claims.NonEssential "website";
-      Claims.NonEssential "gender";
-      Claims.NonEssential "birthdate";
-      Claims.NonEssential "zoneinfo";
-      Claims.NonEssential "locale";
-      Claims.NonEssential "updated_at";
-    ]
-  | Email -> [Claims.NonEssential "email"; Claims.NonEssential "email_verified"]
-  | Address -> [Claims.NonEssential "address"]
-  | Phone ->
-    [
-      Claims.NonEssential "phone_number";
-      Claims.NonEssential "phone_number_verified";
-    ]
-  | NonStandard s -> [Claims.Essential s]
+let to_string = function
+  | `OpenID -> "openid"
+  | `Profile -> "profile"
+  | `Email -> "email"
+  | `Address -> "address"
+  | `Phone -> "phone"
+  | `Offline_access -> "offline_access"
+  | `S s -> s
+
+let of_scope_parameter parameter =
+  String.split_on_char ' ' parameter |> List.map of_string
+
+let to_scope_parameter scopes = List.map to_string scopes |> String.concat " "
