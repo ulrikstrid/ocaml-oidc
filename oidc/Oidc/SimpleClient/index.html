@@ -8,7 +8,7 @@
   <span>provider_uri:<span class="xref-unresolved">Uri</span>.t <span class="arrow">&#45;&gt;</span></span>
   <span>string <span class="arrow">&#45;&gt;</span></span>
   <a href="#type-t">t</a></span></code></div><div class="spec-doc"><p>Create a simple client, it creates a <a href="../Client/index.html#type-t">oidc client</a> with some optional defaults.</p><p>Defaults:</p><ul><li><code>response_types</code> - <code>[&quot;code&quot;]</code></li><li><code>grant_types</code> - <code>[]</code></li><li><code>token_endpoint_auth_method</code> - <code>[&quot;client_secret_post&quot;]</code></li></ul></div></div><h3 id="uri-builders"><a href="#uri-builders" class="anchor"></a>URI builders</h3><div class="odoc-spec"><div class="spec value" id="val-discovery_uri" class="anchored"><a href="#val-discovery_uri" class="anchor"></a><code><span><span class="keyword">val</span> discovery_uri : <span><a href="#type-t">t</a> <span class="arrow">&#45;&gt;</span></span> <span class="xref-unresolved">Uri</span>.t</span></code></div><div class="spec-doc"><p>Get the discovery_uri as specified in the <a href="https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfig">OIDC spec</a></p></div></div><div class="odoc-spec"><div class="spec value" id="val-make_auth_uri" class="anchored"><a href="#val-make_auth_uri" class="anchor"></a><code><span><span class="keyword">val</span> make_auth_uri : 
-  <span>?scope:<span>string list</span> <span class="arrow">&#45;&gt;</span></span>
+  <span>?scope:<span><a href="../Scopes/index.html#type-t">Scopes.t</a> list</span> <span class="arrow">&#45;&gt;</span></span>
   <span>?claims:<span class="xref-unresolved">Yojson</span>.Safe.t <span class="arrow">&#45;&gt;</span></span>
   <span>?nonce:string <span class="arrow">&#45;&gt;</span></span>
   <span>state:string <span class="arrow">&#45;&gt;</span></span>
@@ -27,7 +27,8 @@
   <span>discovery:<a href="../Discover/index.html#type-t">Discover.t</a> <span class="arrow">&#45;&gt;</span></span>
   <span><a href="#type-t">t</a> <span class="arrow">&#45;&gt;</span></span>
   <span>string <span class="arrow">&#45;&gt;</span></span>
-  <span><span>( <a href="../Token/Response/index.html#type-t">Token.Response.t</a>, <span>[&gt; <a href="../IDToken/index.html#type-validation_error">IDToken.validation_error</a> ]</span> )</span> <span class="xref-unresolved">Stdlib</span>.result</span></span></code></div><div class="spec-doc"><p>Will parse the string and validate the token</p><p><code>clock_tolerance</code> is used to allow a difference between the providers and clients clock</p></div></div><div class="odoc-spec"><div class="spec value" id="val-valid_userinfo_of_string" class="anchored"><a href="#val-valid_userinfo_of_string" class="anchor"></a><code><span><span class="keyword">val</span> valid_userinfo_of_string : 
+  <span><span>( <a href="../Token/Response/index.html#type-t">Token.Response.t</a>, <span>[&gt; <span>`Msg of string</span> <span>| <a href="../IDToken/index.html#type-validation_error">IDToken.validation_error</a></span> ]</span> )</span>
+    <span class="xref-unresolved">Stdlib</span>.result</span></span></code></div><div class="spec-doc"><p>Will parse the string and validate the token</p><p><code>clock_tolerance</code> is used to allow a difference between the providers and clients clock</p></div></div><div class="odoc-spec"><div class="spec value" id="val-valid_userinfo_of_string" class="anchored"><a href="#val-valid_userinfo_of_string" class="anchor"></a><code><span><span class="keyword">val</span> valid_userinfo_of_string : 
   <span>token_response:<a href="../Token/Response/index.html#type-t">Token.Response.t</a> <span class="arrow">&#45;&gt;</span></span>
   <span>string <span class="arrow">&#45;&gt;</span></span>
   <span><span>( string, <span>[&gt; `Missing_sub <span>| `Sub_missmatch</span> <span><span>| `Msg</span> of string</span> ]</span> )</span> <span class="xref-unresolved">Stdlib</span>.result</span></span></code></div></div><h3 id="example---google"><a href="#example---google" class="anchor"></a>Example - Google</h3><p>This example is written as if your http client is synchronos since we don't have a <code>Lwt</code> or <code>Async</code> dependency in the core. For a more complete example look in the <code>executable</code> folder.</p><h4 id="server-start"><a href="#server-start" class="anchor"></a>Server start</h4><p>We have to do some things when the server starts to prepare</p><pre><code>let secret = Sys.getenv &quot;OIDC_SECRET&quot;
@@ -47,7 +48,7 @@ let discovery =
 let jwks =
   let uri = discovery.jwks_uri in
   let jwks_string = HttpClient.get uri in
-  Jose.Jwks.of_string jwks_string</code></pre><h4 id="authenitcation-route"><a href="#authenitcation-route" class="anchor"></a>Authenitcation route</h4><p>When the user is supposed to login you create the URI and redirect the user to the provider.</p><pre><code>let uri = Oidc.SimpleClient.make_auth_uri ~scope:[&quot;openid&quot;; &quot;email&quot;; &quot;profile&quot;] ~state:&quot;state&quot; ~discovery client in
+  Jose.Jwks.of_string jwks_string</code></pre><h4 id="authenitcation-route"><a href="#authenitcation-route" class="anchor"></a>Authenitcation route</h4><p>When the user is supposed to login you create the URI and redirect the user to the provider.</p><pre><code>let uri = Oidc.SimpleClient.make_auth_uri ~scope:[`OpenID; `Email; `Profile] ~state:&quot;state&quot; ~discovery client in
 HttpServer.redirect uri</code></pre><h4 id="callback-route"><a href="#callback-route" class="anchor"></a>Callback route</h4><p>When the user returns from the provider we have to fetch the tokens and do some validation and (optionally) get the userinfo.</p><pre><code>let code = HttpServer.get_query &quot;code&quot; request in
 let state = HttpServer.get_query &quot;state&quot; request in
 
@@ -77,12 +78,12 @@ match (validated_token, userinfo) with
   let refresh_token =
     Option.value ~default:&quot;no refresh_token&quot; tokens.refresh_token
   in
-  
+
   (* Save the values in session for later retrieval *)
   let () = HttpServer.put_session &quot;id_token&quot; id_token request in
   let () = HttpServer.put_session &quot;access_token&quot; access_token request in
   let () = HttpServer.put_session &quot;refresh_token&quot; refresh_token request in
   let () = HttpServer.put_session &quot;userinfo&quot; userinfo request in
-  
+
   HttServer.respond id_token
 | Error e -&gt; HttpServer.respond @@ Oidc.Error.to_string e</code></pre></div></body></html>
