@@ -1,6 +1,4 @@
-; (library
-;  (name ProviderLibrary)
-;  (public_name morph-oidc.provider)
-;  (libraries routes uri str lwt uuidm morph oidc tyxml piaf)
-;  (preprocess
-;   (pps tyxml-ppx)))
+(library
+ (name ProviderLibrary)
+ (public_name morph-oidc.provider)
+ (libraries routes uri str lwt uuidm oidc tyxml piaf))
