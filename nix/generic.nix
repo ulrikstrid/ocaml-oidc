@@ -1,4 +1,4 @@
-{ pkgs, stdenv, lib, ocamlPackages, static ? false, doCheck }:
+{ pkgs, stdenv, lib, nix-filter, ocamlPackages, static ? false, doCheck }:
 
 with ocamlPackages;
 
@@ -7,10 +7,13 @@ rec {
     pname = "oidc";
     version = "0.0.1-dev";
 
-    src = lib.filterGitSource {
-      src = ./..;
-      dirs = [ "oidc" ];
-      files = [ "dune-project" "oidc.opam" ];
+    src = with nix-filter.lib; filter {
+      root = ./..;
+      include = [
+        "oidc"
+        "oidc.opam"
+        "dune-project"
+      ];
     };
 
     useDune2 = true;
@@ -35,10 +38,13 @@ rec {
     pname = "oauth";
     version = "0.0.1-dev";
 
-    src = lib.filterGitSource {
-      src = ./..;
-      dirs = [ "oauth" ];
-      files = [ "dune-project" "oauth.opam" ];
+    src = with nix-filter.lib; filter {
+      root = ./..;
+      include = [
+        "oauth"
+        "oauth.opam"
+        "dune-project"
+      ];
     };
 
     useDune2 = true;
@@ -61,10 +67,13 @@ rec {
     pname = "oidc-client";
     version = "1.0.0-dev";
 
-    src = lib.filterGitSource {
-      src = ./..;
-      dirs = [ "oidc-client" ];
-      files = [ "dune-project" "oidc-client.opam" ];
+    src = with nix-filter.lib; filter {
+      root = ./..;
+      include = [
+        "oidc-client"
+        "oidc-client.opam"
+        "dune-project"
+      ];
     };
 
     useDune2 = true;
@@ -95,10 +104,13 @@ rec {
     pname = "executables";
     version = "dev";
 
-    src = lib.filterGitSource {
-      src = ./..;
-      dirs = [ "executable" ];
-      files = [ "dune-project" "morph-oidc-client.opam" ];
+    src = with nix-filter.lib; filter {
+      root = ./..;
+      include = [
+        "executable"
+        "morph-oidc-client.opam"
+        "dune-project"
+      ];
     };
 
     useDune2 = true;
