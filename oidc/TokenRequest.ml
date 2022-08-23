@@ -59,9 +59,18 @@ let of_body_string body =
         client_secret;
         redirect_uri = redirect_uri |> Uri.of_string;
       }
+  | Some grant_type, None, Some code, Some client_id, Some redirect_uri ->
+    Ok
+      {
+        grant_type;
+        scope = [];
+        code;
+        client_id;
+        client_secret;
+        redirect_uri = redirect_uri |> Uri.of_string;
+      }
   | Some _, Some _, Some _, Some _, None -> Error (`Msg "missing redirect_uri")
   | Some _, Some _, Some _, None, Some _ -> Error (`Msg "missing client_id")
   | Some _, Some _, None, Some _, Some _ -> Error (`Msg "missing code")
-  | Some _, None, Some _, Some _, Some _ -> Error (`Msg "missing scope")
   | None, Some _, Some _, Some _, Some _ -> Error (`Msg "missing grant_type")
   | _ -> Error (`Msg "More than 1 missing")
