@@ -66,7 +66,7 @@ let of_string str = Yojson.Safe.from_string str |> of_yojson
 
 let validate ?clock_tolerance ?nonce ~jwks ~(client : Client.t)
     ~(discovery : Discover.t) t =
-  match Jose.Jwt.of_string (Option.get t.id_token) with
+  match Jose.Jwt.unsafe_of_string (Option.get t.id_token) with
   | Ok jwt -> (
     if jwt.header.alg = `None then
       IDToken.validate ?clock_tolerance ?nonce ~client ~issuer:discovery.issuer
