@@ -128,7 +128,7 @@ let to_yojson t : Yojson.Safe.t =
      ]
     |> List.filter_map identity)
 
-let of_yojson ~clients json : (t, error) result =
+let of_yojson ~clients json : (t, [> error]) result =
   let module Json = Yojson.Safe.Util in
   try
     Ok
