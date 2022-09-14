@@ -94,6 +94,9 @@ let validate_iss ~issuer (jwt : Jose.Jwt.t) =
   | Some iss when iss = issuer ->
     Log.debug (fun m -> m "iss is valid, %s" issuer);
     Ok jwt
+  (* Microsoft has a special case because they use a strange templated format *)
+  | Some iss when String.starts_with ~prefix:"https://sts.windows.net" iss ->
+    Ok jwt
   | Some iss ->
     Log.debug (fun m -> m "iss is invalid, expected %s, got %s" issuer iss);
     Error (`Wrong_iss_value iss)
