@@ -1,3 +1,4 @@
+
 (* All fields listed here:
    https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata *)
 type t = {
@@ -12,8 +13,14 @@ type t = {
   subject_types_supported : string list;
   (* "pairwise", "public" *)
   id_token_signing_alg_values_supported : string list;
-      (* "RS256" must be supported, get list from Jose? *)
+  (* "RS256" must be supported, get list from Jose? *)
 }
+
+type error = [ `Msg of string ]
+
+let error_to_string error =
+  match error with
+  | `Msg str -> str
 
 let of_yojson json =
   try
@@ -55,7 +62,7 @@ let of_yojson json =
             |> to_list
             |> List.map to_string;
         }
-  with Yojson.Safe.Util.Type_error (str, _) -> Error str
+  with Yojson.Safe.Util.Type_error (str, _) -> Error (`Msg str)
 
 (* TODO: Should maybe be a result? *)
 let of_string body = Yojson.Safe.from_string body |> of_yojson

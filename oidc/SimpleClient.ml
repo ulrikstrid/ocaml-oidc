@@ -101,7 +101,7 @@ let valid_token_of_string ?clock_tolerance ~jwks ~discovery t body =
   | Ok ret ->
     Token.Response.validate ?clock_tolerance ~jwks ~discovery ~client:t.client
       ret
-  | Error e -> Error (`Msg e)
+  | e -> e
 
 let valid_userinfo_of_string ~(token_response : Token.Response.t) userinfo =
   match Jose.Jwt.unsafe_of_string (Option.get token_response.id_token) with

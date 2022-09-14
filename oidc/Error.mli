@@ -6,6 +6,7 @@
 
 type t =
   [ IDToken.validation_error
+  | Discover.error
   | `Sub_missmatch
   | `Missing_userinfo_endpoint
   | `Missing_access_token ]
