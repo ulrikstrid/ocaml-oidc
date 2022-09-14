@@ -13,6 +13,13 @@ let make ?(token_type = Bearer) ?(scope = []) ?expires_in ?access_token
     ?refresh_token ?id_token () =
   { token_type; scope; expires_in; access_token; refresh_token; id_token }
 
+(* Microsoft returns ints as strings... *)
+let string_or_int_to_int_opt = function
+| `String s -> Some (int_of_string s)
+| `Int i -> Some i
+| `Null -> None
+| _ -> None (* TODO: Should we log or throw? *)
+
 let of_yojson json =
   try
     let module Json = Yojson.Safe.Util in
@@ -35,14 +42,14 @@ let of_yojson json =
         (* Only Bearer is supported by OIDC, TODO = return a error if it is not
            Bearer *)
         scope;
-        expires_in = json |> Json.member "expires_in" |> Json.to_int_option;
+        expires_in = json |> Json.member "expires_in" |> string_or_int_to_int_opt;
         access_token =
           json |> Json.member "access_token" |> Json.to_string_option;
         refresh_token =
           json |> Json.member "refresh_token" |> Json.to_string_option;
         id_token = json |> Json.member "id_token" |> Json.to_string_option;
       }
-  with Yojson.Safe.Util.Type_error (str, _) -> Error str
+  with Yojson.Safe.Util.Type_error (str, _) -> Error (`Msg str)
 
 let of_query query =
   let scope =
