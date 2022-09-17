@@ -1,4 +1,0 @@
-(library
- (name ProviderLibrary)
- (public_name morph-oidc.provider)
- (libraries routes uri str lwt uuidm oidc tyxml piaf))
