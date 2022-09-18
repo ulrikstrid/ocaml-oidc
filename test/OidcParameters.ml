@@ -19,9 +19,7 @@ let valid_query =
 
 let parse_query () =
   match
-    Oidc.Parameters.parse_query
-    ~allowed_redirect_uris:(List.map Uri.to_string client.redirect_uris)
-      (Uri.of_string (base_url ^ valid_query))
+    Oidc.Parameters.parse_query (Uri.of_string (base_url ^ valid_query))
   with
   | Ok valid_parameters ->
     check_string "client_id" "s6BhdRkqt3" valid_parameters.client_id;

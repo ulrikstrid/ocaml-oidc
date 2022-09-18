@@ -155,7 +155,7 @@ let of_yojson  json : (t, [> error]) result =
       }
   with _ -> Error `Invalid_parameters
 
-let parse_query ~(allowed_redirect_uris : string list) uri : (t, [> error]) result =
+let parse_query uri : (t, [> error]) result =
   let getQueryParam param =
     Uri.get_query_param uri param |> function
     | Some x -> Ok x
@@ -189,8 +189,7 @@ let parse_query ~(allowed_redirect_uris : string list) uri : (t, [> error]) resu
     in
 
     match (response_type, redirect_uri, scope) with
-    | Ok response_type, Ok redirect_uri, Ok scope
-      when List.mem redirect_uri allowed_redirect_uris ->
+    | Ok response_type, Ok redirect_uri, Ok scope ->
       Ok
         {
           response_type;
@@ -208,7 +207,6 @@ let parse_query ~(allowed_redirect_uris : string list) uri : (t, [> error]) resu
             RResult.flat_map string_to_prompt (getQueryParam "prompt")
             |> ROpt.of_result;
         }
-    | Ok _, Ok redirect_uri, Ok _ -> Error (`Invalid_redirect_uri redirect_uri)
     | Error e, _, _ -> Error e
     | _, Error e, _ -> Error e
     | _, _, Error e -> Error e)
