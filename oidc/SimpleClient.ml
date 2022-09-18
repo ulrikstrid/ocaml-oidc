@@ -84,8 +84,10 @@ let make_userinfo_request ~(token : Token.Response.t) ~(discovery : Discover.t)
   | None, _ -> Error `Missing_userinfo_endpoint
 
 let get_auth_parameters ?scope ?claims ?nonce ~state t =
-  Parameters.make ?scope ?claims t.client ?nonce ~state
+  Parameters.make ?scope ?claims ?nonce ~state
     ~redirect_uri:t.redirect_uri
+    ~client_id:t.client.id
+    ()
 
 let make_auth_uri ?scope ?claims ?nonce ~state ~discovery t =
   let query =

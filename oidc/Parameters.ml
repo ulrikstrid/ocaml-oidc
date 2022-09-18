@@ -51,7 +51,7 @@ let prompt_to_string = function
 type t = {
   response_type : string list;
   (* TODO: This should probably just be a string *)
-  client : Client.t;
+  client_id : string;
   redirect_uri : Uri.t;
   scope : Scopes.t list;
   (* Must include at least the openid scope *)
@@ -64,10 +64,10 @@ type t = {
 }
 
 let make ?(response_type = ["code"]) ?(scope = [`OpenID]) ?state ?claims
-    ?max_age ?display ?prompt ?nonce client ~redirect_uri =
+    ?max_age ?display ?prompt ?nonce ~redirect_uri ~client_id () =
   {
     response_type;
-    client;
+    client_id;
     redirect_uri;
     scope;
     state;
@@ -83,7 +83,7 @@ let identity a = a
 let to_query t =
   [
     Some ("response_type", t.response_type);
-    Some ("client_id", [t.client.id]);
+    Some ("client_id", [t.client_id]);
     Some ("redirect_uri", [Uri.to_string t.redirect_uri]);
     Some ("scope", [Scopes.to_scope_parameter t.scope]);
     Option.map (fun state -> ("state", [state])) t.state;
@@ -98,19 +98,13 @@ let to_query t =
   ]
   |> List.filter_map identity
 
-let get_client ~clients client_id =
-  List.find_opt (fun (client : Client.t) -> client.id = client_id) clients
-  |> function
-  | Some client -> Ok client
-  | None -> Error `Missing_client
-
 let to_yojson t : Yojson.Safe.t =
   `Assoc
     ([
        Some
          ( "response_type",
            `List (t.response_type |> List.map (fun r -> `String r)) );
-       Some ("client_id", `String t.client.id);
+       Some ("client_id", `String t.client_id);
        Some ("redirect_uri", `String (Uri.to_string t.redirect_uri));
        Some
          ( "scope",
@@ -128,7 +122,7 @@ let to_yojson t : Yojson.Safe.t =
      ]
     |> List.filter_map identity)
 
-let of_yojson ~clients json : (t, [> error]) result =
+let of_yojson  json : (t, [> error]) result =
   let module Json = Yojson.Safe.Util in
   try
     Ok
@@ -136,9 +130,7 @@ let of_yojson ~clients json : (t, [> error]) result =
         response_type =
           Json.to_list (Json.member "response_type" json)
           |> List.map Json.to_string;
-        client =
-          get_client ~clients (Json.member "client_id" json |> Json.to_string)
-          |> Result.get_ok;
+        client_id =(Json.member "client_id" json |> Json.to_string);
         redirect_uri =
           json |> Json.member "redirect_uri" |> Json.to_string |> Uri.of_string;
         scope =
@@ -163,16 +155,16 @@ let of_yojson ~clients json : (t, [> error]) result =
       }
   with _ -> Error `Invalid_parameters
 
-let parse_query ~clients uri : (t, [> error]) result =
+let parse_query ~(allowed_redirect_uris : string list) uri : (t, [> error]) result =
   let getQueryParam param =
     Uri.get_query_param uri param |> function
     | Some x -> Ok x
     | None -> Error (`Missing_parameter (param ^ " not found"))
   in
 
-  match getQueryParam "client_id" |> RResult.flat_map (get_client ~clients) with
+  match getQueryParam "client_id" with
   | Error e -> Error e
-  | Ok client -> (
+  | Ok client_id -> (
     let claims =
       getQueryParam "claims" |> Result.map Yojson.Safe.from_string |> function
       | Ok x -> Some x
@@ -198,13 +190,11 @@ let parse_query ~clients uri : (t, [> error]) result =
 
     match (response_type, redirect_uri, scope) with
     | Ok response_type, Ok redirect_uri, Ok scope
-      when List.exists
-             (fun uri -> Uri.to_string uri = redirect_uri)
-             client.redirect_uris ->
+      when List.mem redirect_uri allowed_redirect_uris ->
       Ok
         {
           response_type;
-          client;
+          client_id;
           redirect_uri = Uri.of_string redirect_uri;
           scope;
           state = ROpt.of_result (getQueryParam "state");
