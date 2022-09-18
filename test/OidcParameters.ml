@@ -19,11 +19,10 @@ let valid_query =
 
 let parse_query () =
   match
-    Oidc.Parameters.parse_query ~clients
-      (Uri.of_string (base_url ^ valid_query))
+    Oidc.Parameters.parse_query (Uri.of_string (base_url ^ valid_query))
   with
   | Ok valid_parameters ->
-    check_string "client_id" "s6BhdRkqt3" valid_parameters.client.id;
+    check_string "client_id" "s6BhdRkqt3" valid_parameters.client_id;
     check_string "redirect_uri" "https://client.example.org/cb"
       (Uri.to_string valid_parameters.redirect_uri);
     check_option_string "nonce" "n-0S6_WzA2Mj" valid_parameters.nonce
@@ -34,7 +33,7 @@ let to_query () =
     Oidc.Parameters.
       {
         response_type = ["code"];
-        client;
+        client_id= client.id;
         redirect_uri = Uri.of_string "https://client.example.org/cb";
         scope = [`OpenID; `Profile];
         state = Some "af0ifjsldkj";

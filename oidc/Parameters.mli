@@ -14,7 +14,7 @@ type prompt =
 
 type t = {
   response_type : string list;
-  client : Client.t;
+  client_id : string;
   redirect_uri : Uri.t;
   scope : Scopes.t list;
   state : string option;
@@ -45,17 +45,18 @@ val make :
   ?display:display ->
   ?prompt:prompt ->
   ?nonce:string ->
-  Client.t ->
   redirect_uri:Uri.t ->
+  client_id:string ->
+  unit ->
   t
 
 val to_query : t -> (string * string list) list
 (** Used when starting a authentication *)
 
 val to_yojson : t -> Yojson.Safe.t
-val of_yojson : clients:Client.t list -> Yojson.Safe.t -> (t, [> error]) result
+val of_yojson : Yojson.Safe.t -> (t, [> error]) result
 
 (** {2 Parsing in the provider} *)
 
-val parse_query : clients:Client.t list -> Uri.t -> (t, [> error]) result
- 
+val parse_query : Uri.t -> (t, [> error]) result
+
