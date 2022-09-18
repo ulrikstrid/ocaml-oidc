@@ -15,7 +15,7 @@ let make ?(token_type = Bearer) ?(scope = []) ?expires_in ?access_token
 
 (* Microsoft returns ints as strings... *)
 let string_or_int_to_int_opt = function
-| `String s -> Some (int_of_string s)
+| `String s -> (try Some (int_of_string s) with | _ -> None)
 | `Int i -> Some i
 | `Null -> None
 | _ -> None (* TODO: Should we log or throw? *)
