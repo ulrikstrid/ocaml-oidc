@@ -2,6 +2,6 @@ let () =
   let path = Sys.getenv_opt "REPORT_PATH" in
   let report =
     Junit.make
-      [OidcParameters.suite; Jwt.suite; Jwks.suite; Token.suite; Scopes.suite]
+      [OidcParameters.suite; Jwt.suite; Jwks.suite; Token.suite; Scopes.suite; Pkce.suite]
   in
   match path with Some path -> Junit.to_file report path | None -> ()
