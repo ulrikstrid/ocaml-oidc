@@ -46,7 +46,7 @@ let challenge_of_string ~transformation challenge =
   | `Plain -> Plain challenge
 
 (* https://www.rfc-editor.org/rfc/rfc7636#section-4.3 *)
-let challenge_to_code_challange_and_method challenge =
+let challenge_to_code_challenge_and_method challenge =
   match challenge with
   | Plain challenge -> (challenge, "plain")
   | S256 challenge -> (challenge, "S256")

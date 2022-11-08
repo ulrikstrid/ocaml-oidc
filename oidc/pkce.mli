@@ -23,7 +23,7 @@ val make_code_challenge : verifier -> challenge
 val challenge_of_string : transformation:challenge_transformation -> string -> challenge
 
 (** https://www.rfc-editor.org/rfc/rfc7636#section-4.3 *)
-val challenge_to_code_challange_and_method : challenge -> string * string
+val challenge_to_code_challenge_and_method : challenge -> string * string
 
 (** https://www.rfc-editor.org/rfc/rfc7636#section-4.6 *)
 val verify : verifier -> challenge -> bool
