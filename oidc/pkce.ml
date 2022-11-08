@@ -7,7 +7,10 @@
 (* https://www.rfc-editor.org/rfc/rfc3986#section-2.3
     can also contain "." and "~" but we already have 64 characters
 *)
-let alphabet = Base64.uri_safe_alphabet
+let alphabet =
+  Base64.make_alphabet
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
+
 let octets = 96 (* 4 * (96/3) = 128 *)
 
 let base64_encode_cstruct cstruct =
