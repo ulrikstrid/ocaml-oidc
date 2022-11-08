@@ -4,26 +4,32 @@
  * license that can be found in the LICENSE file.
  *)
 
-type verifier
+module Verifier : sig
+  type t
 
-(** https://www.rfc-editor.org/rfc/rfc7636#section-4.2 *)
-type challenge
+  val make : unit -> t
+  (** https://www.rfc-editor.org/rfc/rfc7636#section-4.1 *)
 
-type challenge_transformation = [ `S256 | `Plain ]
+  val of_string : string -> t
+end
 
-(** https://www.rfc-editor.org/rfc/rfc7636#section-4.1 *)
-val make_code_verifier : unit -> verifier
+module Challenge : sig
+  type t
+  (** https://www.rfc-editor.org/rfc/rfc7636#section-4.2 *)
 
-val verifier_of_string : string -> verifier
+  type transformation =
+    [ `S256
+    | `Plain ]
 
-(** Will always be a S256 challenge
+  val make : Verifier.t -> t
+  (** Will always be a S256 challenge
   https://www.rfc-editor.org/rfc/rfc7636#section-4.2 *)
-val make_code_challenge : verifier -> challenge 
 
-val challenge_of_string : transformation:challenge_transformation -> string -> challenge
+  val of_string : transformation:transformation -> string -> t
 
-(** https://www.rfc-editor.org/rfc/rfc7636#section-4.3 *)
-val challenge_to_code_challenge_and_method : challenge -> string * string
+  val to_code_challenge_and_method : t -> string * string
+  (** https://www.rfc-editor.org/rfc/rfc7636#section-4.3 *)
+end
 
+val verify : Verifier.t -> Challenge.t -> bool
 (** https://www.rfc-editor.org/rfc/rfc7636#section-4.6 *)
-val verify : verifier -> challenge -> bool
