@@ -30,14 +30,15 @@ jobs:
       - name: Send coverage report
         run: nix develop -c bisect-ppx-report send-to Codecov
         if: ${{ matrix.os == 'ubuntu-latest' }}
+        continue-on-error: true
 
       - name: "Generate documentation"
         run: nix develop -c dune build @doc --force --no-buffer
-        if: ${{ matrix.os == 'ubuntu-latest' }}
+        if: ${{ github.ref == 'refs/heads/master' && github.event_name == 'push' && matrix.os == 'ubuntu-latest' }}
 
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@releases/v3
-        if: ${{ github.ref == 'refs/heads/master' && github.event_name == 'push' }}
+        if: ${{ github.ref == 'refs/heads/master' && github.event_name == 'push' && matrix.os == 'ubuntu-latest' }}
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH: gh-pages
