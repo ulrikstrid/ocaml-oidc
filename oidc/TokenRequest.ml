@@ -40,37 +40,31 @@ let to_body_string t =
    Verify that the Authorization Code used was issued in response to an OpenID Connect Authentication Request (so that an ID Token will be returned from the Token Endpoint).
 *)
 
-let of_body_string body =
+let map_none ~v = function
+| None -> v
+| some -> some
+
+let of_body_string ?client_id body =
   let query = Uri.query_of_encoded body |> Uri.with_query Uri.empty in
   let gt = Uri.get_query_param query "grant_type" in
-  let s = Uri.get_query_param query "scope" in
+  let scope = Uri.get_query_param query "scope" |> Option.map Scopes.of_scope_parameter |> Option.value ~default:[] in
   let c = Uri.get_query_param query "code" in
-  let ci = Uri.get_query_param query "client_id" in
+  let ci = Uri.get_query_param query "client_id" |> map_none ~v:client_id in
   let client_secret = Uri.get_query_param query "client_secret" in
   let ru = Uri.get_query_param query "redirect_uri" in
-  match (gt, s, c, ci, ru) with
-  | Some grant_type, Some scope, Some code, Some client_id, Some redirect_uri ->
+  match (gt, c, ci, ru) with
+  | Some grant_type, Some code, Some client_id, Some redirect_uri ->
     Ok
       {
         grant_type;
-        scope = Scopes.of_scope_parameter scope;
+        scope =  scope;
         code;
         client_id;
         client_secret;
         redirect_uri = redirect_uri |> Uri.of_string;
       }
-  | Some grant_type, None, Some code, Some client_id, Some redirect_uri ->
-    Ok
-      {
-        grant_type;
-        scope = [];
-        code;
-        client_id;
-        client_secret;
-        redirect_uri = redirect_uri |> Uri.of_string;
-      }
-  | Some _, Some _, Some _, Some _, None -> Error (`Msg "missing redirect_uri")
-  | Some _, Some _, Some _, None, Some _ -> Error (`Msg "missing client_id")
-  | Some _, Some _, None, Some _, Some _ -> Error (`Msg "missing code")
-  | None, Some _, Some _, Some _, Some _ -> Error (`Msg "missing grant_type")
+  | Some _, Some _, Some _, None -> Error (`Msg "missing redirect_uri")
+  | Some _, Some _, None, Some _ -> Error (`Msg "missing client_id")
+  | Some _, None, Some _, Some _ -> Error (`Msg "missing code")
+  | None, Some _, Some _, Some _ -> Error (`Msg "missing grant_type")
   | _ -> Error (`Msg "More than 1 missing")
