@@ -73,6 +73,10 @@ let of_string str = Yojson.Safe.from_string str |> of_yojson
 
 let validate ?clock_tolerance ?nonce ~jwks ~(client : Client.t)
     ~(discovery : Discover.t) t =
+  if Option.is_none t.id_token then
+    (* If there is no token to validate we're in a OAuth2 flow and it's fine *)
+    Ok t
+  else
   match Jose.Jwt.unsafe_of_string (Option.get t.id_token) with
   | Ok jwt -> (
     if jwt.header.alg = `None then
