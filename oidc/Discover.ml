@@ -1,4 +1,3 @@
-
 (* All fields listed here:
    https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata *)
 type t = {
@@ -13,14 +12,12 @@ type t = {
   subject_types_supported : string list;
   (* "pairwise", "public" *)
   id_token_signing_alg_values_supported : string list;
-  (* "RS256" must be supported, get list from Jose? *)
+      (* "RS256" must be supported, get list from Jose? *)
 }
 
-type error = [ `Msg of string ]
+type error = [`Msg of string]
 
-let error_to_string error =
-  match error with
-  | `Msg str -> str
+let error_to_string error = match error with `Msg str -> str
 
 let of_yojson json =
   try

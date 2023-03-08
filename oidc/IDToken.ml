@@ -153,19 +153,13 @@ let validate_nonce ?nonce (jwt : Jose.Jwt.t) =
     Log.debug (fun m -> m "no nonce provided");
     Ok jwt
 
-(* let now = Ptime.of_date (2023, 2, 19) |> Option.get *)
-let validate
-    ?clock_tolerance
-    ?nonce
-    ?jwk
-    ?(now=Unix.gettimeofday() |> Ptime.of_float_s|> Option.get)
-    ~(client : Client.t)
-    ~issuer
-    (jwt : Jose.Jwt.t) =
+let validate ?clock_tolerance ?nonce ?jwk
+    ?(now = Unix.gettimeofday () |> Ptime.of_float_s |> Option.get)
+    ~(client : Client.t) ~issuer (jwt : Jose.Jwt.t) =
   let issuer = Uri.to_string issuer in
   (match (jwt.header.alg, jwk) with
   | `None, _ -> Ok jwt
-  | _, Some jwk -> Jose.Jwt.validate ~now~jwk jwt
+  | _, Some jwk -> Jose.Jwt.validate ~now ~jwk jwt
   | _, None -> Error `No_jwk_provided)
   >>= validate_iss ~issuer
   >>= validate_exp

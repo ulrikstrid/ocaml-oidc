@@ -15,10 +15,10 @@ let make ?(token_type = Bearer) ?(scope = []) ?expires_in ?access_token
 
 (* Microsoft returns ints as strings... *)
 let string_or_int_to_int_opt = function
-| `String s -> (try Some (int_of_string s) with | _ -> None)
-| `Int i -> Some i
-| `Null -> None
-| _ -> None (* TODO: Should we log or throw? *)
+  | `String s -> ( try Some (int_of_string s) with _ -> None)
+  | `Int i -> Some i
+  | `Null -> None
+  | _ -> None (* TODO: Should we log or throw? *)
 
 let of_yojson json =
   try
@@ -42,7 +42,8 @@ let of_yojson json =
         (* Only Bearer is supported by OIDC, TODO = return a error if it is not
            Bearer *)
         scope;
-        expires_in = json |> Json.member "expires_in" |> string_or_int_to_int_opt;
+        expires_in =
+          json |> Json.member "expires_in" |> string_or_int_to_int_opt;
         access_token =
           json |> Json.member "access_token" |> Json.to_string_option;
         refresh_token =

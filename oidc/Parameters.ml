@@ -122,7 +122,7 @@ let to_yojson t : Yojson.Safe.t =
      ]
     |> List.filter_map identity)
 
-let of_yojson  json : (t, [> error]) result =
+let of_yojson json : (t, [> error]) result =
   let module Json = Yojson.Safe.Util in
   try
     Ok
@@ -130,7 +130,7 @@ let of_yojson  json : (t, [> error]) result =
         response_type =
           Json.to_list (Json.member "response_type" json)
           |> List.map Json.to_string;
-        client_id =(Json.member "client_id" json |> Json.to_string);
+        client_id = Json.member "client_id" json |> Json.to_string;
         redirect_uri =
           json |> Json.member "redirect_uri" |> Json.to_string |> Uri.of_string;
         scope =
