@@ -14,6 +14,8 @@ type validation_error =
   | `Missing_iss
   | `Missing_nonce
   | `Missing_sub
+  | `Not_json
+  | `Not_supported
   | `Msg of string
   | `No_jwk_provided
   | `Unexpected_nonce
@@ -28,6 +30,7 @@ val validate :
   ?clock_tolerance:int ->
   ?nonce:string ->
   ?jwk:'a Jose.Jwk.t ->
+  ?now:Ptime.t ->
   client:Client.t ->
   issuer:Uri.t ->
   Jose.Jwt.t ->
@@ -48,7 +51,7 @@ val validate :
   - aud
   - exp
   - iat
-  
+
   Fields to be validated if exists
   - nonce
 

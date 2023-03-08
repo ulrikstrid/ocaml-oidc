@@ -17,6 +17,8 @@ type validation_error =
   | `Missing_iss
   | `Missing_nonce
   | `Missing_sub
+  | `Not_json
+  | `Not_supported
   | `Msg of string
   | `No_jwk_provided
   | `Unexpected_nonce
@@ -34,6 +36,8 @@ let validation_error_to_string = function
   | `Unexpected_nonce -> "Got nonce when not expected"
   | `Invalid_sub_length -> "Invalid sub length"
   | `Missing_sub -> "Missing sub"
+  | `Not_json -> "Not JSON"
+  | `Not_supported -> "Not supported"
   | `Wrong_aud_value aud -> "Wrong aud " ^ aud
   | `Missing_aud -> "aud is missing"
   | `Wrong_iss_value iss -> "Wrong iss value " ^ iss
@@ -149,12 +153,13 @@ let validate_nonce ?nonce (jwt : Jose.Jwt.t) =
     Log.debug (fun m -> m "no nonce provided");
     Ok jwt
 
-let validate ?clock_tolerance ?nonce ?jwk ~(client : Client.t) ~issuer
-    (jwt : Jose.Jwt.t) =
+let validate ?clock_tolerance ?nonce ?jwk
+    ?(now = Unix.gettimeofday () |> Ptime.of_float_s |> Option.get)
+    ~(client : Client.t) ~issuer (jwt : Jose.Jwt.t) =
   let issuer = Uri.to_string issuer in
   (match (jwt.header.alg, jwk) with
   | `None, _ -> Ok jwt
-  | _, Some jwk -> Jose.Jwt.validate ~jwk jwt
+  | _, Some jwk -> Jose.Jwt.validate ~now ~jwk jwt
   | _, None -> Error `No_jwk_provided)
   >>= validate_iss ~issuer
   >>= validate_exp

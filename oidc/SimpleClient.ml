@@ -45,8 +45,7 @@ type request_descr = {
 let make_token_request ~code ~discovery t =
   let body =
     Token.Request.make ~client:t.client ~grant_type:"authorization_code"
-      ~scope:[`OpenID]
-      ~redirect_uri:t.redirect_uri ~code
+      ~scope:[`OpenID] ~redirect_uri:t.redirect_uri ~code
     |> Token.Request.to_body_string
   in
   let headers =
@@ -84,10 +83,8 @@ let make_userinfo_request ~(token : Token.Response.t) ~(discovery : Discover.t)
   | None, _ -> Error `Missing_userinfo_endpoint
 
 let get_auth_parameters ?scope ?claims ?nonce ~state t =
-  Parameters.make ?scope ?claims ?nonce ~state
-    ~redirect_uri:t.redirect_uri
-    ~client_id:t.client.id
-    ()
+  Parameters.make ?scope ?claims ?nonce ~state ~redirect_uri:t.redirect_uri
+    ~client_id:t.client.id ()
 
 let make_auth_uri ?scope ?claims ?nonce ~state ~discovery t =
   let query =

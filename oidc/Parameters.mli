@@ -59,4 +59,3 @@ val of_yojson : Yojson.Safe.t -> (t, [> error]) result
 (** {2 Parsing in the provider} *)
 
 val parse_query : Uri.t -> (t, [> error]) result
-

@@ -19,14 +19,14 @@ type t = {
 (** {i The discovery type can include much more than the type currently
        includes. Feel free to open a PR adding anything you need} *)
 
-type error = [ `Msg of string ]
+type error = [`Msg of string]
 
 val error_to_string : error -> string
 
-val of_yojson : Yojson.Safe.t -> (t, [> error ]) result
+val of_yojson : Yojson.Safe.t -> (t, [> error]) result
 (** {i This might change to return a result in the future} *)
 
-val of_string : string -> (t, [> error ]) result
+val of_string : string -> (t, [> error]) result
 (** {i This might change to return a result in the future} *)
 
 val to_yojson : t -> Yojson.Safe.t

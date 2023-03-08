@@ -97,7 +97,13 @@ val valid_token_of_string :
 val valid_userinfo_of_string :
   token_response:Token.Response.t ->
   string ->
-  (string, [> `Missing_sub | `Sub_missmatch | `Msg of string]) result
+  ( string,
+    [> `Missing_sub
+    | `Sub_missmatch
+    | `Not_json
+    | `Not_supported
+    | `Msg of string ] )
+  result
 
 (** {2 Example - Google}
 

@@ -33,7 +33,7 @@ let to_query () =
     Oidc.Parameters.
       {
         response_type = ["code"];
-        client_id= client.id;
+        client_id = client.id;
         redirect_uri = Uri.of_string "https://client.example.org/cb";
         scope = [`OpenID; `Profile];
         state = Some "af0ifjsldkj";
