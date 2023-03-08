@@ -8,7 +8,9 @@ let get_use jwk =
   | Jose.Jwk.Rsa_pub jwk -> jwk.use
   | Jose.Jwk.Oct jwk -> jwk.use
   | Jose.Jwk.Es256_pub jwk -> jwk.use
+  | Jose.Jwk.Es384_pub jwk -> jwk.use
   | Jose.Jwk.Es512_pub jwk -> jwk.use
+  | Jose.Jwk.Ed25519_pub jwk -> jwk.use
 
 let matching_jwt (jwt : Jose.Jwt.t) (jwk : Jose.Jwk.public Jose.Jwk.t) =
   match Jose.Jwk.get_alg jwk, get_use jwk with

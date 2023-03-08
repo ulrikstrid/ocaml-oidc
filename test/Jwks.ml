@@ -1,6 +1,6 @@
 open Helpers
 
-let () = Mirage_crypto_rng_unix.initialize ()
+let () = Mirage_crypto_rng_unix.initialize (module Mirage_crypto_rng.Fortuna)
 let rsa = Mirage_crypto_pk.Rsa.generate ~bits:1024 ()
 let jwk = Jose.Jwk.make_priv_rsa rsa
 
@@ -23,8 +23,8 @@ let find_jwk_with_kid () =
   match found_jwk with
   | Some found_jwk ->
     check_result_string "thumbprint"
-      (Jose.Jwk.get_thumbprint `SHA1 jwk)
-      (Jose.Jwk.get_thumbprint `SHA1 found_jwk)
+      (Jose.Jwk.get_thumbprint `SHA1 jwk |> Result.map Cstruct.to_string)
+      (Jose.Jwk.get_thumbprint `SHA1 found_jwk |> Result.map Cstruct.to_string)
   | None ->
     print_endline "Did not find jwk";
     raise Not_found
@@ -34,8 +34,8 @@ let find_jwk_without_kid () =
   match found_jwk with
   | Some found_jwk ->
     check_result_string "thumbprint"
-      (Jose.Jwk.get_thumbprint `SHA1 jwk)
-      (Jose.Jwk.get_thumbprint `SHA1 found_jwk)
+      (Jose.Jwk.get_thumbprint `SHA1 jwk |> Result.map Cstruct.to_string)
+      (Jose.Jwk.get_thumbprint `SHA1 found_jwk |> Result.map Cstruct.to_string)
   | None ->
     print_endline "Did not find jwk";
     raise Not_found

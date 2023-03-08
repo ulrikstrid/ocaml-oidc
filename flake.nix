@@ -7,7 +7,7 @@
   };
 
   inputs = {
-    nixpkgs.url = "github:nix-ocaml/nix-overlays/0081a01960591e7415986eca055887ca76689799";
+    nixpkgs.url = "github:nix-ocaml/nix-overlays?rev=5f9732395c157852afe6710e11097afa2083cbc1";
 
     flake-utils.url = "github:numtide/flake-utils";
     nixpkgs.inputs.flake-utils.follows = "flake-utils";
