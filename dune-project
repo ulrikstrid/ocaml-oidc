@@ -32,6 +32,7 @@
   uri
   yojson
   logs
+  eqaf
   (alcotest :with-test)
   (junit :with-test)
   (junit_alcotest :with-test)
