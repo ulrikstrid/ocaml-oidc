@@ -1,7 +1,7 @@
 (library
  (name oidc)
  (public_name oidc)
- (libraries logs uri yojson jose base64 unix)
+ (libraries logs uri yojson jose base64 eqaf unix)
  (instrumentation
   (backend bisect_ppx)))
 

@@ -61,5 +61,5 @@ let verify (verifier : Verifier.t) (challenge : Challenge.t) =
   match challenge with
   | S256 c ->
     let[@warning "-8"] (Challenge.S256 v) = Challenge.make verifier in
-    String.compare v c = 0
-  | Plain c -> String.compare verifier c = 0
+    Eqaf.equal v c
+  | Plain c -> Eqaf.equal verifier c
