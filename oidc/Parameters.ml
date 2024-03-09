@@ -10,43 +10,51 @@ type error =
   | `Invalid_prompt of string
   | `Invalid_parameters ]
 
-type display =
-  [ `Page
-  | `Popup
-  | `Touch
-  | `Wap ]
+module Display = struct
+  type t =
+    [ `Page
+    | `Popup
+    | `Touch
+    | `Wap ]
 
-let string_to_display = function
-  | "page" -> Ok `Page
-  | "popup" -> Ok `Popup
-  | "touch" -> Ok `Touch
-  | "wap" -> Ok `Wap
-  | s -> Error (`Invalid_display s)
+  type error = [ | `Invalid_display of string ]
 
-let display_to_string = function
-  | `Page -> "page"
-  | `Popup -> "popup"
-  | `Touch -> "touch"
-  | `Wap -> "wap"
+  let parse = function
+    | "page" -> Ok `Page
+    | "popup" -> Ok `Popup
+    | "touch" -> Ok `Touch
+    | "wap" -> Ok `Wap
+    | s -> Error (`Invalid_display s)
 
-type prompt =
-  [ `None
-  | `Login
-  | `Consent
-  | `Select_account ]
+  let serialize = function
+    | `Page -> "page"
+    | `Popup -> "popup"
+    | `Touch -> "touch"
+    | `Wap -> "wap"
+end
 
-let string_to_prompt = function
-  | "none" -> Ok `None
-  | "login" -> Ok `Login
-  | "consent" -> Ok `Consent
-  | "select_account" -> Ok `Select_account
-  | s -> Error (`Invalid_prompt s)
+module Prompt = struct
+  type t =
+    [ `None
+    | `Login
+    | `Consent
+    | `Select_account ]
 
-let prompt_to_string = function
-  | `None -> "none"
-  | `Login -> "login"
-  | `Consent -> "consent"
-  | `Select_account -> "select_account"
+  type error = [ | `Invalid_prompt of string ]
+
+  let parse = function
+    | "none" -> Ok `None
+    | "login" -> Ok `Login
+    | "consent" -> Ok `Consent
+    | "select_account" -> Ok `Select_account
+    | s -> Error (`Invalid_prompt s)
+
+  let serialize = function
+    | `None -> "none"
+    | `Login -> "login"
+    | `Consent -> "consent"
+    | `Select_account -> "select_account"
+end
 
 type t = {
   response_type : string list;
@@ -59,8 +67,8 @@ type t = {
   nonce : string option;
   claims : Yojson.Safe.t option;
   max_age : int option;
-  display : display option;
-  prompt : prompt option;
+  display : Display.t option;
+  prompt : Prompt.t option;
 }
 
 let make ?(response_type = ["code"]) ?(scope = [`OpenID]) ?state ?claims
@@ -91,9 +99,9 @@ let to_query t =
     Option.map
       (fun claims -> ("claims", [Yojson.Safe.to_string claims]))
       t.claims;
-    Option.map (fun prompt -> ("prompt", [prompt_to_string prompt])) t.prompt;
+    Option.map (fun prompt -> ("prompt", [Prompt.serialize prompt])) t.prompt;
     Option.map
-      (fun display -> ("display", [display_to_string display]))
+      (fun display -> ("display", [Display.serialize display]))
       t.display;
   ]
   |> List.filter_map identity
@@ -114,10 +122,10 @@ let to_yojson t : Yojson.Safe.t =
        Option.map (fun nonce -> ("nonce", `String nonce)) t.nonce;
        Option.map (fun claims -> ("claims", claims)) t.claims;
        Option.map
-         (fun prompt -> ("prompt", `String (prompt_to_string prompt)))
+         (fun prompt -> ("prompt", `String (Prompt.serialize prompt)))
          t.prompt;
        Option.map
-         (fun display -> ("display", `String (display_to_string display)))
+         (fun display -> ("display", `String (Display.serialize display)))
          t.display;
      ]
     |> List.filter_map identity)
@@ -146,12 +154,12 @@ let of_yojson json : (t, [> error]) result =
           json
           |> Json.member "display"
           |> Json.to_string_option
-          |> ROpt.flat_map (fun d -> string_to_display d |> ROpt.of_result);
+          |> ROpt.flat_map (fun d -> Display.parse d |> ROpt.of_result);
         prompt =
           json
           |> Json.member "prompt"
           |> Json.to_string_option
-          |> ROpt.flat_map (fun p -> string_to_prompt p |> ROpt.of_result);
+          |> ROpt.flat_map (fun p -> Prompt.parse p |> ROpt.of_result);
       }
   with _ -> Error `Invalid_parameters
 
@@ -201,10 +209,10 @@ let parse_query uri : (t, [> error]) result =
           claims;
           max_age;
           display =
-            RResult.flat_map string_to_display (getQueryParam "display")
+            RResult.flat_map Display.parse (getQueryParam "display")
             |> ROpt.of_result;
           prompt =
-            RResult.flat_map string_to_prompt (getQueryParam "prompt")
+            RResult.flat_map Prompt.parse (getQueryParam "prompt")
             |> ROpt.of_result;
         }
     | Error e, _, _ -> Error e

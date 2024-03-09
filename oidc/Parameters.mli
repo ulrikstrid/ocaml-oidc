@@ -1,16 +1,30 @@
 (** Auth parameters *)
 
-type display =
-  [ `Page
-  | `Popup
-  | `Touch
-  | `Wap ]
+module Display : sig
+  type t =
+    [ `Page
+    | `Popup
+    | `Touch
+    | `Wap ]
 
-type prompt =
-  [ `None
-  | `Login
-  | `Consent
-  | `Select_account ]
+  type error = [ | `Invalid_display of string ]
+
+  val serialize: t -> string
+  val parse: string -> (t, [> error ]) result
+end
+
+module Prompt : sig
+  type t =
+    [ `None
+    | `Login
+    | `Consent
+    | `Select_account ]
+
+  type error = [ | `Invalid_prompt of string ]
+
+  val serialize: t -> string
+  val parse: string -> (t, [> error ]) result
+end
 
 type t = {
   response_type : string list;
@@ -21,8 +35,8 @@ type t = {
   nonce : string option;
   claims : Yojson.Safe.t option;
   max_age : int option;
-  display : display option;
-  prompt : prompt option;
+  display : Display.t option;
+  prompt : Prompt.t option;
 }
 
 type error =
@@ -31,8 +45,8 @@ type error =
   | `Invalid_scope of string list
   | `Invalid_redirect_uri of string
   | `Missing_parameter of string
-  | `Invalid_display of string
-  | `Invalid_prompt of string
+  | Display.error
+  | Prompt.error
   | `Invalid_parameters ]
 (** Possible states when parsing the query *)
 
@@ -42,8 +56,8 @@ val make :
   ?state:string ->
   ?claims:Yojson.Safe.t ->
   ?max_age:int ->
-  ?display:display ->
-  ?prompt:prompt ->
+  ?display:Display.t ->
+  ?prompt:Prompt.t ->
   ?nonce:string ->
   redirect_uri:Uri.t ->
   client_id:string ->
