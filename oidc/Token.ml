@@ -21,4 +21,5 @@ let basic_auth ~client_id ~secret =
   ("Authorization", "Basic " ^ b64)
 
 module Request = TokenRequest
+module RefreshTokenRequest = RefreshTokenRequest
 module Response = TokenResponse

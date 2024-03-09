@@ -3,18 +3,18 @@ open Utils
 type t = {
   grant_type : string;
   scope : Scopes.t list;
-  code : string;
+  refresh_token : string;
   client_id : string;
   client_secret : string option;
   redirect_uri : Uri.t;
 }
 
-let make ~grant_type ~scope ~redirect_uri ~code client =
+let make ~grant_type ~scope ~redirect_uri ~refresh_token client =
   let { Client.id; secret; _ } = client in
   {
     grant_type;
     scope;
-    code;
+    refresh_token;
     client_id = id;
     client_secret = secret;
     redirect_uri;
@@ -24,7 +24,7 @@ let to_body_string t =
   [
     ("grant_type", [t.grant_type]);
     ("scope", [Scopes.to_scope_parameter t.scope]);
-    ("code", [t.code]);
+    ("refresh_token", [t.refresh_token]);
     ("client_id", [t.client_id]);
     ("client_secret", [t.client_secret |> ROpt.get_or ~default:"secret"]);
     ("redirect_uri", [t.redirect_uri |> Uri.to_string]);
@@ -45,33 +45,34 @@ let of_body_string body =
   let query = Uri.query_of_encoded body |> Uri.with_query Uri.empty in
   let gt = Uri.get_query_param query "grant_type" in
   let s = Uri.get_query_param query "scope" in
-  let c = Uri.get_query_param query "code" in
+  let rt = Uri.get_query_param query "refresh_token" in
   let ci = Uri.get_query_param query "client_id" in
   let client_secret = Uri.get_query_param query "client_secret" in
   let ru = Uri.get_query_param query "redirect_uri" in
-  match (gt, s, c, ci, ru) with
-  | Some grant_type, Some scope, Some code, Some client_id, Some redirect_uri ->
+  match (gt, s, rt, ci, ru) with
+  | Some grant_type, Some scope, Some refresh_token, Some client_id, Some redirect_uri ->
     Ok
       {
         grant_type;
         scope = Scopes.of_scope_parameter scope;
-        code;
+        refresh_token;
         client_id;
         client_secret;
         redirect_uri = redirect_uri |> Uri.of_string;
       }
-  | Some grant_type, None, Some code, Some client_id, Some redirect_uri ->
+  | Some grant_type, None, Some refresh_token, Some client_id, Some redirect_uri ->
     Ok
       {
         grant_type;
         scope = [];
-        code;
+        refresh_token;
         client_id;
         client_secret;
         redirect_uri = redirect_uri |> Uri.of_string;
       }
   | Some _, Some _, Some _, Some _, None -> Error (`Msg "missing redirect_uri")
   | Some _, Some _, Some _, None, Some _ -> Error (`Msg "missing client_id")
-  | Some _, Some _, None, Some _, Some _ -> Error (`Msg "missing code")
+  | Some _, Some _, None, Some _, Some _ -> Error (`Msg "missing refresh_token")
   | None, Some _, Some _, Some _, Some _ -> Error (`Msg "missing grant_type")
   | _ -> Error (`Msg "More than 1 missing")
+

@@ -44,7 +44,7 @@ type request_descr = {
 (* Used to request a [Token.Response.t] *)
 let make_token_request ~code ~discovery t =
   let body =
-    Token.Request.make ~client:t.client ~grant_type:"authorization_code"
+    Token.Request.make t.client ~grant_type:"authorization_code"
       ~scope:[`OpenID] ~redirect_uri:t.redirect_uri ~code
     |> Token.Request.to_body_string
   in
@@ -64,6 +64,31 @@ let make_token_request ~code ~discovery t =
   in
   let uri = discovery.Discover.token_endpoint in
   { body = Some body; headers; uri; meth = `POST }
+
+let make_refresh_token_request ~refresh_token ~discovery t =
+  let body =
+    Token.RefreshTokenRequest.make t.client ~grant_type:"authorization_code"
+      ~scope:[`OpenID] ~redirect_uri:t.redirect_uri ~refresh_token
+    |> Token.RefreshTokenRequest.to_body_string
+  in
+  let headers =
+    [
+      ("Content-Type", "application/x-www-form-urlencoded");
+      ("Accept", "application/json");
+    ]
+  in
+  let headers =
+    match t.client.token_endpoint_auth_method with
+    | "client_secret_basic" ->
+      Token.basic_auth ~client_id:t.client.id
+        ~secret:(Option.value ~default:"" t.client.secret)
+      :: headers
+    | _ -> headers
+  in
+  let uri = discovery.Discover.token_endpoint in
+  { body = Some body; headers; uri; meth = `POST }
+
+
 
 let make_userinfo_request ~(token : Token.Response.t) ~(discovery : Discover.t)
     =

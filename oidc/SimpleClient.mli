@@ -77,6 +77,10 @@ val make_token_request :
   code:string -> discovery:Discover.t -> t -> request_descr
 (** Creates a {!type:request_descr} for the token request *)
 
+val make_refresh_token_request :
+  refresh_token:string -> discovery:Discover.t -> t -> request_descr
+(** Creates a {!type:request_descr} for the refresh token request *)
+
 val make_userinfo_request :
   token:Token.Response.t ->
   discovery:Discover.t ->
