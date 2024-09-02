@@ -23,8 +23,8 @@ let find_jwk_with_kid () =
   match found_jwk with
   | Some found_jwk ->
     check_result_string "thumbprint"
-      (Jose.Jwk.get_thumbprint `SHA1 jwk |> Result.map Cstruct.to_string)
-      (Jose.Jwk.get_thumbprint `SHA1 found_jwk |> Result.map Cstruct.to_string)
+      (Jose.Jwk.get_thumbprint `SHA1 jwk)
+      (Jose.Jwk.get_thumbprint `SHA1 found_jwk)
   | None ->
     print_endline "Did not find jwk";
     raise Not_found
@@ -34,8 +34,8 @@ let find_jwk_without_kid () =
   match found_jwk with
   | Some found_jwk ->
     check_result_string "thumbprint"
-      (Jose.Jwk.get_thumbprint `SHA1 jwk |> Result.map Cstruct.to_string)
-      (Jose.Jwk.get_thumbprint `SHA1 found_jwk |> Result.map Cstruct.to_string)
+      (Jose.Jwk.get_thumbprint `SHA1 jwk)
+      (Jose.Jwk.get_thumbprint `SHA1 found_jwk)
   | None ->
     print_endline "Did not find jwk";
     raise Not_found

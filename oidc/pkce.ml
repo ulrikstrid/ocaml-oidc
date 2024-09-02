@@ -13,14 +13,14 @@ let alphabet =
 
 let octets = 96 (* 4 * (96/3) = 128 *)
 
-let base64_encode_cstruct cstruct =
-  Base64.encode_string ~alphabet ~pad:false @@ Cstruct.to_string cstruct
+let base64_encode s =
+  Base64.encode_string ~alphabet ~pad:false s
 
 module Verifier = struct
   type t = string
 
   (* https://www.rfc-editor.org/rfc/rfc7636#section-4.1 *)
-  let make () = Mirage_crypto_rng.generate octets |> base64_encode_cstruct
+  let make () = Mirage_crypto_rng.generate octets |> base64_encode
   let of_string s = s
 end
 
@@ -38,8 +38,9 @@ module Challenge = struct
      https://www.rfc-editor.org/rfc/rfc7636#section-4.2 *)
   let make verifier =
     let s256_challenge_string =
-      Mirage_crypto.Hash.SHA256.digest (Cstruct.of_string verifier)
-      |> base64_encode_cstruct
+      Digestif.SHA256.digest_string verifier
+      |> Digestif.SHA256.to_raw_string
+      |> base64_encode
     in
 
     S256 s256_challenge_string
