@@ -40,15 +40,15 @@
   (mirage-crypto
    (and
     :with-test
-    (>= "0.8.1")))
+    (>= "1.0.0")))
   (mirage-crypto-rng
    (and
     :with-test
-    (>= "0.8.1")))
+    (>= "1.0.0")))
   (mirage-crypto-pk
    (and
     :with-test
-    (>= "0.8.1")))))
+    (>= "1.0.0")))))
 
 (package
  (version 1.0.0)
