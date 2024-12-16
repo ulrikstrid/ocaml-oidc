@@ -2,12 +2,12 @@
   description = "OpenID Connect implementation for OCaml";
 
   nixConfig = {
-    extra-substituters = "https://anmonteiro.nix-cache.workers.dev";
+    extra-substituters = "https://ocaml.nix-cache.com";
     extra-trusted-public-keys = "ocaml.nix-cache.com-1:/xI2h2+56rwFfKyyFVbkJSeGqSIYMC/Je+7XXqGKDIY=";
   };
 
   inputs = {
-    nixpkgs.url = "github:nix-ocaml/nix-overlays?rev=5f9732395c157852afe6710e11097afa2083cbc1";
+    nixpkgs.url = "github:nix-ocaml/nix-overlays";
 
     flake-utils.url = "github:numtide/flake-utils";
     nixpkgs.inputs.flake-utils.follows = "flake-utils";
