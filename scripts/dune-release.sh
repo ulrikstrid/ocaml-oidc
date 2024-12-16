@@ -12,8 +12,8 @@ step()
 {
   printf "Continue? [Yn] "
   read action
-  if [ "x$action" == "xn" ]; then exit 2; fi
-  if [ "x$action" == "xN" ]; then exit 2; fi
+  if [ "$action" = "n" ]; then exit 2; fi
+  if [ "$action" = "N" ]; then exit 2; fi
 }
 
 dune-release tag "$TAG"
