@@ -3,7 +3,7 @@ let src =
 
 module Log = (val Logs.src_log src : Logs.LOG)
 
-let get_use jwk =
+let _get_use jwk =
   match jwk with
   | Jose.Jwk.Rsa_pub jwk -> jwk.use
   | Jose.Jwk.Oct jwk -> jwk.use
@@ -12,10 +12,17 @@ let get_use jwk =
   | Jose.Jwk.Es512_pub jwk -> jwk.use
   | Jose.Jwk.Ed25519_pub jwk -> jwk.use
 
+let get_alg jwk =
+  match jwk with
+  | Jose.Jwk.Rsa_pub _jwk -> `RS256
+  | Jose.Jwk.Oct _jwk -> `HS256
+  | Jose.Jwk.Es256_pub _jwk -> `ES256
+  | Jose.Jwk.Es384_pub _jwk -> `ES384
+  | Jose.Jwk.Es512_pub _jwk -> `ES512
+  | Jose.Jwk.Ed25519_pub _jwk -> `EdDSA
+
 let matching_jwt (jwt : Jose.Jwt.t) (jwk : Jose.Jwk.public Jose.Jwk.t) =
-  match (Jose.Jwk.get_alg jwk, get_use jwk) with
-  | Some alg, Some use -> alg = jwt.header.alg && use = `Sig
-  | _, _ -> false
+  get_alg jwk = jwt.header.alg
 
 let find_jwk ~(jwt : Jose.Jwt.t) jwks =
   match jwt.header.kid with
@@ -27,4 +34,7 @@ let find_jwk ~(jwt : Jose.Jwt.t) jwks =
         m "No kid supplied, trying the first key with matching alg")
     [@coverage off];
     let matching_keys = List.filter (matching_jwt jwt) jwks.keys in
-    if List.length matching_keys = 1 then Some (List.hd matching_keys) else None
+    match matching_keys with
+    | key :: _ -> Some key
+    | [] -> None
+
