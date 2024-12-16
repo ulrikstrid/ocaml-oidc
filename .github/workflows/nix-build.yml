@@ -17,18 +17,18 @@ jobs:
       - uses: cachix/install-nix-action@v30
 
       - name: "Run nix flake check"
-        run: nix flake check
+        run: nix flake check --accept-flake-config
 
       - name: "Unit tests"
-        run: nix develop -c dune runtest --instrument-with bisect_ppx --force --no-buffer
+        run: nix develop --accept-flake-config -c dune runtest --instrument-with bisect_ppx --force --no-buffer
 
       - name: Send coverage report
-        run: nix develop -c bisect-ppx-report send-to Codecov
+        run: nix develop --accept-flake-config -c bisect-ppx-report send-to Codecov
         if: ${{ matrix.os == 'ubuntu-latest' }}
         continue-on-error: true
 
       - name: "Generate documentation"
-        run: nix develop -c dune build @doc --force --no-buffer
+        run: nix develop --accept-flake-config -c dune build @doc --force --no-buffer
         if: ${{ github.ref == 'refs/heads/master' && github.event_name == 'push' && matrix.os == 'ubuntu-latest' }}
 
       - name: Deploy
