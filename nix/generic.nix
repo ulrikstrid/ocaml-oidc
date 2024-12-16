@@ -94,7 +94,6 @@ rec {
       routes
       uuidm
       oidc
-      oauth
       jose
       piaf
       uri

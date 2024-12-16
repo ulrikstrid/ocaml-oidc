@@ -10,7 +10,6 @@
     nixpkgs.url = "github:nix-ocaml/nix-overlays";
 
     flake-utils.url = "github:numtide/flake-utils";
-    nixpkgs.inputs.flake-utils.follows = "flake-utils";
 
     nix-filter.url = "github:numtide/nix-filter";
   };
@@ -35,26 +34,28 @@
               drv.pname == null ||
               !(lib.any (name: name == drv.pname || name == drv.name) (lib.attrNames oidcDrvs)))
             inputs;
-        devShell = (pkgs.mkShell {
-          inputsFrom = lib.attrValues oidcDrvs;
-          buildInputs = with pkgs; with ocamlPackages; [
-            ocaml-lsp
-            ocamlformat
-            odoc
-            reenv
-            # dune-release
-            cacert
-            curl
-            which
-          ];
-        }).overrideAttrs (o: {
-          propagatedBuildInputs = filterDrvs o.propagatedBuildInputs;
-          buildInputs = filterDrvs o.buildInputs;
-          checkInputs = filterDrvs o.checkInputs;
-        });
+        devShells = {
+          default = (pkgs.mkShell {
+            inputsFrom = lib.attrValues oidcDrvs;
+            buildInputs = with pkgs; with ocamlPackages; [
+              ocaml-lsp
+              ocamlformat
+              odoc
+              reenv
+              # dune-release
+              cacert
+              curl
+              which
+            ];
+          }).overrideAttrs (o: {
+            propagatedBuildInputs = filterDrvs o.propagatedBuildInputs;
+            buildInputs = filterDrvs o.buildInputs;
+            checkInputs = filterDrvs o.checkInputs;
+          });
+        };
       in
       {
-        inherit devShell;
+        inherit devShells;
         packages = {
           oidc = oidcPkgs.oidc;
         };
