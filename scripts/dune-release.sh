@@ -18,10 +18,10 @@ step()
 
 dune-release tag "$TAG"
 step
-dune-release distrib -p oidc -n oidc -t "$TAG" --skip-tests #--skip-lint
+dune-release distrib -p oidc -t "$TAG" --skip-tests #--skip-lint
 step
-dune-release publish distrib -p oidc -n oidc -t "$TAG"
+dune-release publish distrib -p oidc -t "$TAG"
 step
-dune-release opam pkg -p oidc -n oidc -t "$TAG"
+dune-release opam pkg -p oidc -t "$TAG"
 step
-dune-release opam submit -p oidc -n oidc -t "$TAG"
+dune-release opam submit -p oidc -t "$TAG"

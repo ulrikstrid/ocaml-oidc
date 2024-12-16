@@ -42,7 +42,7 @@
               ocamlformat
               odoc
               reenv
-              # dune-release
+              dune-release
               cacert
               curl
               which
