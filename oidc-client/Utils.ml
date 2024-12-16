@@ -14,7 +14,8 @@ end
 
 module RPiaf = struct
   let map_piaf_err (x : ('a, Piaf.Error.t) Lwt_result.t) :
-      ('a, [> `Msg of string]) Lwt_result.t =
+    ('a, [> `Msg of string ]) Lwt_result.t
+    =
     Lwt_result.map_error (fun e -> `Msg (Piaf.Error.to_string e)) x
 end
 

@@ -1,4 +1,4 @@
-let result_t : [> Oidc.Error.t] Alcotest.testable =
+let result_t : [> Oidc.Error.t ] Alcotest.testable =
   let pp = Oidc.Error.pp in
   Alcotest.testable pp ( = )
 

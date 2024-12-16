@@ -24,7 +24,8 @@ type validation_error =
   | `Unexpected_nonce
   | `Unsafe
   | `Wrong_aud_value of string
-  | `Wrong_iss_value of string ]
+  | `Wrong_iss_value of string
+  ]
 
 let validation_error_to_string = function
   | `Msg e -> e
@@ -116,32 +117,33 @@ let validate_aud ~(client : Client.t) (jwt : Jose.Jwt.t) =
   | `String aud ->
     Log.debug (fun m -> m "aud is invalid, expected %s got %s" client.id aud);
     Error (`Wrong_aud_value aud)
-  | `List json -> (
+  | `List json ->
     Log.debug (fun m -> m "aud is list");
     let maybe_client_id = List.find_opt (fun v -> v = `String client.id) json in
-    match maybe_client_id with
+    (match maybe_client_id with
     | Some _ ->
       Log.debug (fun m -> m "aud list includes %s" client.id);
       Ok jwt
     | None ->
       Log.debug (fun m ->
-          m "aud list does not include expected value %s" client.id);
-      Error (`Wrong_aud_value "")
-    (* TODO: Check azp as well if audience is longer than 1 *))
+        m "aud list does not include expected value %s" client.id);
+      Error (`Wrong_aud_value ""))
+    (* TODO: Check azp as well if audience is longer than 1 *)
   | _ ->
     Log.debug (fun m -> m "aud is missing");
     Error `Missing_aud
 
 let validate_nonce ?nonce (jwt : Jose.Jwt.t) =
   let jwt_nonce = get_string_member "nonce" jwt.payload in
-  match (nonce, jwt_nonce) with
+  match nonce, jwt_nonce with
   | Some nonce, Some jwt_nonce ->
-    if nonce = jwt_nonce then (
+    if nonce = jwt_nonce
+    then (
       Log.debug (fun m -> m "nonce is valid");
       Ok jwt)
     else (
       Log.debug (fun m ->
-          m "nonce is invalid, expected %s got %s" nonce jwt_nonce);
+        m "nonce is invalid, expected %s got %s" nonce jwt_nonce);
       Error `Invalid_nonce)
   | None, Some _ ->
     Log.debug (fun m -> m "Got nonce but did not expect to");
@@ -153,14 +155,20 @@ let validate_nonce ?nonce (jwt : Jose.Jwt.t) =
     Log.debug (fun m -> m "no nonce provided");
     Ok jwt
 
-let validate ?clock_tolerance ?nonce ?jwk
-    ?(now = Unix.gettimeofday () |> Ptime.of_float_s |> Option.get)
-    ~(client : Client.t) ~issuer (jwt : Jose.Jwt.t) =
+let validate
+      ?clock_tolerance
+      ?nonce
+      ?jwk
+      ?(now = Unix.gettimeofday () |> Ptime.of_float_s |> Option.get)
+      ~(client : Client.t)
+      ~issuer
+      (jwt : Jose.Jwt.t)
+  =
   let issuer = Uri.to_string issuer in
-  (match (jwt.header.alg, jwk) with
-  | `None, _ -> Ok jwt
-  | _, Some jwk -> Jose.Jwt.validate ~now ~jwk jwt
-  | _, None -> Error `No_jwk_provided)
+  (match jwt.header.alg, jwk with
+    | `None, _ -> Ok jwt
+    | _, Some jwk -> Jose.Jwt.validate ~now ~jwk jwt
+    | _, None -> Error `No_jwk_provided)
   >>= validate_iss ~issuer
   >>= validate_exp
   >>= validate_iat ?clock_tolerance

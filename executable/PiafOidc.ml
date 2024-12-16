@@ -1,8 +1,6 @@
-(**
- * Copyright 2022 Ulrik Strid. All rights reserved.
- * Use of this source code is governed by a BSD-style
- * license that can be found in the LICENSE file.
- *)
+(** * Copyright 2022 Ulrik Strid. All rights reserved. * Use of this source code
+    is governed by a BSD-style * license that can be found in the LICENSE file.
+*)
 
 let to_string_body (res : Piaf.Response.t) = Piaf.Body.to_string res.body
 let map_piaf_error e = `Msg (Piaf.Error.to_string e)

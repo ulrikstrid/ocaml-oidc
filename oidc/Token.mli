@@ -1,111 +1,120 @@
 (** Types and functions to work with the token endpoint *)
 
-(** {{: https://openid.net/specs/openid-connect-core-1_0.html#TokenEndpoint} OpenID Connect Core 1.0 TokenEndpoint} *)
+(** {{:https://openid.net/specs/openid-connect-core-1_0.html#TokenEndpoint}
+     OpenID Connect Core 1.0 TokenEndpoint} *)
 
 module Response : sig
   type token_type = Bearer
 
-  type t = {
-    token_type : token_type;
-    scope : Scopes.t list;
-    expires_in : int option;
-    access_token : string option;
-    refresh_token : string option;
-    id_token : string option;
-  }
+  type t =
+    { token_type : token_type
+    ; scope : Scopes.t list
+    ; expires_in : int option
+    ; access_token : string option
+    ; refresh_token : string option
+    ; id_token : string option
+    }
   (** A token response *)
 
   val make :
-    ?token_type:token_type ->
-    ?scope:Scopes.t list ->
-    ?expires_in:int ->
-    ?access_token:string ->
-    ?refresh_token:string ->
-    ?id_token:string ->
-    unit ->
-    t
+     ?token_type:token_type
+    -> ?scope:Scopes.t list
+    -> ?expires_in:int
+    -> ?access_token:string
+    -> ?refresh_token:string
+    -> ?id_token:string
+    -> unit
+    -> t
 
-  val of_yojson : Yojson.Safe.t -> (t, [> `Msg of string]) result
-  val of_string : string -> (t, [> `Msg of string]) result
+  val of_yojson : Yojson.Safe.t -> (t, [> `Msg of string ]) result
+  val of_string : string -> (t, [> `Msg of string ]) result
   val to_yojson : t -> Yojson.Safe.t
 
   val validate :
-    ?clock_tolerance:int ->
-    ?nonce:string ->
-    jwks:Jose.Jwks.t ->
-    client:Client.t ->
-    discovery:Discover.t ->
-    t ->
-    (t, [> IDToken.validation_error]) result
+     ?clock_tolerance:int
+    -> ?nonce:string
+    -> jwks:Jose.Jwks.t
+    -> client:Client.t
+    -> discovery:Discover.t
+    -> t
+    -> (t, [> IDToken.validation_error ]) result
 end
 
 module Request : sig
   (** Types and functions to work with the token endpoint *)
 
-  type t = {
-    grant_type : string;
-    scope : Scopes.t list;
-    code : string;
-    client_id : string;
-    client_secret : string option;
-    redirect_uri : Uri.t;
-  }
+  type t =
+    { grant_type : string
+    ; scope : Scopes.t list
+    ; code : string
+    ; client_id : string
+    ; client_secret : string option
+    ; redirect_uri : Uri.t
+    }
   (** A refresh token request *)
 
   val make :
-    grant_type:string ->
-    scope:Scopes.t list ->
-    redirect_uri:Uri.t ->
-    code:string ->
-    Client.t ->
-    t
+     grant_type:string
+    -> scope:Scopes.t list
+    -> redirect_uri:Uri.t
+    -> code:string
+    -> Client.t
+    -> t
 
   val to_body_string : t -> string
   (** Creates the body for the token request *)
 
-  val of_body_string : string -> (t, [> `Msg of string]) result
+  val of_body_string : string -> (t, [> `Msg of string ]) result
   (** Parses a request body into a t *)
 end
 
 module RefreshTokenRequest : sig
   (** Types and functions to work with the token endpoint *)
 
-  type t = {
-    grant_type : string;
-    scope : Scopes.t list;
-    refresh_token : string;
-    client_id : string;
-    client_secret : string option;
-    redirect_uri : Uri.t;
-  }
+  type t =
+    { grant_type : string
+    ; scope : Scopes.t list
+    ; refresh_token : string
+    ; client_id : string
+    ; client_secret : string option
+    ; redirect_uri : Uri.t
+    }
   (** A token request *)
 
   val make :
-    grant_type:string ->
-    scope:Scopes.t list ->
-    redirect_uri:Uri.t ->
-    refresh_token:string ->
-    Client.t ->
-    t
+     grant_type:string
+    -> scope:Scopes.t list
+    -> redirect_uri:Uri.t
+    -> refresh_token:string
+    -> Client.t
+    -> t
 
   val to_body_string : t -> string
   (** Creates the body for the token request *)
 
-  val of_body_string : string -> (t, [> `Msg of string]) result
+  val of_body_string : string -> (t, [> `Msg of string ]) result
   (** Parses a request body into a t *)
 
   (** {2 Notes}
 
-  The Authorization Server MUST validate the Token Request as follows:
-  - Authenticate the Client if it was issued Client Credentials or if it uses another Client Authentication method, per Section 9.
-  - Ensure the Authorization Code was issued to the authenticated Client.
-  - Verify that the Authorization Code is valid.
-  - If possible, verify that the Authorization Code has not been previously used.
-  - Ensure that the redirect_uri parameter value is identical to the redirect_uri parameter value that was included in the initial Authorization Request. If the redirect_uri parameter value is not present when there is only one registered redirect_uri value, the Authorization Server MAY return an error (since the Client should have included the parameter) or MAY proceed without an error (since OAuth 2.0 permits the parameter to be omitted in this case).
-  - Verify that the Authorization Code used was issued in response to an OpenID Connect Authentication Request (so that an ID Token will be returned from the Token Endpoint).
-  *)
+      The Authorization Server MUST validate the Token Request as follows:
+      - Authenticate the Client if it was issued Client Credentials or if it
+        uses another Client Authentication method, per Section 9.
+      - Ensure the Authorization Code was issued to the authenticated Client.
+      - Verify that the Authorization Code is valid.
+      - If possible, verify that the Authorization Code has not been previously
+        used.
+      - Ensure that the redirect_uri parameter value is identical to the
+        redirect_uri parameter value that was included in the initial
+        Authorization Request. If the redirect_uri parameter value is not
+        present when there is only one registered redirect_uri value, the
+        Authorization Server MAY return an error (since the Client should have
+        included the parameter) or MAY proceed without an error (since OAuth 2.0
+        permits the parameter to be omitted in this case).
+      - Verify that the Authorization Code used was issued in response to an
+        OpenID Connect Authentication Request (so that an ID Token will be
+        returned from the Token Endpoint). *)
 end
-
 
 (** {2 Utils} *)
 

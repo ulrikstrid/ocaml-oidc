@@ -4,17 +4,15 @@
  * license that can be found in the LICENSE file.
  *)
 
-(* https://www.rfc-editor.org/rfc/rfc3986#section-2.3
-    can also contain "." and "~" but we already have 64 characters
+(* https://www.rfc-editor.org/rfc/rfc3986#section-2.3 can also contain "." and
+   "~" but we already have 64 characters
 *)
 let alphabet =
   Base64.make_alphabet
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
 
 let octets = 96 (* 4 * (96/3) = 128 *)
-
-let base64_encode s =
-  Base64.encode_string ~alphabet ~pad:false s
+let base64_encode s = Base64.encode_string ~alphabet ~pad:false s
 
 module Verifier = struct
   type t = string
@@ -32,7 +30,8 @@ module Challenge = struct
 
   type transformation =
     [ `S256
-    | `Plain ]
+    | `Plain
+    ]
 
   (* We MUST create sha256 since we can
      https://www.rfc-editor.org/rfc/rfc7636#section-4.2 *)
@@ -53,8 +52,8 @@ module Challenge = struct
   (* https://www.rfc-editor.org/rfc/rfc7636#section-4.3 *)
   let to_code_challenge_and_method challenge =
     match challenge with
-    | Plain challenge -> (challenge, "plain")
-    | S256 challenge -> (challenge, "S256")
+    | Plain challenge -> challenge, "plain"
+    | S256 challenge -> challenge, "S256"
 end
 
 (* https://www.rfc-editor.org/rfc/rfc7636#section-4.6 *)

@@ -19,7 +19,8 @@ module Challenge : sig
 
   type transformation =
     [ `S256
-    | `Plain ]
+    | `Plain
+    ]
 
   val make : Verifier.t -> t
   (** Will always be a S256 challenge

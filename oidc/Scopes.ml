@@ -5,7 +5,8 @@ type t =
   | `Address
   | `Phone
   | `Offline_access
-  | `S of string ]
+  | `S of string
+  ]
 
 let of_string = function
   | "openid" -> `OpenID

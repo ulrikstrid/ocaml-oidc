@@ -17,22 +17,25 @@ let create_challenge () =
   let challenge_string, _meth =
     Challenge.to_code_challenge_and_method challenge
   in
-  check_string "Create code_challenge from code_verifier" code_challenge
+  check_string
+    "Create code_challenge from code_verifier"
+    code_challenge
     challenge_string
 
 let verify_challenge () =
   let verifier = Verifier.of_string code_verifier in
   let challenge = Challenge.of_string ~transformation:`S256 code_challenge in
   Alcotest.(check bool)
-    "Verify challenge and verifier" true
+    "Verify challenge and verifier"
+    true
     (verify verifier challenge)
 
 let tests =
-  List.map make_test_case
-    [
-      ("Creates the same challenge", create_challenge);
-      ("Verify challenge and verifier", verify_challenge);
+  List.map
+    make_test_case
+    [ "Creates the same challenge", create_challenge
+    ; "Verify challenge and verifier", verify_challenge
     ]
 
 let suite, _ =
-  Junit_alcotest.run_and_report ~package:"oidc" "pkce" [("OIDC - pkce", tests)]
+  Junit_alcotest.run_and_report ~package:"oidc" "pkce" [ "OIDC - pkce", tests ]

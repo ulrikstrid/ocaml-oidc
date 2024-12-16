@@ -4,53 +4,55 @@
  * license that can be found in the LICENSE file.
  *)
 
-(**
-  Simpler interface for creating a oidc client
-*)
+(** Simpler interface for creating a oidc client *)
 
-type t = {
-  client : Client.t;
-  provider_uri : Uri.t;  (** The uri where we'll find the provider *)
-  redirect_uri : Uri.t;  (** The uri where the provider should return the user *)
+type t =
+  { client : Client.t
+  ; provider_uri : Uri.t  (** The uri where we'll find the provider *)
+  ; redirect_uri : Uri.t
+    (** The uri where the provider should return the user *)
 }
 (** Client with information needed to create calls *)
 
 val make :
-  ?secret:string ->
-  ?response_types:string list ->
-  ?grant_types:string list ->
-  ?token_endpoint_auth_method:string ->
-  redirect_uri:Uri.t ->
-  provider_uri:Uri.t ->
-  string ->
-  t
-(** Create a simple client, it creates a {{!type:Client.t} oidc client} with some optional defaults.
+   ?secret:string
+  -> ?response_types:string list
+  -> ?grant_types:string list
+  -> ?token_endpoint_auth_method:string
+  -> redirect_uri:Uri.t
+  -> provider_uri:Uri.t
+  -> string
+  -> t
+(** Create a simple client, it creates a {{!type:Client.t} oidc client} with
+    some optional defaults.
 
     Defaults:
     - [response_types] - [["code"]]
     - [grant_types] - [[]]
-    - [token_endpoint_auth_method] - [["client_secret_post"]]
-*)
+    - [token_endpoint_auth_method] - [["client_secret_post"]] *)
 
 (** {2 URI builders} *)
 
 val discovery_uri : t -> Uri.t
-(** Get the discovery_uri as specified in the {{:https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfig} OIDC spec} *)
+(** Get the discovery_uri as specified in the
+    {{:https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfig}
+     OIDC spec} *)
 
 val make_auth_uri :
-  ?scope:Scopes.t list ->
-  ?claims:Yojson.Safe.t ->
-  ?nonce:string ->
-  state:string ->
-  discovery:Discover.t ->
-  t ->
-  Uri.t
+   ?scope:Scopes.t list
+  -> ?claims:Yojson.Safe.t
+  -> ?nonce:string
+  -> state:string
+  -> discovery:Discover.t
+  -> t
+  -> Uri.t
 (** Builds the uri used for redirecting the user to the provider
 
 - [scope] example input: [["openid"; "email"; "profile"]]
-- [nonce] should be validated when the user comes back to make sure they were not hijacked
-- [state] will be returend by the provider and can be used to remember where to redirect the user after successful login
-*)
+    - [nonce] should be validated when the user comes back to make sure they
+      were not hijacked
+    - [state] will be returend by the provider and can be used to remember where
+      to redirect the user after successful login *)
 
 (** {2 Request builders}*)
 
@@ -63,59 +65,70 @@ type meth =
   | `PUT
   | `TRACE
   | `OPTIONS
-  | `Other of string ]
+  | `Other of string
+  ]
 
-type request_descr = {
-  body : string option;
-  headers : (string * string) list;
-  uri : Uri.t;
-  meth : meth;
+type request_descr =
+  { body : string option
+  ; headers : (string * string) list
+  ; uri : Uri.t
+  ; meth : meth
 }
-(** Request description that can be used by a http client to make the needed call *)
+(** Request description that can be used by a http client to make the needed
+    call *)
 
 val make_token_request :
-  code:string -> discovery:Discover.t -> t -> request_descr
+   code:string
+  -> discovery:Discover.t
+  -> t
+  -> request_descr
 (** Creates a {!type:request_descr} for the token request *)
 
 val make_refresh_token_request :
-  refresh_token:string -> discovery:Discover.t -> t -> request_descr
+   refresh_token:string
+  -> discovery:Discover.t
+  -> t
+  -> request_descr
 (** Creates a {!type:request_descr} for the refresh token request *)
 
 val make_userinfo_request :
-  token:Token.Response.t ->
-  discovery:Discover.t ->
-  (request_descr, [> Error.t]) result
+   token:Token.Response.t
+  -> discovery:Discover.t
+  -> (request_descr, [> Error.t ]) result
 (** Creates a {!type:request_descr} for the userinfo request *)
 
 val valid_token_of_string :
-  ?clock_tolerance:int ->
-  ?nonce:string ->
-  jwks:Jose.Jwks.t ->
-  discovery:Discover.t ->
-  t ->
-  string ->
-  (Token.Response.t, [> `Msg of string | IDToken.validation_error]) result
+   ?clock_tolerance:int
+  -> ?nonce:string
+  -> jwks:Jose.Jwks.t
+  -> discovery:Discover.t
+  -> t
+  -> string
+  -> (Token.Response.t, [> `Msg of string | IDToken.validation_error ]) result
 (** Will parse the string and validate the token
 
-[clock_tolerance] is used to allow a difference between the providers and clients clock *)
+    [clock_tolerance] is used to allow a difference between the providers and
+    clients clock *)
 
 val valid_userinfo_of_string :
-  token_response:Token.Response.t ->
-  string ->
-  ( string,
-    [> `Missing_sub
+   token_response:Token.Response.t
+  -> string
+  -> ( string
+       , [> `Missing_sub
     | `Sub_missmatch
     | `Not_json
     | `Not_supported
-    | `Msg of string ] )
+         | `Msg of string
+         ] )
   result
 
 (** {2 Example - Google}
 
-This example is written as if your http client is synchronos since we don't have a [Lwt] or [Async] dependency in the core.
-For a more complete example  look in the [executable] folder.
+    This example is written as if your http client is synchronos since we don't
+    have a [Lwt] or [Async] dependency in the core. For a more complete example
+    look in the [executable] folder.
 
-{3 Server start }
+    {3 Server start}
 
 We have to do some things when the server starts to prepare
 
@@ -125,9 +138,10 @@ let client_id = Sys.getenv "OIDC_CLIENT_ID"
 let provider_uri = Uri.of_string "https://accounts.google.com"
 let redirect_uri = Uri.of_string "http://localhost:8080/auth/callback"
 
-(* Create a client, it will create a oidc client
-   under the hood and inherits parameters from there *)
-let simple_client = Oidc.SimpleClient.make ~redirect_uri ~provider_uri ~secret client_id
+      (* Create a client, it will create a oidc client under the hood and
+         inherits parameters from there *)
+      let simple_client =
+        Oidc.SimpleClient.make ~redirect_uri ~provider_uri ~secret client_id
 
 let discovery =
   let uri = Oidc.SimpleClient.discovery_uri simple_client in
@@ -142,16 +156,24 @@ let jwks =
 
 {3 Authenitcation route}
 
-When the user is supposed to login you create the URI and redirect the user to the provider.
+    When the user is supposed to login you create the URI and redirect the user
+    to the provider.
 
 {[
-  let uri = Oidc.SimpleClient.make_auth_uri ~scope:[`OpenID; `Email; `Profile] ~state:"state" ~discovery client in
+      let uri =
+        Oidc.SimpleClient.make_auth_uri
+          ~scope:[ `OpenID; `Email; `Profile ]
+          ~state:"state"
+          ~discovery
+          client
+      in
   HttpServer.redirect uri
 ]}
 
 {3 Callback route}
 
-When the user returns from the provider we have to fetch the tokens and do some validation and (optionally) get the userinfo.
+    When the user returns from the provider we have to fetch the tokens and do
+    some validation and (optionally) get the userinfo.
 
 {[
 let code = HttpServer.get_query "code" request in
@@ -192,5 +214,4 @@ match (validated_token, userinfo) with
 
   HttServer.respond id_token
 | Error e -> HttpServer.respond @@ Oidc.Error.to_string e
-]}
-*)
+    ]} *)

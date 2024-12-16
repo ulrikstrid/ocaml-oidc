@@ -45,7 +45,7 @@ module JWKs = struct
   open Lwt_result.Infix
 
   let dependencies : (unit, 'a, 'b) Archi_lwt.Component.deps =
-    [Discovery.component]
+    [ Discovery.component ]
 
   let start () (discovery : Oidc.Discover.t) =
     Piaf.Client.Oneshot.get discovery.jwks_uri
@@ -59,7 +59,7 @@ end
 
 module WebServer = struct
   let dependencies : (unit, 'a, 'b) Archi_lwt.Component.deps =
-    [Discovery.component; JWKs.component]
+    [ Discovery.component; JWKs.component ]
 
   let stop_promise, stopper = Lwt.wait ()
 
@@ -67,12 +67,14 @@ module WebServer = struct
     Dream.serve ~stop:stop_promise
     @@ Dream.logger
     @@ Dream.cookie_sessions
-    @@ Dream.router [(Dream.get "/" @@ fun _ -> Dream.html "Unsecured route")]
-    @@ DreamOidcMiddleware.middleware ~redirect_to:"/secure" ~discovery ~jwks
+    @@ Dream.router [ (Dream.get "/" @@ fun _ -> Dream.html "Unsecured route") ]
+    @@ DreamOidcMiddleware.middleware
+         ~redirect_to:"/secure"
+         ~discovery
+         ~jwks
          simple_client
     @@ Dream.router
-         [
-           ( Dream.get "/secure" @@ fun request ->
+         [ ( Dream.get "/secure" @@ fun request ->
              let id_token = Dream.session "id_token" request |> Option.get in
              let access_token =
                Dream.session "access_token" request |> Option.get
@@ -84,7 +86,10 @@ module WebServer = struct
              Dream.html
              @@ Printf.sprintf
                   "<html><body><p>id_token</p><pre>%s</pre><p>userinfo</p><pre>%s</pre><p>access_token</p><pre>%s</pre><p>refresh_token</p><pre>%s</pre></body></html>"
-                  id_token userinfo access_token refresh_token );
+                  id_token
+                  userinfo
+                  access_token
+                  refresh_token )
          ]
     @@ Dream.not_found
     |> Lwt.map Result.ok
@@ -95,9 +100,8 @@ end
 
 let system =
   Archi_lwt.System.make
-    [
-      ("Discovery document", Discovery.component);
-      ("HTTP server", WebServer.component);
+    [ "Discovery document", Discovery.component
+    ; "HTTP server", WebServer.component
     ]
 
 let main () =
@@ -106,7 +110,8 @@ let main () =
   Archi_lwt.System.start () system >|= function
   | Ok system ->
     Sys.(
-      set_signal sigint
+      set_signal
+        sigint
         (Signal_handle (fun _ -> Archi_lwt.System.stop system |> ignore)))
   | Error (`Msg error) ->
     prerr_endline error;

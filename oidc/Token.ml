@@ -18,7 +18,7 @@ let basic_auth ~client_id ~secret =
   let b64 = RBase64.encode_string (Printf.sprintf "%s:%s" username password) in
 
   Log.debug (fun m -> m "Basic auth: %s" b64) [@coverage off];
-  ("Authorization", "Basic " ^ b64)
+  "Authorization", "Basic " ^ b64
 
 module Request = TokenRequest
 module RefreshTokenRequest = RefreshTokenRequest

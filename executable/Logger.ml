@@ -33,7 +33,8 @@
 
 let setup_log ?style_renderer level =
   let pp_header src ppf (l, h) =
-    if l = Logs.App then Format.fprintf ppf "%a" Logs_fmt.pp_header (l, h)
+    if l = Logs.App
+    then Format.fprintf ppf "%a" Logs_fmt.pp_header (l, h)
     else
       let x =
         match Array.length Sys.argv with

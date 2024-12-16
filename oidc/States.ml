@@ -1,4 +1,4 @@
-type invalidPayload = [`Msg of string]
+type invalidPayload = [ `Msg of string ]
 type code = string
 
 type t =

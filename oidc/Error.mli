@@ -9,7 +9,8 @@ type t =
   | Discover.error
   | `Sub_missmatch
   | `Missing_userinfo_endpoint
-  | `Missing_access_token ]
+  | `Missing_access_token
+  ]
 (** Possible errors *)
 
 val to_string : t -> string

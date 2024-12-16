@@ -5,12 +5,13 @@ module Display : sig
     [ `Page
     | `Popup
     | `Touch
-    | `Wap ]
+    | `Wap
+    ]
 
-  type error = [ | `Invalid_display of string ]
+  type error = [ `Invalid_display of string ]
 
-  val serialize: t -> string
-  val parse: string -> (t, [> error ]) result
+  val serialize : t -> string
+  val parse : string -> (t, [> error ]) result
 end
 
 module Prompt : sig
@@ -18,26 +19,27 @@ module Prompt : sig
     [ `None
     | `Login
     | `Consent
-    | `Select_account ]
+    | `Select_account
+    ]
 
-  type error = [ | `Invalid_prompt of string ]
+  type error = [ `Invalid_prompt of string ]
 
-  val serialize: t -> string
-  val parse: string -> (t, [> error ]) result
+  val serialize : t -> string
+  val parse : string -> (t, [> error ]) result
 end
 
-type t = {
-  response_type : string list;
-  client_id : string;
-  redirect_uri : Uri.t;
-  scope : Scopes.t list;
-  state : string option;
-  nonce : string option;
-  claims : Yojson.Safe.t option;
-  max_age : int option;
-  display : Display.t option;
-  prompt : Prompt.t option;
-}
+type t =
+  { response_type : string list
+  ; client_id : string
+  ; redirect_uri : Uri.t
+  ; scope : Scopes.t list
+  ; state : string option
+  ; nonce : string option
+  ; claims : Yojson.Safe.t option
+  ; max_age : int option
+  ; display : Display.t option
+  ; prompt : Prompt.t option
+  }
 
 type error =
   [ `Unauthorized_client of Client.t
@@ -47,29 +49,30 @@ type error =
   | `Missing_parameter of string
   | Display.error
   | Prompt.error
-  | `Invalid_parameters ]
+  | `Invalid_parameters
+  ]
 (** Possible states when parsing the query *)
 
 val make :
-  ?response_type:string list ->
-  ?scope:Scopes.t list ->
-  ?state:string ->
-  ?claims:Yojson.Safe.t ->
-  ?max_age:int ->
-  ?display:Display.t ->
-  ?prompt:Prompt.t ->
-  ?nonce:string ->
-  redirect_uri:Uri.t ->
-  client_id:string ->
-  unit ->
-  t
+   ?response_type:string list
+  -> ?scope:Scopes.t list
+  -> ?state:string
+  -> ?claims:Yojson.Safe.t
+  -> ?max_age:int
+  -> ?display:Display.t
+  -> ?prompt:Prompt.t
+  -> ?nonce:string
+  -> redirect_uri:Uri.t
+  -> client_id:string
+  -> unit
+  -> t
 
 val to_query : t -> (string * string list) list
 (** Used when starting a authentication *)
 
 val to_yojson : t -> Yojson.Safe.t
-val of_yojson : Yojson.Safe.t -> (t, [> error]) result
+val of_yojson : Yojson.Safe.t -> (t, [> error ]) result
 
 (** {2 Parsing in the provider} *)
 
-val parse_query : Uri.t -> (t, [> error]) result
+val parse_query : Uri.t -> (t, [> error ]) result
