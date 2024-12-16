@@ -2,7 +2,7 @@
 
 (name oidc)
 
-(license BSD3)
+(license BSD-3-Clause)
 
 (source
  (github ulrikstrid/ocaml-oidc))
