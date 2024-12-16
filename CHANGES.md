@@ -1,3 +1,9 @@
+0.2.0
+--------------
+- Upgrade mirage-crypto and remove cstruct (by @anmonteiro)
+- Remove esy
+- Add nonce to `SimpleClient.valid_token_of_string`
+
 0.1.1
 --------------
 - Add more logging
