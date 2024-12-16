@@ -89,6 +89,7 @@ val make_userinfo_request :
 
 val valid_token_of_string :
   ?clock_tolerance:int ->
+  ?nonce:string ->
   jwks:Jose.Jwks.t ->
   discovery:Discover.t ->
   t ->

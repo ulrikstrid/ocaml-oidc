@@ -117,11 +117,11 @@ let make_auth_uri ?scope ?claims ?nonce ~state ~discovery t =
   in
   Uri.add_query_params discovery.Discover.authorization_endpoint query
 
-let valid_token_of_string ?clock_tolerance ~jwks ~discovery t body =
+let valid_token_of_string ?clock_tolerance ?nonce ~jwks ~discovery t body =
   let ret = Token.Response.of_string body in
   match ret with
   | Ok ret ->
-    Token.Response.validate ?clock_tolerance ~jwks ~discovery ~client:t.client
+    Token.Response.validate ?clock_tolerance ?nonce ~jwks ~discovery ~client:t.client
       ret
   | e -> e
 
