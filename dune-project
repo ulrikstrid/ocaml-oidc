@@ -28,7 +28,7 @@
   (dune
    (>= 2.5))
   (jose
-   (>= 0.5.1))
+   (>= 0.10.0))
   uri
   yojson
   logs
