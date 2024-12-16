@@ -2,15 +2,14 @@
   description = "OpenID Connect implementation for OCaml";
 
   nixConfig = {
-    extra-substituters = "https://anmonteiro.nix-cache.workers.dev";
+    extra-substituters = "https://ocaml.nix-cache.com";
     extra-trusted-public-keys = "ocaml.nix-cache.com-1:/xI2h2+56rwFfKyyFVbkJSeGqSIYMC/Je+7XXqGKDIY=";
   };
 
   inputs = {
-    nixpkgs.url = "github:nix-ocaml/nix-overlays?rev=5f9732395c157852afe6710e11097afa2083cbc1";
+    nixpkgs.url = "github:nix-ocaml/nix-overlays";
 
     flake-utils.url = "github:numtide/flake-utils";
-    nixpkgs.inputs.flake-utils.follows = "flake-utils";
 
     nix-filter.url = "github:numtide/nix-filter";
   };
@@ -35,26 +34,28 @@
               drv.pname == null ||
               !(lib.any (name: name == drv.pname || name == drv.name) (lib.attrNames oidcDrvs)))
             inputs;
-        devShell = (pkgs.mkShell {
-          inputsFrom = lib.attrValues oidcDrvs;
-          buildInputs = with pkgs; with ocamlPackages; [
-            ocaml-lsp
-            ocamlformat
-            odoc
-            reenv
-            # dune-release
-            cacert
-            curl
-            which
-          ];
-        }).overrideAttrs (o: {
-          propagatedBuildInputs = filterDrvs o.propagatedBuildInputs;
-          buildInputs = filterDrvs o.buildInputs;
-          checkInputs = filterDrvs o.checkInputs;
-        });
+        devShells = {
+          default = (pkgs.mkShell {
+            inputsFrom = lib.attrValues oidcDrvs;
+            buildInputs = with pkgs; with ocamlPackages; [
+              ocaml-lsp
+              ocamlformat
+              odoc
+              reenv
+              # dune-release
+              cacert
+              curl
+              which
+            ];
+          }).overrideAttrs (o: {
+            propagatedBuildInputs = filterDrvs o.propagatedBuildInputs;
+            buildInputs = filterDrvs o.buildInputs;
+            checkInputs = filterDrvs o.checkInputs;
+          });
+        };
       in
       {
-        inherit devShell;
+        inherit devShells;
         packages = {
           oidc = oidcPkgs.oidc;
         };
