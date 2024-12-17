@@ -85,4 +85,4 @@ val dynamic_of_yojson : Yojson.Safe.t -> (dynamic_response, string) result
 val dynamic_of_string : string -> (dynamic_response, string) result
 
 val of_dynamic_and_meta : dynamic:dynamic_response -> meta:meta -> t
-(** Createa a {{!t} OIDC Client} from {!dynamic} and {!meta} *)
+(** Createa a {{!t} OIDC Client} from {!dynamic_response} and {!meta} *)

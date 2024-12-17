@@ -18,7 +18,7 @@
 (generate_opam_files true)
 
 (package
- (version 0.1.1)
+ (version 0.2.0)
  (name oidc)
  (synopsis "Base package for working with OIDC")
  (description "Base functions and types to work with OpenID Connect.")
