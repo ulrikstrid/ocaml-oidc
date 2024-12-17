@@ -16,8 +16,6 @@ rec {
       ];
     };
 
-    useDune2 = true;
-
     propagatedBuildInputs = [
       uri
       jose
@@ -46,8 +44,6 @@ rec {
         "dune-project"
       ];
     };
-
-    useDune2 = true;
 
     propagatedBuildInputs = [
       oidc
@@ -79,12 +75,10 @@ rec {
       root = ./..;
       include = [
         "executable"
-        "morph-oidc-client.opam"
+        "oidc-client.opam"
         "dune-project"
       ];
     };
-
-    useDune2 = true;
 
     propagatedBuildInputs = [
       archi

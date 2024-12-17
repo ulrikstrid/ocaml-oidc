@@ -18,8 +18,9 @@ let () =
            let params =
              Oidc.Parameters.make
                ~scope:[ `S "repo"; `S "read:user" ]
-               client
+               ~client_id:client.id
                ~redirect_uri
+               ()
            in
            let uri = Uri.of_string "https://github.com/login/oauth/authorize" in
            let redirect_uri =
@@ -27,7 +28,7 @@ let () =
            in
            Dream.redirect request (Uri.to_string redirect_uri) )
        ; ( Dream.get "/auth/callback" @@ fun request ->
-           match Dream.query "code" request with
+           match Dream.query request "code" with
            | None -> Dream.html ~status:`Unauthorized "error"
            | Some code ->
              let uri =
@@ -35,11 +36,11 @@ let () =
              in
              let request_body =
                Oidc.Token.Request.make
-                 ~client
                  ~grant_type:"code"
                  ~scope:[ `S "repo" ]
                  ~redirect_uri
                  ~code
+                 client
                |> Oidc.Token.Request.to_body_string
              in
              let open Lwt.Syntax in
@@ -54,7 +55,9 @@ let () =
              in
              let* body = Cohttp_lwt.Body.to_string (snd token_response) in
              let () = Dream.info (fun m -> m "body: %s" body) in
-             let token_response = Oidc.Token.Response.of_string body in
+             let token_response =
+               Oidc.Token.Response.of_string body |> Result.get_ok
+             in
              let access_token = Option.get token_response.access_token in
              let* user =
                Cohttp_lwt_unix.Client.get
@@ -68,4 +71,3 @@ let () =
              let+ response = Dream.html ("auth callback " ^ user) in
              response )
        ]
-  @@ Dream.not_found

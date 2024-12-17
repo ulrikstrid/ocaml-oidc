@@ -1,38 +1,9 @@
 (executable
  (name DreamOauthClient)
- (package morph-oidc)
+ (package oidc-client)
  (public_name DreamOauthClient)
  (libraries lwt logs logs.fmt fmt.tty oidc dream cohttp cohttp-lwt-unix)
  (modules DreamOauthClient))
-
-(executable
- (name DreamOidcClient)
- (package morph-oidc)
- (public_name DreamOidcClient)
- (libraries
-  lwt
-  logs
-  logs.fmt
-  fmt.tty
-  oidc
-  dream
-  piaf
-  archi
-  archi-lwt
-  DreamOidcMiddleware)
- (modules DreamOidcClient))
-
-(library
- (name PiafOidc)
- (package morph-oidc)
- (libraries lwt logs logs.fmt fmt.tty oidc piaf)
- (modules PiafOidc))
-
-(library
- (name DreamOidcMiddleware)
- (package morph-oidc)
- (libraries lwt logs logs.fmt fmt.tty oidc piaf PiafOidc dream)
- (modules DreamOidcMiddleware))
 
 (env
  (docker

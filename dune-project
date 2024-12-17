@@ -68,7 +68,3 @@
   yojson
   logs
   piaf))
-
-(package
- (version 0.1.0)
- (name morph-oidc))
