@@ -39,6 +39,7 @@ type t =
   ; max_age : int option
   ; display : Display.t option
   ; prompt : Prompt.t option
+  ; login_hint : string option
   }
 
 type error =
@@ -61,6 +62,7 @@ val make :
   -> ?max_age:int
   -> ?display:Display.t
   -> ?prompt:Prompt.t
+  -> ?login_hint:string
   -> ?nonce:string
   -> redirect_uri:Uri.t
   -> client_id:string

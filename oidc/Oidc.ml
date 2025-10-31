@@ -1,5 +1,6 @@
 module SimpleClient = SimpleClient
 module Client = Client
+module Provider = Provider
 module Discover = Discover
 module Parameters = Parameters
 module Scopes = Scopes

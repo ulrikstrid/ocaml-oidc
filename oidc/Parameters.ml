@@ -72,6 +72,7 @@ type t =
   ; max_age : int option
   ; display : Display.t option
   ; prompt : Prompt.t option
+  ; login_hint : string option
   }
 
 let make
@@ -82,6 +83,7 @@ let make
       ?max_age
       ?display
       ?prompt
+      ?login_hint
       ?nonce
       ~redirect_uri
       ~client_id
@@ -97,6 +99,7 @@ let make
   ; max_age
   ; display
   ; prompt
+  ; login_hint
   }
 
 let identity a = a
@@ -138,6 +141,9 @@ let to_yojson t : Yojson.Safe.t =
      ; Option.map
          (fun display -> "display", `String (Display.serialize display))
          t.display
+     ; Option.map
+         (fun login_hint -> "login_hint", `String login_hint)
+         t.login_hint
      ]
     |> List.filter_map identity)
 
@@ -170,6 +176,7 @@ let of_yojson json : (t, [> error ]) result =
           |> Json.member "prompt"
           |> Json.to_string_option
           |> ROpt.flat_map (fun p -> Prompt.parse p |> ROpt.of_result)
+      ; login_hint = json |> Json.member "login_hint" |> Json.to_string_option
       }
   with
   | _ -> Error `Invalid_parameters
@@ -224,6 +231,7 @@ let parse_query uri : (t, [> error ]) result =
         ; prompt =
             RResult.flat_map Prompt.parse (getQueryParam "prompt")
             |> ROpt.of_result
+        ; login_hint = ROpt.of_result (getQueryParam "login_hint")
         }
     | Error e, _, _ -> Error e
     | _, Error e, _ -> Error e

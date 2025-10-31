@@ -5,6 +5,7 @@ module SimpleClient = SimpleClient
 (** {2 Lower level constructs}*)
 
 module Client = Client
+module Provider = Provider
 module Discover = Discover
 module Parameters = Parameters
 module Scopes = Scopes
